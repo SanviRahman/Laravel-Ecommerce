@@ -2,15 +2,7 @@
 
 @section('content')
 <section class="no-padding-top no-padding-bottom">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="alert alert-success">
-                    <h4><i class="fa fa-user"></i> Welcome, {{ Auth::user()->name }}!</h4>
-                    <p>You are logged in to the admin dashboard.</p>
-                </div>
-            </div>
-        </div>
+    <div class="container-fluid" style="margin-top: 5px;">
         <div class="row">
             <div class="col-md-3 col-sm-6">
                 <div class="statistic-block block">
