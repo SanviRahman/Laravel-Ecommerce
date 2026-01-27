@@ -135,7 +135,7 @@
                     }}">
                         <li><a href="{{ route('categories.index') }}" 
                               class="{{ $currentRoute == 'categories.index' ? 'active' : '' }}">
-                              All Categories
+                              View All Categories
                           </a></li>
                         <li><a href="{{ route('categories.create') }}" 
                               class="{{ $currentRoute == 'categories.create' ? 'active' : '' }}">
@@ -151,8 +151,8 @@
                         <i class="icon-windows"></i>Product
                     </a>
                     <ul id="exampleDropdown" class="collapse list-unstyled">
-                        <li><a href="{{ route('products.create') }}">Add Product</a></li>
                         <li><a href="{{ route('products.index') }}">View All Products</a></li>
+                        <li><a href="{{ route('products.create') }}">Add Product</a></li>
                     </ul>
                 </li>
             </ul>

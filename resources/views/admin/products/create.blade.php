@@ -110,6 +110,7 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
+                                        <pre></pre>
                                         <small class="form-text text-muted">
                                             Recommended size: 500x500px, Max size: 12MB
                                         </small>

@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -83,7 +82,7 @@ class AdminController extends Controller
     // Product Index
     public function productIndex()
     {
-        $products = Product::with('category')->latest()->paginate(10);
+        $products = Product::with('category')->paginate(10);
         return view('admin.products.index', compact('products'));
     }
 
@@ -186,18 +185,41 @@ class AdminController extends Controller
     }
 
     // Product Delete
+    // Product Delete
     public function productDelete($id)
     {
         $product = Product::findOrFail($id);
 
-        // Delete image if exists
-        if ($product->image && Storage::disk('public')->exists($product->image)) {
-            Storage::disk('public')->delete($product->image);
+        try {
+            // Delete image from public/uploads folder if exists
+            if ($product->product_image) {
+                $imagePath = public_path($product->product_image);
+
+                // Check if file exists in public path
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+
+                    // Log deletion for debugging
+                    \Log::info('Product image deleted: ' . $imagePath);
+                }
+
+                // Also check and delete from storage if exists (for consistency)
+                $storagePath = storage_path('app/public/' . $product->product_image);
+                if (file_exists($storagePath)) {
+                    unlink($storagePath);
+                }
+            }
+
+            $product->delete();
+
+            return redirect()->route('products.index')
+                ->with('success', 'Product deleted successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting product: ' . $e->getMessage());
+
+            return redirect()->route('products.index')
+                ->with('error', 'Error deleting product. Please try again.');
         }
-
-        $product->delete();
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully.');
     }
 }

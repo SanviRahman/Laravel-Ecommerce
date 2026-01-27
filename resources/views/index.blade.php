@@ -2,519 +2,568 @@
 <html>
 
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-  <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+    <!-- Basic -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Mobile Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Site Metas -->
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
-  <title>
-    Giftos
-  </title>
+    <title>
+        Giftos
+    </title>
 
-  <!-- slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <!-- slider stylesheet -->
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
 
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="front_end/css/bootstrap.css" />
+    <!-- bootstrap core css -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('front_end/css/bootstrap.css') }}" />
 
-  <!-- Custom styles for this template -->
-  <link href="front_end/css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="front_end/css/responsive.css" rel="stylesheet" />
+    <!-- Custom styles for this template -->
+    <link href="{{ asset('front_end/css/style.css') }}" rel="stylesheet" />
+    <!-- responsive style -->
+    <link href="{{ asset('front_end/css/responsive.css') }}" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local Font Awesome -->
+    <link rel="stylesheet" href="{{ asset('front_end/css/fontawesome/css/all.min.css') }}">
+
+    <style>
+    .product-box {
+        transition: transform 0.3s ease;
+    }
+
+    .product-box:hover {
+        transform: translateY(-5px);
+    }
+
+    .img-box img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .box {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .box:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .detail-box {
+        padding: 15px;
+    }
+
+    .detail-box h6 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .detail-box span {
+        color: #f7444e;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .btn-box a {
+        background: #f7444e;
+        color: white;
+        padding: 10px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+        transition: background 0.3s;
+    }
+
+    .btn-box a:hover {
+        background: #d43c45;
+    }
+
+    .alert {
+        margin: 20px 0;
+    }
+    </style>
 </head>
 
 <body>
-  <div class="hero_area">
-    <!-- header section strats -->
-    <header class="header_section">
-      <nav class="navbar navbar-expand-lg custom_nav-container ">
-        <a class="navbar-brand" href="index.html">
-          <span>
-            Giftos
-          </span>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class=""></span>
-        </button>
+    <div class="hero_area">
+        <!-- header section strats -->
+        <header class="header_section">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+                <a class="navbar-brand" href="{{ url('/') }}">
+                    <span>
+                        Giftos
+                    </span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class=""></span>
+                </button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav  ">
-            <li class="nav-item active">
-              <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="shop.html">
-                Shop
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="why.html">
-                Why Us
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="testimonial.html">
-                Testimonial
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="contact.html">Contact Us</a>
-            </li>
-          </ul>
-          <div class="user_option">
-            @if(Auth::check())
-            <a href="{{ route('dashboard') }}">
-              <i class="fa fa-user" aria-hidden="true"></i>
-              <span>
-                Dashboard
-              </span>
-            </a>
-            @else
-            <a href="{{ route('login') }}">
-              <i class="fa fa-user" aria-hidden="true"></i>
-              <span>
-                Login
-              </span>
-            </a>
-              <a href="{{ route('register') }}">
-              <i class="fa fa-user" aria-hidden="true"></i>
-              <span>
-                Register
-              </span>
-            </a>
-            @endif
-            <a href="">
-              <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-            </a>
-            <form class="form-inline ">
-              <button class="btn nav_search-btn" type="submit">
-                <i class="fa fa-search" aria-hidden="true"></i>
-              </button>
-            </form>
-          </div>
-        </div>
-      </nav>
-    </header>
-    <!-- end header section -->
-    <!-- slider section -->
-
-    <section class="slider_section">
-      <div class="slider_container">
-        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-          <div class="carousel-inner">
-            <div class="carousel-item active">
-              <div class="container-fluid">
-                <div class="row">
-                  <div class="col-md-7">
-                    <div class="detail-box"> 
-                      <h1>
-                        Welcome To Our <br>
-                        Gift Shop
-                      </h1>
-                      <p>
-                        Sequi perspiciatis nulla reiciendis, rem, tenetur impedit, eveniet non necessitatibus error distinctio mollitia suscipit. Nostrum fugit doloribus consequatur distinctio esse, possimus maiores aliquid repellat beatae cum, perspiciatis enim, accusantium perferendis.
-                      </p>
-                      <a href="">
-                        Contact Us
-                      </a>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav  ">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Shop
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Why Us
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Testimonial
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Contact Us</a>
+                        </li>
+                    </ul>
+                    <div class="user_option">
+                        @if(Auth::check())
+                        <a href="{{ route('dashboard') }}">
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                            <span>
+                                Dashboard
+                            </span>
+                        </a>
+                        @else
+                        <a href="{{ route('login') }}">
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                            <span>
+                                Login
+                            </span>
+                        </a>
+                        <a href="{{ route('register') }}">
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                            <span>
+                                Register
+                            </span>
+                        </a>
+                        @endif
+                        <a href="#">
+                            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                        </a>
+                        <form class="form-inline ">
+                            <button class="btn nav_search-btn" type="submit">
+                                <i class="fa fa-search" aria-hidden="true"></i>
+                            </button>
+                        </form>
                     </div>
-                  </div>
-                  <div class="col-md-5 ">
-                    <div class="img-box">
-                      <img style="width:600px" src="images/image3.jpeg" alt="" />
-                    </div>
-                  </div>
                 </div>
-              </div>
+            </nav>
+        </header>
+        <!-- end header section -->
+        <!-- slider section -->
+        <section class="slider_section">
+            <div class="slider_container">
+                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="detail-box">
+                                            <h1>
+                                                Welcome To Our <br>
+                                                Gift Shop
+                                            </h1>
+                                            <p>
+                                                Sequi perspiciatis nulla reiciendis, rem, tenetur impedit, eveniet non
+                                                necessitatibus error distinctio mollitia suscipit. Nostrum fugit
+                                                doloribus consequatur distinctio esse, possimus maiores aliquid repellat
+                                                beatae cum, perspiciatis enim, accusantium perferendis.
+                                            </p>
+                                            <a href="#">
+                                                Contact Us
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 ">
+                                        <div class="img-box">
+                                            <img style="width:600px"
+                                                src="https://cdn.pixabay.com/photo/2021/11/22/20/20/online-6817350_1280.jpg"
+                                                alt="" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
-            
-          </div>
-          
+        </section>
+
+        <!-- end slider section -->
+    </div>
+    <!-- end hero area -->
+
+    <!-- shop section -->
+    <br><br><br>
+    <section class="shop_section layout_padding"
+        style="background-color: #d1c9c9;padding: 60px 0;width: 96%;border-radius: 10px;margin: 0 auto 40px;">
+        <div class="container">
+            <div class="heading_container heading_center">
+                <h2>
+                    Latest Products
+                </h2>
+            </div>
+
+            @if(isset($products) && count($products) > 0)
+            <div class="row">
+                @foreach($products as $product)
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="box product-box">
+                        <a href="#">
+                            <div class="img-box">
+                                @php
+                                // Check if image exists
+                                $imageExists = $product->product_image &&
+                                file_exists(public_path($product->product_image));
+                                @endphp
+
+                                @if($imageExists)
+                                <img src="{{ asset($product->product_image) }}" alt="{{ $product->product_title }}">
+                                @else
+                                <img src="{{ asset('images/default-product.jpg') }}" alt="No Image Available">
+                                @endif
+                            </div>
+                            <div class="detail-box">
+                                <h6>
+                                    {{ \Illuminate\Support\Str::limit($product->product_title, 25) }}
+                                </h6>
+                                <h6>
+                                    Price
+                                    <span>
+                                        ${{ number_format($product->product_price, 2) }}
+                                    </span>
+                                </h6>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <div class="btn-box">
+                <a href="#">
+                    View All Products
+                </a>
+            </div>
+
+            @else
+            <div class="alert alert-info text-center">
+                <p>No products available at the moment. Check back soon!</p>
+            </div>
+            @endif
+
         </div>
-      </div>
     </section>
 
-    <!-- end slider section -->
-  </div>
-  <!-- end hero area -->
-
-  <!-- shop section -->
-
-  <section class="shop_section layout_padding">
-    <div class="container">
-      <div class="heading_container heading_center">
-        <h2>
-          Latest Products
-        </h2>
-      </div>
-      <div class="row">
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p1.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Ring
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $200
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p2.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Watch
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $300
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p3.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Teddy Bear
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $110
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p4.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Flower Bouquet
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $45
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p5.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Teddy Bear
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $95
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p6.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Flower Bouquet
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $70
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p7.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Watch
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $400
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="box">
-            <a href="">
-              <div class="img-box">
-                <img src="front_end/images/p8.png" alt="">
-              </div>
-              <div class="detail-box">
-                <h6>
-                  Ring
-                </h6>
-                <h6>
-                  Price
-                  <span>
-                    $450
-                  </span>
-                </h6>
-              </div>
-              <div class="new">
-                <span>
-                  New
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="btn-box">
-        <a href="">
-          View All Products
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- end shop section -->
+    <!-- end shop section -->
 
 
-
-
-
-
-
-  <!-- contact section -->
-
-  <section class="contact_section ">
-    <div class="container px-0">
-      <div class="heading_container ">
-        <h2 class="">
-          Contact Us
-        </h2>
-      </div>
-    </div>
-    <div class="container container-bg">
-      <div class="row">
-        <div class="col-lg-7 col-md-6 px-0">
-          <div class="map_container">
-            <div class="map-responsive">
-              <iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France" width="600" height="300" frameborder="0" style="border:0; width: 100%; height:100%" allowfullscreen></iframe>
+    <br><br>
+    <!-- contact section -->
+    <section class="contact_section" style="background-color: #d1c9c9; padding: 60px 0; height: auto; weight: normal;">
+        <div class="container">
+            <div class="heading_container text-center mb-5">
+                <h2 style="color: #333; font-size: 36px; font-weight: 700;">
+                    Contact Us
+                </h2>
             </div>
-          </div>
+            <div class="container-bg"
+                style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-md-6 mb-4 mb-md-0">
+                        <div class="map_container"
+                            style="border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                            <div class="map-responsive" style="position: relative; overflow: hidden; padding-top: 75%;">
+                                <iframe
+                                    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France"
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="contact_form" style="padding: 20px;">
+                            <form action="#">
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Name"
+                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <input type="email" class="form-control" placeholder="Your Email"
+                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Phone"
+                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <textarea class="form-control message-box" rows="4" placeholder="Your Message"
+                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%; resize: vertical;"></textarea>
+                                </div>
+                                <div class="d-flex">
+                                    <button type="submit"
+                                        style="background: #333; color: white; border: none; padding: 12px 35px; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background 0.3s;">
+                                        SEND MESSAGE
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 col-lg-5 px-0">
-          <form action="#">
-            <div>
-              <input type="text" placeholder="Name" />
+    </section>
+
+    <!-- info section -->
+
+    <br><br>
+    <section class="info_section layout_padding2-top"
+        style="background-color: #2c2c2c; color: white; padding: 60px 0 20px;">
+        <div class="container">
+            <div class="social_container text-center mb-4">
+                <div class="social_box d-flex justify-content-center">
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
             </div>
-            <div>
-              <input type="email" placeholder="Email" />
+
+            <div class="info_container" style="padding: 40px 0;">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            ABOUT US
+                        </h6>
+                        <p style="color: #aaa; line-height: 1.6;">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                        </p>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="info_form">
+                            <h5 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                                Newsletter
+                            </h5>
+                            <form action="#">
+                                <div class="mb-3">
+                                    <input type="email" placeholder="Enter your email"
+                                        style="border: 1px solid #555; background: #444; color: white; border-radius: 5px; padding: 10px 15px; width: 100%;">
+                                </div>
+                                <button type="submit"
+                                    style="background: #f7444e; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer;">
+                                    Subscribe
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            NEED HELP
+                        </h6>
+                        <p style="color: #aaa; line-height: 1.6;">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                        </p>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            CONTACT US
+                        </h6>
+                        <div class="info_link-box">
+                            <a href="#"
+                                style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">Gb road 123 london Uk</span>
+                            </a>
+                            <a href="#"
+                                style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">+01 12345678901</span>
+                            </a>
+                            <a href="#" style="color: #aaa; text-decoration: none; display: block;">
+                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">demo@gmail.com</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-              <input type="text" placeholder="Phone" />
-            </div>
-            <div>
-              <input type="text" class="message-box" placeholder="Message" />
-            </div>
-            <div class="d-flex ">
-              <button>
-                SEND
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <br><br><br>
-
-  <!-- end contact section -->
-
-   
-
-  <!-- info section -->
-
-  <section class="info_section  layout_padding2-top">
-    <div class="social_container">
-      <div class="social_box">
-        <a href="">
-          <i class="fa fa-facebook" aria-hidden="true"></i>
-        </a>
-        <a href="">
-          <i class="fa fa-twitter" aria-hidden="true"></i>
-        </a>
-        <a href="">
-          <i class="fa fa-instagram" aria-hidden="true"></i>
-        </a>
-        <a href="">
-          <i class="fa fa-youtube" aria-hidden="true"></i>
-        </a>
-      </div>
-    </div>
-    <div class="info_container ">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6 col-lg-3">
-            <h6>
-              ABOUT US
-            </h6>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
-            </p>
-          </div>
-          <div class="col-md-6 col-lg-3">
-            <div class="info_form ">
-              <h5>
-                Newsletter
-              </h5>
-              <form action="#">
-                <input type="email" placeholder="Enter your email">
-                <button>
-                  Subscribe
-                </button>
-              </form>
+        <!-- footer section -->
+        <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
+            <div class="container text-center">
+                <p style="color: #aaa; margin: 0;">
+                    &copy; <span id="displayYear"></span> All Rights Reserved By
+                    <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">Web Tech Knowledge</a>
+                </p>
             </div>
-          </div>
-          <div class="col-md-6 col-lg-3">
-            <h6>
-              NEED HELP
-            </h6>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
-            </p>
-          </div>
-          <div class="col-md-6 col-lg-3">
-            <h6>
-              CONTACT US
-            </h6>
-            <div class="info_link-box">
-              <a href="">
-                <i class="fa fa-map-marker" aria-hidden="true"></i>
-                <span> Gb road 123 london Uk </span>
-              </a>
-              <a href="">
-                <i class="fa fa-phone" aria-hidden="true"></i>
-                <span>+01 12345678901</span>
-              </a>
-              <a href="">
-                <i class="fa fa-envelope" aria-hidden="true"></i>
-                <span> demo@gmail.com</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- footer section -->
-    <footer class=" footer_section">
-      <div class="container">
-        <p>
-          &copy; <span id="displayYear"></span> All Rights Reserved By
-          <a href="https://html.design/">Web Tech Knowledge</a>
-        </p>
-      </div>
-    </footer>
-    <!-- footer section -->
+        </footer>
+        <!-- footer section -->
+    </section>
 
-  </section>
+    <style>
+    /* Common Styles for Both Sections */
+    .contact_section,
+    .info_section {
+        width: 96%;
+        border-radius: 10px;
+        margin: 0 auto 40px;
+    }
 
-  <!-- end info section -->
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    /* Form Controls */
+    .form-control:focus {
+        outline: none;
+        border-color: #f7444e;
+        box-shadow: 0 0 0 2px rgba(247, 68, 78, 0.2);
+    }
+
+    /* Button Hover Effects */
+    button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+
+    /* Social Icons Hover */
+    .social_box a:hover {
+        color: #f7444e !important;
+        transform: scale(1.1);
+        transition: all 0.3s ease;
+    }
+
+    /* Links Hover */
+    .info_link-box a:hover {
+        color: #f7444e !important;
+        transition: color 0.3s ease;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 991px) {
+
+        .contact_section,
+        .info_section {
+            padding: 40px 0 !important;
+        }
+
+        .container-bg {
+            padding: 30px !important;
+        }
+
+        .col-md-6,
+        .col-lg-3 {
+            margin-bottom: 30px;
+        }
+    }
+
+    @media (max-width: 767px) {
+
+        .contact_section,
+        .info_section {
+            padding: 30px 0 !important;
+        }
+
+        .container-bg {
+            padding: 20px !important;
+        }
+
+        .heading_container h2 {
+            font-size: 28px !important;
+        }
+
+        .social_box a {
+            margin: 0 10px !important;
+            font-size: 20px !important;
+        }
+    }
+
+    /* Font Awesome Fix */
+    .fab,
+    .fa {
+        font-family: 'Font Awesome 6 Brands', 'Font Awesome 6 Free' !important;
+    }
+    </style>
+
+    <script>
+    // Set current year in footer
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('displayYear').textContent = new Date().getFullYear();
+
+        // Add Font Awesome if not loaded
+        if (!document.querySelector('link[href*="fontawesome"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            document.head.appendChild(link);
+        }
+    });
+    </script>
 
 
-  <script src="front_end/js/jquery-3.4.1.min.js"></script>
-  <script src="front_end/js/bootstrap.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
-  </script>
-  <script src="front_end/js/custom.js"></script>
+    <!-- end contact section -->
+    <script src="{{ asset('front_end/js/jquery-3.4.1.min.js') }}"></script>
+    <script src="{{ asset('front_end/js/bootstrap.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script src="{{ asset('front_end/js/custom.js') }}"></script>
+
+    <script>
+    // Display current year in footer
+    document.getElementById('displayYear').textContent = new Date().getFullYear();
+
+    // Image error handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const images = document.querySelectorAll('.img-box img');
+        images.forEach(img => {
+            img.onerror = function() {
+                this.src = "{{ asset('images/default-product.jpg') }}";
+                this.alt = "Image not found";
+            };
+        });
+    });
+    </script>
 </body>
 
 </html>
