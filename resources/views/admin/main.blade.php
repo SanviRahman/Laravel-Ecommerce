@@ -148,12 +148,11 @@
                 <li>
                     <a href="#exampleDropdown" aria-expanded="false" 
                        data-toggle="collapse" class="collapsed">
-                        <i class="icon-windows"></i>Example dropdown
+                        <i class="icon-windows"></i>Product
                     </a>
                     <ul id="exampleDropdown" class="collapse list-unstyled">
-                        <li><a href="#">Page</a></li>
-                        <li><a href="#">Page</a></li>
-                        <li><a href="#">Page</a></li>
+                        <li><a href="{{ route('products.create') }}">Add Product</a></li>
+                        <li><a href="{{ route('products.index') }}">View All Products</a></li>
                     </ul>
                 </li>
             </ul>

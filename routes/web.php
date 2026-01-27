@@ -18,20 +18,25 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
+// Admin Routes
 Route::middleware(['auth', 'admin'])->group(function () {
-    // Category List (সব ক্যাটাগরি দেখাবে)
+    // Category Routes
     Route::get('/categories', [AdminController::class, 'categoryIndex'])->name('categories.index');
-    // Create Category Form (ফর্ম দেখাবে)
     Route::get('/categories/create', [AdminController::class, 'addCategory'])->name('categories.create');
-    // Store Category (ফর্ম সাবমিট করবে)
     Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
-    // Edit Category Form (এডিট ফর্ম দেখাবে)
     Route::get('/categories/{id}/edit', [AdminController::class, 'editCategory'])->name('categories.edit');
-    // Update Category (এডিট ফর্ম আপডেট করবে)
     Route::put('/categories/{id}', [AdminController::class, 'updateCategory'])->name('categories.update');
-    // Delete Category (ক্যাটাগরি ডিলিট করবে)
     Route::delete('/categories/{id}', [AdminController::class, 'deleteCategory'])->name('categories.delete');
+
+
+    // Product Routes
+    Route::get('/products', [AdminController::class, 'productIndex'])->name('products.index');
+    Route::get('/products/create', [AdminController::class, 'productCreate'])->name('products.create');
+    Route::post('/products', [AdminController::class, 'productStore'])->name('products.store');
+    Route::get('/products/{id}/edit', [AdminController::class, 'productEdit'])->name('products.edit');
+    Route::put('/products/{id}', [AdminController::class, 'productUpdate'])->name('products.update');
+    Route::delete('/products/{id}', [AdminController::class, 'productDelete'])->name('products.delete');
+
 });
 
 
