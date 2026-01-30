@@ -222,4 +222,35 @@ class AdminController extends Controller
                 ->with('error', 'Error deleting product. Please try again.');
         }
     }
+
+    // Product Search
+    public function productSearch(Request $request)
+    {
+        $search     = $request->input('search');
+        $searchType = $request->input('search_type', 'product_title');
+
+        $query = Product::query();
+
+        if ($search) {
+            switch ($searchType) {
+                case 'product_title':
+                    $query->where('product_title', 'like', '%' . $search . '%');
+                    break;
+
+                case 'product_description':
+                    $query->where('product_description', 'like', '%' . $search . '%');
+                    break;
+
+                case 'product_category':
+                    $query->whereHas('product_category', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
+                    break;
+            }
+        }
+
+        $products = $query->latest()->paginate(10);
+
+        return view('admin.products.index', compact('products', 'search', 'searchType'));
+    }
 }

@@ -25,6 +25,66 @@
         </div>
         @endif
 
+         <!-- Search Products -->
+
+        <!-- Search Form Section - Add this in your index.blade.php file -->
+        <div class="row mb-4">
+            <div class="col-lg-12">
+                <div class="block">
+                    <div class="title"><strong>Search Products</strong></div>
+                    <div class="block-body">
+                        <form action="{{ route('products.search') }}" method="GET" class="form-inline">
+                            @csrf
+
+                            <div class="form-group mr-3 mb-2">
+                                <label for="search_type" class="sr-only">Search Type</label>
+                                <select name="search_type" id="search_type" class="form-control">
+                                    <option value="product_title"
+                                        {{ request('search_type') == 'product_title' ? 'selected' : '' }}>Product Title
+                                    </option>
+                                    <option value="product_description"
+                                        {{ request('search_type') == 'product_description' ? 'selected' : '' }}>Product
+                                        Description</option>
+                                    <option value="product_category"
+                                        {{ request('search_type') == 'product_category' ? 'selected' : '' }}>Product
+                                        Category</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mr-3 mb-2" style="flex-grow: 1;">
+                                <label for="search" class="sr-only">Search</label>
+                                <input type="text" class="form-control" id="search" name="search"
+                                    placeholder="Enter search keyword..." value="{{ request('search') }}">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary mb-2 mr-2">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+
+                            @if(request()->has('search'))
+                            <a href="{{ route('products.index') }}" class="btn btn-secondary mb-2">
+                                <i class="fa fa-refresh"></i> Reset
+                            </a>
+                            @endif
+                        </form>
+
+                        <!-- Search Results Info -->
+                        @if(request()->has('search') && request('search'))
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="fa fa-info-circle"></i>
+                            Showing results for "<strong>{{ request('search') }}</strong>"
+                            in
+                            <strong>{{ ucfirst(str_replace('_', ' ', request('search_type', 'product_title'))) }}</strong>
+                            | Total found: <strong>{{ $products->total() }}</strong>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- End Search Products -->
         <div class="row">
             <div class="col-lg-12">
                 <div class="block">
@@ -43,6 +103,7 @@
                                         <th>Image</th>
                                         <th>Title</th>
                                         <th>Category</th>
+                                        <th>Description</th>
                                         <th>Price</th>
                                         <th>Quantity</th>
                                         <th>Created At</th>
@@ -67,6 +128,7 @@
                                         </td>
                                         <td>{{ Str::limit($product->product_title, 30) }}</td>
                                         <td>{{ $product->category->name ?? 'N/A' }}</td>
+                                        <td>{{ Str::limit($product->product_description, 50) }}</td>
                                         <td>${{ number_format($product->product_price, 2) }}</td>
                                         <td>{{ $product->product_quantity }}</td>
                                         <td>{{ $product->created_at->format('d M, Y') }}</td>
@@ -108,3 +170,45 @@
     </div>
 </section>
 @endsection
+
+
+
+@push('styles')
+<style>
+/* Search Form Styling */
+.form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.form-inline .form-group {
+    margin-bottom: 0;
+}
+
+.form-inline .form-control {
+    min-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .form-inline .form-group {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .form-inline .form-control {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Alert styling for search results */
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+    padding: 12px 20px;
+    border-radius: 4px;
+}
+</style>
+@endpush

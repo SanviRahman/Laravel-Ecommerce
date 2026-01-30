@@ -236,7 +236,8 @@
                 @foreach($products as $product)
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="box product-box">
-                        <a href="#">
+                        <!-- Fix the link here -->
+                        <a href="{{ route('product.details', $product->id) }}">
                             <div class="img-box">
                                 @php
                                 // Check if image exists
@@ -266,6 +267,7 @@
                 </div>
                 @endforeach
             </div>
+            @endif
 
             <div class="btn-box">
                 <a href="#">
@@ -273,11 +275,6 @@
                 </a>
             </div>
 
-            @else
-            <div class="alert alert-info text-center">
-                <p>No products available at the moment. Check back soon!</p>
-            </div>
-            @endif
 
         </div>
     </section>

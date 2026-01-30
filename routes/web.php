@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 Route::get('/',[UserController::class, 'home'])->name('index');
 
 Route::get('/dashboard',[UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('products/{id}', [UserController::class, 'productDetails'])->name('product.details');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -34,6 +35,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/products/{id}/edit', [AdminController::class, 'productEdit'])->name('products.edit');
     Route::put('/products/{id}', [AdminController::class, 'productUpdate'])->name('products.update');
     Route::delete('/products/{id}', [AdminController::class, 'productDelete'])->name('products.delete');
+    Route::get('/products/search', [AdminController::class, 'productSearch'])->name('products.search');
 
 });
 
