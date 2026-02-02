@@ -34,7 +34,6 @@
                     <div class="title"><strong>Search Products</strong></div>
                     <div class="block-body">
                         <form action="{{ route('products.search') }}" method="GET" class="form-inline">
-                            @csrf
 
                             <div class="form-group mr-3 mb-2">
                                 <label for="search_type" class="sr-only">Search Type</label>
@@ -90,7 +89,7 @@
                 <div class="block">
                     <div class="title d-flex justify-content-between align-items-center">
                         <strong>All Products</strong>
-                        <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn-primary btn-sm">
                             <i class="fa fa-plus"></i> Add New Product
                         </a>
                     </div>

@@ -57,7 +57,7 @@
 
     /* Navbar Mobile Fix */
     .navbar-toggler {
-        border: 1px solid #ff3368;
+        border: 1px solid #2f3ad1;
     }
     
     .navbar-toggler-icon {
@@ -120,7 +120,7 @@
     }
 
     .back-btn a:hover {
-        color: #ff3368;
+        color:#2f3ad1;
     }
 
     .product-card {
@@ -173,7 +173,7 @@
     .product-price {
         font-size: 36px;
         font-weight: 700;
-        color: #ff3368;
+        color: #2f3ad1;
         display: inline-block;
         margin-right: 15px;
     }
@@ -186,7 +186,7 @@
     }
 
     .product-discount {
-        background: #ff3368;
+        background: #2f3ad1;
         color: white;
         padding: 5px 12px;
         border-radius: 20px;
@@ -215,7 +215,7 @@
     .meta-icon {
         width: 35px;
         height: 35px;
-        background: #ff3368;
+        background: #2f3ad1;
         color: white;
         border-radius: 50%;
         display: flex;
@@ -248,7 +248,7 @@
         color: #333;
         margin-bottom: 15px;
         padding-bottom: 10px;
-        border-bottom: 2px solid #ff3368;
+        border-bottom: 2px solid #2f3ad1;
         display: inline-block;
     }
 
@@ -298,9 +298,9 @@
     }
 
     .quantity-btn:hover {
-        background: #ff3368;
+        background: #2f3ad1;
         color: white;
-        border-color: #ff3368;
+        border-color: #2f3ad1;
     }
 
     .quantity-btn:first-child {
@@ -324,7 +324,7 @@
     }
 
     .btn-add-cart {
-        background: linear-gradient(135deg, #ff3368, #ff6b6b);
+        background: linear-gradient(135deg, #2f3ad1, #4a5de0);
         color: white;
         border: none;
         padding: 16px 40px;

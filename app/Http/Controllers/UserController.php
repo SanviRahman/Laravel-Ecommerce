@@ -19,8 +19,14 @@ class UserController extends Controller
 
     public function home()
     {
-        $products = Product::all();
+        $products = Product::latest()->take(6)->get();
         return view('index', compact('products'));
+    }
+
+    public function viewAllProducts()
+    {
+        $products = Product::all();
+        return view('admin.products.viewallproducts', compact('products'));
     }
 
     public function productDetails($id)

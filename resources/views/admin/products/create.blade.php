@@ -270,3 +270,4 @@ document.getElementById('product_image').addEventListener('change', function(e) 
 });
 </script>
 @endpush
+

@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
     <title>
-        E-Commerce
+        Giftos
     </title>
 
     <!-- slider stylesheet -->
@@ -227,14 +227,14 @@
         <div class="container">
             <div class="heading_container heading_center">
                 <h2>
-                    Latest Products
+                    ALL PRODUCTS
                 </h2>
             </div>
 
             @if(isset($products) && count($products) > 0)
             <div class="row">
                 @foreach($products as $product)
-                <div  class="col-md-4 mb-4">
+                <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="box product-box">
                         <!-- Fix the link here -->
                         <a href="{{ route('product.details', $product->id) }}">
@@ -270,8 +270,8 @@
             @endif
 
             <div class="btn-box">
-                <a href="{{ route('viewallproducts') }}">
-                    View All Products
+                <a href="{{ route('index') }}">
+                    View Latest Products
                 </a>
             </div>
 
@@ -281,66 +281,7 @@
 
     <!-- end shop section -->
 
-
-    <br><br>
-    <!-- contact section -->
-    <section class="contact_section" style="background-color: #d1c9c9; padding: 60px 0; height: auto; weight: normal;">
-        <div class="container">
-            <div class="heading_container text-center mb-5">
-                <h2 style="color: #333; font-size: 36px; font-weight: 700;">
-                    Contact Us
-                </h2>
-            </div>
-            <div class="container-bg"
-                style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 col-md-6 mb-4 mb-md-0">
-                        <div class="map_container"
-                            style="border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
-                            <div class="map-responsive" style="position: relative; overflow: hidden; padding-top: 75%;">
-                                <iframe
-                                    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France"
-                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 col-md-6">
-                        <div class="contact_form" style="padding: 20px;">
-                            <form action="#">
-                                <div class="form-group mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Name"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
-                                </div>
-                                <div class="form-group mb-3">
-                                    <input type="email" class="form-control" placeholder="Your Email"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
-                                </div>
-                                <div class="form-group mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Phone"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
-                                </div>
-                                <div class="form-group mb-3">
-                                    <textarea class="form-control message-box" rows="4" placeholder="Your Message"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%; resize: vertical;"></textarea>
-                                </div>
-                                <div class="d-flex">
-                                    <button type="submit"
-                                        style="background: #333; color: white; border: none; padding: 12px 35px; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background 0.3s;">
-                                        SEND MESSAGE
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- info section -->
-
     <br><br>
     <section class="info_section layout_padding2-top"
         style="background-color: #2c2c2c; color: white; padding: 60px 0 20px;">

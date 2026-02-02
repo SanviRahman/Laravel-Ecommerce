@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -33,7 +34,7 @@ class AdminController extends Controller
         // Create category
         Category::create([
             'name' => $request->name,
-            'slug' => \Str::slug($request->name),
+            'slug' => Str::slug($request->name),
         ]);
 
         return redirect()->route('categories.index')
@@ -60,7 +61,7 @@ class AdminController extends Controller
         // Update category
         $category->update([
             'name' => $request->name,
-            'slug' => \Str::slug($request->name),
+            'slug' => Str::slug($request->name),
         ]);
 
         return redirect()->route('categories.index')
@@ -80,15 +81,35 @@ class AdminController extends Controller
     //                                             <========= Product Methods =======>
 
     // Product Index
-    public function productIndex()
-    {
-        $products = Product::with('category')->paginate(10);
-        return view('admin.products.index', compact('products'));
+  // Product Index
+public function productIndex(Request $request)
+{
+    $search = $request->input('search');
+    $searchType = $request->input('search_type', 'product_title');
+    
+    $query = Product::with('category');
+    
+    if ($search) {
+        if ($searchType == 'product_category') {
+            // Search by category name through relationship
+            $query->whereHas('category', function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        } else {
+            // Search by product fields
+            $query->where($searchType, 'like', '%' . $search . '%');
+        }
     }
+    
+    $products = $query->latest()->paginate(10);
+    
+    return view('admin.products.index', compact('products', 'search', 'searchType'));
+}
 
     // Product Create View
     public function productCreate()
     {
+        return "Okay";
         $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }
@@ -185,7 +206,6 @@ class AdminController extends Controller
     }
 
     // Product Delete
-    // Product Delete
     public function productDelete($id)
     {
         $product = Product::findOrFail($id);
@@ -198,15 +218,6 @@ class AdminController extends Controller
                 // Check if file exists in public path
                 if (file_exists($imagePath)) {
                     unlink($imagePath);
-
-                    // Log deletion for debugging
-                    \Log::info('Product image deleted: ' . $imagePath);
-                }
-
-                // Also check and delete from storage if exists (for consistency)
-                $storagePath = storage_path('app/public/' . $product->product_image);
-                if (file_exists($storagePath)) {
-                    unlink($storagePath);
                 }
             }
 
@@ -223,29 +234,23 @@ class AdminController extends Controller
         }
     }
 
-    // Product Search
+    // Product Search (Alternative method if you want separate search)
     public function productSearch(Request $request)
     {
         $search     = $request->input('search');
         $searchType = $request->input('search_type', 'product_title');
 
-        $query = Product::query();
+        $query = Product::with('category');
 
         if ($search) {
-            switch ($searchType) {
-                case 'product_title':
-                    $query->where('product_title', 'like', '%' . $search . '%');
-                    break;
-
-                case 'product_description':
-                    $query->where('product_description', 'like', '%' . $search . '%');
-                    break;
-
-                case 'product_category':
-                    $query->whereHas('product_category', function ($q) use ($search) {
-                        $q->where('name', 'like', '%' . $search . '%');
-                    });
-                    break;
+            if ($searchType == 'product_category') {
+                // Search by category name through relationship
+                $query->whereHas('category', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                });
+            } else {
+                // Search by product fields
+                $query->where($searchType, 'like', '%' . $search . '%');
             }
         }
 
