@@ -109,7 +109,6 @@ public function productIndex(Request $request)
     // Product Create View
     public function productCreate()
     {
-        return "Okay";
         $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }

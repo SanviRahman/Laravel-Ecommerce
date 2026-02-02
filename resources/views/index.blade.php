@@ -44,10 +44,10 @@
     }
 
     .img-box img {
-        width: 100%;
-        height: 250px;
+        width: 60%;
+        height: 100%;
         object-fit: cover;
-        border-radius: 8px;
+        border-radius: 15px;
     }
 
     .box {
@@ -234,11 +234,11 @@
             @if(isset($products) && count($products) > 0)
             <div class="row">
                 @foreach($products as $product)
-                <div  class="col-md-4 mb-4">
-                    <div class="box product-box">
-                        <!-- Fix the link here -->
-                        <a href="{{ route('product.details', $product->id) }}">
-                            <div class="img-box">
+                <div class="col-md-4 mb-4">
+                    <div class="box product-box h-100 d-flex flex-column">
+                        <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none text-dark">
+                            <!-- Image Container with fixed height -->
+                            <div class="img-box" style="height: 250px; overflow: hidden; position: relative;">
                                 @php
                                 // Check if image exists
                                 $imageExists = $product->product_image &&
@@ -246,26 +246,61 @@
                                 @endphp
 
                                 @if($imageExists)
-                                <img src="{{ asset($product->product_image) }}" alt="{{ $product->product_title }}">
+                                <img src="{{ asset($product->product_image) }}" alt="{{ $product->product_title }}"
+                                    style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
                                 @else
-                                <img src="{{ asset('images/default-product.jpg') }}" alt="No Image Available">
+                                <img src="{{ asset('images/default-product.jpg') }}" alt="No Image Available"
+                                    style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                @endif
+
+                                <!-- Discount badge (if any) -->
+                                @if($product->product_discount_price && $product->product_discount_price >
+                                $product->product_price)
+                                <span
+                                    style="position: absolute; top: 10px; right: 10px; background: #ff3368; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                                    Save
+                                    {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
+                                </span>
                                 @endif
                             </div>
-                            <div class="detail-box">
-                                <h6>
+
+                            <!-- Content with flex-grow to take remaining space -->
+                            <div class="detail-box p-3 flex-grow-1 d-flex flex-column">
+                                <h6 class="mb-2"
+                                    style="font-weight: 600; font-size: 16px; line-height: 1.4; min-height: 45px;">
                                     {{ \Illuminate\Support\Str::limit($product->product_title, 25) }}
                                 </h6>
-                                <h6>
-                                    Price
-                                    <span>
+
+                                <div class="mt-auto">
+                                    <h6 class="mb-0" style="color: #ff3368; font-size: 18px; font-weight: 700;">
                                         ${{ number_format($product->product_price, 2) }}
-                                    </span>
-                                </h6>
+                                        @if($product->product_discount_price && $product->product_discount_price >
+                                        $product->product_price)
+                                        <span class="text-muted"
+                                            style="font-size: 14px; text-decoration: line-through; margin-left: 5px;">
+                                            ${{ number_format($product->product_discount_price, 2) }}
+                                        </span>
+                                        @endif
+                                    </h6>
+
+                                    <!-- Add to Cart Button -->
+                                    <button class="btn btn-sm btn-outline-primary mt-2 w-100 add-to-cart-btn"
+                                        data-product-id="{{ $product->id }}"
+                                        data-product-title="{{ $product->product_title }}"
+                                        data-product-price="{{ $product->product_price }}"
+                                        style="border-color: #2d43be; color: #2d43be; background-color: #2d43be; color: white; border-radius: 5px; padding: 8px 12px; font-size: 14px;">
+                                         View Details
+                                    </button>
+                                </div>
                             </div>
                         </a>
                     </div>
                 </div>
                 @endforeach
+            </div>
+            @else
+            <div class="text-center py-5">
+                <h4 class="text-muted">No products found</h4>
             </div>
             @endif
 

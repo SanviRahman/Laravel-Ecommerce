@@ -89,7 +89,7 @@
                 <div class="block">
                     <div class="title d-flex justify-content-between align-items-center">
                         <strong>All Products</strong>
-                        <a href="#" class="btn btn-primary btn-sm">
+                        <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm">
                             <i class="fa fa-plus"></i> Add New Product
                         </a>
                     </div>

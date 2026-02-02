@@ -31,15 +31,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Product Routes
     Route::get('/products', [AdminController::class, 'productIndex'])->name('products.index');
+    Route::get('/product/create', [AdminController::class, 'productCreate'])->name('products.create');
     Route::post('/products', [AdminController::class, 'productStore'])->name('products.store');
     Route::get('/products/{id}/edit', [AdminController::class, 'productEdit'])->name('products.edit');
     Route::put('/products/{id}', [AdminController::class, 'productUpdate'])->name('products.update');
     Route::delete('/products/{id}', [AdminController::class, 'productDelete'])->name('products.delete');
-    Route::get('/products/search', [AdminController::class, 'productSearch'])->name('products.search');
+    Route::get('/product/search', [AdminController::class, 'productSearch'])->name('products.search');
 
-});
-Route::get('/products/create',function () {
-    return view('welcome');
 });
 
 
