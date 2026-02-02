@@ -101,7 +101,7 @@ public function productIndex(Request $request)
         }
     }
     
-    $products = $query->latest()->paginate(10);
+    $products = $query->paginate(10);
     
     return view('admin.products.index', compact('products', 'search', 'searchType'));
 }
