@@ -41,4 +41,14 @@ class UserController extends Controller
 
         return view('admin.products.product_details', compact('product', 'relatedProducts'));
     }
+
+    public function addToCart($id)
+    {
+        // Logic to add product to cart
+        // This is a placeholder implementation
+        $product = Product::findOrFail($id);
+        // Here you would typically add the product to the user's cart in the database or session
+
+        return redirect()->back()->with('success', $product->product_name . ' has been added to your cart!');
+    }
 }

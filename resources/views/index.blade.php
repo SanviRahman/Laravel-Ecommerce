@@ -138,6 +138,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -289,7 +292,7 @@
                                         data-product-title="{{ $product->product_title }}"
                                         data-product-price="{{ $product->product_price }}"
                                         style="border-color: #2d43be; color: #2d43be; background-color: #2d43be; color: white; border-radius: 5px; padding: 8px 12px; font-size: 14px;">
-                                         View Details
+                                        View Details
                                     </button>
                                 </div>
                             </div>

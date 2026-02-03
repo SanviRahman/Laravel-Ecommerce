@@ -14,11 +14,12 @@
 
     <!-- Bootstrap 4 CDN (Navbar এর জন্য) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-     <!-- Basic -->
+    <!-- Basic -->
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!-- Mobile Metas -->
@@ -27,9 +28,10 @@
     <meta name="keywords" content="" />
     <meta name="description" content="" />
     <meta name="author" content="" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
-   
+
 
     <!-- slider stylesheet -->
     <link rel="stylesheet" type="text/css"
@@ -59,38 +61,38 @@
     .navbar-toggler {
         border: 1px solid #2f3ad1;
     }
-    
+
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 51, 104, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
     }
-    
+
     @media (max-width: 991px) {
         .navbar-collapse {
             background: white;
             padding: 20px;
             border-radius: 10px;
             margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .navbar-nav {
             flex-direction: column;
         }
-        
+
         .nav-item {
             margin-bottom: 10px;
         }
-        
+
         .nav-link {
             padding: 10px 15px;
             border-radius: 5px;
         }
-        
+
         .nav-link:hover {
             background: #ff3368;
             color: white !important;
         }
-        
+
         .user_option {
             margin-top: 15px;
             padding-top: 15px;
@@ -120,7 +122,7 @@
     }
 
     .back-btn a:hover {
-        color:#2f3ad1;
+        color: #2f3ad1;
     }
 
     .product-card {
@@ -487,6 +489,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
+                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -549,10 +554,13 @@
                             <!-- Product Price -->
                             <div class="product-price-section">
                                 <span class="product-price">${{ number_format($product->product_price, 2) }}</span>
-                                @if($product->product_discount_price && $product->product_discount_price > $product->product_price)
-                                <span class="product-old-price">${{ number_format($product->product_discount_price, 2) }}</span>
+                                @if($product->product_discount_price && $product->product_discount_price >
+                                $product->product_price)
+                                <span
+                                    class="product-old-price">${{ number_format($product->product_discount_price, 2) }}</span>
                                 <span class="product-discount">
-                                    Save {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
+                                    Save
+                                    {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
                                 </span>
                                 @endif
                             </div>
@@ -627,7 +635,7 @@
                                     </div>
                                 </div>
 
-                                <button class="btn-add-cart" id="add-to-cart">
+                                <button class="btn-add-cart" id="add-to-cart-btn" data-product-id="{{ $product->id }}">
                                     <i class="fas fa-shopping-cart"></i>
                                     Add to Cart
                                 </button>
@@ -760,15 +768,90 @@
 
     <!-- Custom JavaScript -->
     <script>
+    // Add to Cart with AJAX
     document.addEventListener('DOMContentLoaded', function() {
-        // Set current year in footer
-        document.getElementById('displayYear').textContent = new Date().getFullYear();
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
 
-        // Quantity controls
-        const quantityInput = document.getElementById('quantity');
+        if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const productId = this.getAttribute('data-product-id');
+                const quantity = document.getElementById('quantity') ? document.getElementById(
+                    'quantity').value : 1;
+
+                // Show loading
+                const originalHTML = addToCartBtn.innerHTML;
+                addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                addToCartBtn.disabled = true;
+
+                // CSRF token
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                // AJAX request
+                fetch(`/cart/add/${productId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            quantity: quantity
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Product added to cart successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+
+                        // Update cart count in navbar
+                        const cartCount = document.querySelector('.cart-count');
+                        if (cartCount) {
+                            cartCount.textContent = data.cart_count;
+                            cartCount.style.display = 'flex';
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to add product to cart'
+                        });
+                    })
+                    .finally(() => {
+                        // Reset button
+                        addToCartBtn.innerHTML = originalHTML;
+                        addToCartBtn.disabled = false;
+                    });
+            });
+        }
+    });
+
+    // SweetAlert2 include করুন head section-এ
+    </script>
+    <!-- SweetAlert CDN head-এ যোগ করুন -->
+
+    <head>
+        <!-- অন্যান্য CSS এর পরে -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+
+    <!-- Product Details Section এর পরে নিচের সCRIPT টা যোগ করুন -->
+    <!-- Custom JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Quantity control
         const decreaseBtn = document.getElementById('decrease-qty');
         const increaseBtn = document.getElementById('increase-qty');
-        const addToCartBtn = document.getElementById('add-to-cart');
+        const quantityInput = document.getElementById('quantity');
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
 
         // Decrease quantity
         if (decreaseBtn) {
@@ -788,114 +871,132 @@
             });
         }
 
-        // Quantity input validation
-        if (quantityInput) {
-            quantityInput.addEventListener('change', function() {
-                let value = parseInt(this.value);
-                const min = parseInt(this.min);
-
-                if (isNaN(value) || value < min) {
-                    this.value = min;
-                }
-            });
-
-            quantityInput.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
-            });
-        }
-
-        // Add to cart functionality
+        // Add to cart function
         if (addToCartBtn) {
             addToCartBtn.addEventListener('click', function() {
-                const quantity = quantityInput ? quantityInput.value : 1;
-                const productTitle = "{{ $product->product_title }}";
+                const productId = this.getAttribute('data-product-id');
+                const quantity = parseInt(quantityInput.value) || 1;
 
-                // Show success message
-                const alertDiv = document.createElement('div');
-                alertDiv.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #28a745;
-                    color: white;
-                    padding: 15px 25px;
-                    border-radius: 8px;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                    z-index: 9999;
-                    font-weight: 500;
-                    animation: slideIn 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                `;
+                // Show loading
+                const originalText = addToCartBtn.innerHTML;
+                addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                addToCartBtn.disabled = true;
 
-                alertDiv.innerHTML = `
-                    <i class="fas fa-check-circle" style="font-size: 20px;"></i>
-                    <div>
-                        <strong>Success!</strong><br>
-                        Added ${quantity} item(s) to cart
-                    </div>
-                `;
+                // CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
+                    'content');
 
-                document.body.appendChild(alertDiv);
+                // Send AJAX request
+                fetch(`/cart/add/${productId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            quantity: quantity,
+                            _token: csrfToken
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false,
+                                position: 'top-end',
+                                toast: true
+                            });
 
-                // Remove alert after 3 seconds
-                setTimeout(() => {
-                    alertDiv.style.animation = 'slideOut 0.3s ease';
-                    setTimeout(() => alertDiv.remove(), 300);
-                }, 3000);
-
-                // Update cart count
-                const cartCount = document.querySelector('.cart-count');
-                if (cartCount) {
-                    const currentCount = parseInt(cartCount.textContent) || 0;
-                    cartCount.textContent = currentCount + parseInt(quantity);
-                    cartCount.style.display = 'flex';
-                }
+                            // Update cart count in navbar
+                            updateCartCount();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong!'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to add product to cart. Please try again.'
+                        });
+                    })
+                    .finally(() => {
+                        // Reset button
+                        addToCartBtn.innerHTML = originalText;
+                        addToCartBtn.disabled = false;
+                    });
             });
         }
 
-        // Add CSS for animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-            .cart-count {
-                position: absolute;
-                top: -8px;
-                right: -8px;
-                background: #ff3368;
-                color: white;
-                border-radius: 50%;
-                width: 20px;
-                height: 20px;
-                font-size: 12px;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-            }
-        `;
-        document.head.appendChild(style);
+        // Function to update cart count in navbar
+        function updateCartCount() {
+            fetch('/cart/count', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const cartCountElements = document.querySelectorAll('.cart-count');
+                    cartCountElements.forEach(element => {
+                        element.textContent = data.count;
+                        element.style.display = 'inline-block';
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching cart count:', error);
+                });
+        }
+
+        // Initial cart count load
+        updateCartCount();
+
+        // Also update when page loads
+        window.addEventListener('load', function() {
+            updateCartCount();
+        });
     });
     </script>
+
+    <!-- Navbar-এ cart count দেখানোর জন্য CSS যোগ করুন -->
+    <style>
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff3368;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-icon {
+        position: relative;
+    }
+    </style>
 </body>
+
 </html>

@@ -61,9 +61,9 @@ class UsersTableSeeder extends Seeder
         // Create regular users
         $this->createRegularUsers(10); // 10 regular users
 
-        $this->command->info('✅ Total users created: ' . User::count());
-        $this->command->info('📊 Admin users: ' . User::where('user_type', 'admin')->count());
-        $this->command->info('📊 Regular users: ' . User::where('user_type', 'user')->count());
+        $this->command->info('Total users created: ' . User::count());
+        $this->command->info('Admin users: ' . User::where('user_type', 'admin')->count());
+        $this->command->info('Regular users: ' . User::where('user_type', 'user')->count());
     }
     
     /**

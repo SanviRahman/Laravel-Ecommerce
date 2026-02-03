@@ -1,16 +1,26 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
 
+Route::get('/', [UserController::class, 'home'])->name('index');
 
-Route::get('/',[UserController::class, 'home'])->name('index');
-
-Route::get('/dashboard',[UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('products/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name('viewallproducts');
+
+// Cart Routes
+Route::prefix('cart')->group(function () {
+    Route::get('/showallcarts', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/add/{product}', [CartController::class, 'addToCart'])->name('cart.add');
+    Route::delete('/remove/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
+    Route::put('/update/{id}', [CartController::class, 'updateCart'])->name('cart.update');
+    Route::get('/count', [CartController::class, 'getCartCountApi'])->name('cart.count');
+    Route::get('/data', [CartController::class, 'getCartData'])->name('cart.data');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -28,7 +38,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/categories/{id}', [AdminController::class, 'updateCategory'])->name('categories.update');
     Route::delete('/categories/{id}', [AdminController::class, 'deleteCategory'])->name('categories.delete');
 
-
     // Product Routes
     Route::get('/products', [AdminController::class, 'productIndex'])->name('products.index');
     Route::get('/product/create', [AdminController::class, 'productCreate'])->name('products.create');
@@ -40,6 +49,4 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 });
 
-
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
