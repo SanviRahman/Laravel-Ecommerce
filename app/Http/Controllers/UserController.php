@@ -3,7 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductAddCard;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
@@ -20,7 +22,11 @@ class UserController extends Controller
     public function home()
     {
         $products = Product::latest()->take(9)->get();
-        return view('index', compact('products'));
+
+        // Get cart count for the current user/session
+        $cartCount = $this->getCartCount();
+
+        return view('index', compact('products', 'cartCount'));
     }
 
     public function viewAllProducts()
@@ -50,5 +56,22 @@ class UserController extends Controller
         // Here you would typically add the product to the user's cart in the database or session
 
         return redirect()->back()->with('success', $product->product_name . ' has been added to your cart!');
+    }
+
+    /**
+     * Get cart count for current user/session
+     */
+    private function getCartCount()
+    {
+        if (Auth::check()) {
+            return ProductAddCard::where('user_id', Auth::id())->count();
+        } else {
+            if (! Session::has('cart_session_id')) {
+                return 0;
+            }
+
+            $sessionId = Session::get('cart_session_id');
+            return ProductAddCard::where('session_id', $sessionId)->count();
+        }
     }
 }

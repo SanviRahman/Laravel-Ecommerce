@@ -27,68 +27,91 @@ class CartController extends Controller
                 ->get();
         }
 
-        return view('cart.index', compact('cartItems'));
+        // Calculate totals
+        $subtotal  = 0;
+        $itemCount = 0;
+
+        foreach ($cartItems as $item) {
+            $subtotal  += $item->price * $item->quantity;
+            $itemCount += $item->quantity;
+        }
+
+        $shipping = 0;                // You can add shipping logic here
+        $tax      = $subtotal * 0.10; // 10% tax (adjust as needed)
+        $total    = $subtotal + $shipping + $tax;
+
+        return view('cart.index', compact('cartItems', 'subtotal', 'shipping', 'tax', 'total', 'itemCount'));
     }
 
     // Add to cart - FIXED VERSION
+    // Add to cart - FIXED VERSION
     public function addToCart(Request $request, $productId)
     {
-        // Find the product
-        $product  = Product::findOrFail($productId);
-        $quantity = $request->input('quantity', 1);
+        try {
+            // Find the product
+            $product  = Product::findOrFail($productId);
+            $quantity = $request->input('quantity', 1);
 
-        // Check if user is logged in
-        if (auth()->check()) {
-            $userId    = auth()->id();
-            $sessionId = null;
-        } else {
-            // Generate unique session ID for guest
-            if (! Session::has('cart_session_id')) {
-                Session::put('cart_session_id', 'guest_' . uniqid() . '_' . time());
+            // Check if user is logged in
+            if (auth()->check()) {
+                $userId    = auth()->id();
+                $sessionId = null;
+            } else {
+                // Generate unique session ID for guest
+                if (! Session::has('cart_session_id')) {
+                    Session::put('cart_session_id', 'guest_' . uniqid() . '_' . time());
+                }
+                $sessionId = Session::get('cart_session_id');
+                $userId    = null;
             }
-            $sessionId = Session::get('cart_session_id');
-            $userId    = null;
-        }
 
-        // Check if product already in cart
-        if ($userId) {
-            // For logged in users
-            $cartItem = ProductAddCard::where('user_id', $userId)
-                ->where('product_id', $productId)
-                ->first();
-        } else {
-            // For guests
-            $cartItem = ProductAddCard::where('session_id', $sessionId)
-                ->where('product_id', $productId)
-                ->first();
-        }
+            // Check if product already in cart
+            if ($userId) {
+                // For logged in users
+                $cartItem = ProductAddCard::where('user_id', $userId)
+                    ->where('product_id', $productId)
+                    ->first();
+            } else {
+                // For guests
+                $cartItem = ProductAddCard::where('session_id', $sessionId)
+                    ->where('product_id', $productId)
+                    ->first();
+            }
 
-        if ($cartItem) {
-            // Update quantity if exists
-            $cartItem->quantity += $quantity;
-            $cartItem->save();
-            $message  = 'Product quantity updated in cart!';
-        } else {
-            // Create new cart item
-            ProductAddCard::create([
-                'session_id'    => $sessionId,
-                'user_id'       => $userId,
-                'product_id'    => $productId,
-                'quantity'      => $quantity,
-                'price'         => $product->product_price,
-                'product_title' => $product->product_title,
+            if ($cartItem) {
+                // Update quantity if exists
+                $cartItem->quantity += $quantity;
+                $cartItem->save();
+                $message  = 'Product quantity updated in cart!';
+            } else {
+                // Create new cart item
+                ProductAddCard::create([
+                    'session_id'    => $sessionId,
+                    'user_id'       => $userId,
+                    'product_id'    => $productId,
+                    'quantity'      => $quantity,
+                    'price'         => $product->product_price,
+                    'product_title' => $product->product_title,
+                ]);
+                $message = 'Product added to cart successfully!';
+            }
+
+            // Get updated cart count
+            $cartCount = $this->getCartCount();
+
+            return response()->json([
+                'success'    => true,
+                'message'    => $message,
+                'cart_count' => $cartCount,
             ]);
-            $message = 'Product added to cart successfully!';
+
+        } catch (\Exception $e) {
+            \Log::error('Add to cart error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add product to cart.',
+            ], 500);
         }
-
-        // Get updated cart count
-        $cartCount = $this->getCartCount();
-
-        return response()->json([
-            'success'    => true,
-            'message'    => $message,
-            'cart_count' => $cartCount,
-        ]);
     }
 
     // Remove from cart
@@ -121,6 +144,7 @@ class CartController extends Controller
     }
 
     // Update cart quantity
+    // Update cart quantity
     public function updateCart(Request $request, $id)
     {
         $quantity = $request->input('quantity', 1);
@@ -145,7 +169,7 @@ class CartController extends Controller
                 $cartItem->quantity = $quantity;
                 $cartItem->save();
 
-                // Calculate new total
+                // Calculate new total for this item
                 $newTotal = $cartItem->price * $quantity;
 
                 return response()->json([

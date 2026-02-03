@@ -403,13 +403,34 @@
         width: 20px;
         height: 20px;
         font-size: 12px;
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .cart-icon {
         position: relative;
+    }
+
+    /* Loading spinner */
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
     </style>
 </head>
@@ -445,7 +466,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                         </li>
                     </ul>
@@ -492,11 +513,24 @@
                 <i class="fas fa-shopping-cart"></i>
                 <h3>Your cart is empty</h3>
                 <p>Looks like you haven't added any products to your cart yet.</p>
-                <a href="{{ url('/') }}" class="continue-btn">
+                <a href="{{ route('products.index') }}" class="continue-btn">
                     <i class="fas fa-shopping-bag"></i> Continue Shopping
                 </a>
             </div>
             @else
+            @php
+            // Calculate totals from controller
+            $subtotal = 0;
+            $itemCount = 0;
+            foreach($cartItems as $item) {
+            $subtotal += $item->price * $item->quantity;
+            $itemCount += $item->quantity;
+            }
+            $shipping = 0;
+            $tax = $subtotal * 0.10; // 10% tax
+            $total = $subtotal + $shipping + $tax;
+            @endphp
+
             <div class="row">
                 <!-- Cart Items -->
                 <div class="col-lg-8">
@@ -513,6 +547,9 @@
                             </thead>
                             <tbody id="cart-items-body">
                                 @foreach($cartItems as $item)
+                                @php
+                                $itemTotal = $item->price * $item->quantity;
+                                @endphp
                                 <tr class="cart-item" id="cart-item-{{ $item->id }}">
                                     <td data-label="Product">
                                         <div class="product-info">
@@ -542,7 +579,7 @@
                                         </div>
                                     </td>
                                     <td data-label="Total" class="price item-total" id="total-{{ $item->id }}">
-                                        ${{ number_format($item->price * $item->quantity, 2) }}
+                                        ${{ number_format($itemTotal, 2) }}
                                     </td>
                                     <td data-label="Action">
                                         <button class="remove-btn" data-id="{{ $item->id }}">
@@ -568,23 +605,28 @@
                         <h4 class="mb-4">Order Summary</h4>
 
                         <div class="summary-row">
+                            <span>Items</span>
+                            <span class="summary-value" id="item-count">{{ $itemCount }} items</span>
+                        </div>
+
+                        <div class="summary-row">
                             <span>Subtotal</span>
-                            <span class="summary-value" id="subtotal">$0.00</span>
+                            <span class="summary-value" id="subtotal">${{ number_format($subtotal, 2) }}</span>
                         </div>
 
                         <div class="summary-row">
                             <span>Shipping</span>
-                            <span class="summary-value">$0.00</span>
+                            <span class="summary-value" id="shipping">${{ number_format($shipping, 2) }}</span>
                         </div>
 
                         <div class="summary-row">
-                            <span>Tax</span>
-                            <span class="summary-value" id="tax">$0.00</span>
+                            <span>Tax (10%)</span>
+                            <span class="summary-value" id="tax">${{ number_format($tax, 2) }}</span>
                         </div>
 
                         <div class="summary-row total">
                             <span>Total</span>
-                            <span class="summary-value" id="cart-total">$0.00</span>
+                            <span class="summary-value" id="cart-total">${{ number_format($total, 2) }}</span>
                         </div>
 
                         <button class="checkout-btn" id="checkout-btn">
@@ -700,90 +742,71 @@
         </section>
     </div>
 
-    <!-- Bootstrap 4 JS (Navbar এর জন্য) -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Cart JavaScript -->
     <script>
     $(document).ready(function() {
-        // Calculate and display cart totals
-        function updateCartTotals() {
-            let subtotal = 0;
-
-            // Calculate subtotal from all items
-            $('.item-total').each(function() {
-                const totalText = $(this).text().replace('$', '');
-                subtotal += parseFloat(totalText);
-            });
-
-            // Calculate tax (10% for example)
-            const tax = subtotal * 0.10;
-            const total = subtotal + tax;
-
-            // Update display
-            $('#subtotal').text('$' + subtotal.toFixed(2));
-            $('#tax').text('$' + tax.toFixed(2));
-            $('#cart-total').text('$' + total.toFixed(2));
-        }
-
-        // Initial calculation
-        updateCartTotals();
-
-        // Update cart count in navbar
-        function updateCartCount() {
-            $.ajax({
-                url: '{{ route("cart.count") }}',
-                type: 'GET',
-                success: function(data) {
-                    $('.cart-count').text(data.count);
-                }
-            });
-        }
-
-        // Update initial cart count
-        updateCartCount();
-
-        // CSRF token for all AJAX requests
+        // Initialize CSRF token for all AJAX requests
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
 
-        // Increase quantity
-        $(document).on('click', '.increase-btn', function() {
-            const itemId = $(this).data('id');
-            const input = $('#quantity-' + itemId);
-            let quantity = parseInt(input.val());
-            input.val(quantity + 1);
-            updateQuantity(itemId, quantity + 1);
-        });
+        // Function to update cart count in navbar
+        function updateCartCount() {
+            $.ajax({
+                url: '{{ route("cart.count") }}',
+                type: 'GET',
+                success: function(data) {
+                    $('.cart-count').text(data.count || 0);
+                }
+            });
+        }
 
-        // Decrease quantity
-        $(document).on('click', '.decrease-btn', function() {
-            const itemId = $(this).data('id');
-            const input = $('#quantity-' + itemId);
-            let quantity = parseInt(input.val());
+        // Function to recalculate totals from UI
+        function recalculateTotals() {
+            let subtotal = 0;
+            let itemCount = 0;
 
-            if (quantity > 1) {
-                input.val(quantity - 1);
-                updateQuantity(itemId, quantity - 1);
-            }
-        });
+            // Calculate subtotal and item count from all items
+            $('.item-total').each(function() {
+                const totalText = $(this).text().replace('$', '').replace(',', '');
+                subtotal += parseFloat(totalText);
+            });
 
-        // Direct quantity input change
-        $(document).on('change', '.quantity-input', function() {
-            const itemId = $(this).data('id');
-            let quantity = parseInt($(this).val());
+            // Calculate item quantities
+            $('.quantity-input').each(function() {
+                itemCount += parseInt($(this).val()) || 0;
+            });
 
-            if (quantity < 1) quantity = 1;
-            $(this).val(quantity);
-            updateQuantity(itemId, quantity);
-        });
+            // Get shipping (you can make this dynamic)
+            const shipping = 0;
 
-        // Update quantity via AJAX
+            // Calculate tax (10% for example)
+            const tax = subtotal * 0.10;
+            const total = subtotal + shipping + tax;
+
+            // Update display
+            $('#subtotal').text('$' + subtotal.toFixed(2));
+            $('#shipping').text('$' + shipping.toFixed(2));
+            $('#tax').text('$' + tax.toFixed(2));
+            $('#cart-total').text('$' + total.toFixed(2));
+            $('#item-count').text(itemCount + ' items');
+        }
+
+        // Function to update quantity via AJAX
         function updateQuantity(itemId, quantity) {
+            const $input = $('#quantity-' + itemId);
+            const originalValue = $input.val();
+
+            // Show loading
+            $input.prop('disabled', true);
+
             $.ajax({
                 url: '/cart/update/' + itemId,
                 type: 'PUT',
@@ -793,21 +816,104 @@
                 success: function(response) {
                     if (response.success) {
                         // Update item total
-                        const itemTotal = response.new_total;
-                        $('#total-' + itemId).text('$' + itemTotal);
+                        $('#total-' + itemId).text('$' + response.new_total);
 
-                        // Update cart totals
-                        updateCartTotals();
+                        // Recalculate and update all totals
+                        recalculateTotals();
 
-                        // Update cart count
+                        // Update cart count in navbar
                         updateCartCount();
+
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false,
+                            position: 'top-end',
+                            toast: true
+                        });
+                    } else {
+                        Swal.fire('Error', 'Failed to update quantity', 'error');
+                        $input.val(originalValue);
                     }
                 },
-                error: function() {
-                    Swal.fire('Error', 'Failed to update quantity', 'error');
+                error: function(xhr) {
+                    Swal.fire('Error', 'Failed to update quantity. Please try again.', 'error');
+                    $input.val(originalValue);
+                },
+                complete: function() {
+                    $input.prop('disabled', false);
                 }
             });
         }
+
+        // Function to remove item from cart
+        function removeItem(itemId) {
+            $.ajax({
+                url: '/cart/remove/' + itemId,
+                type: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        // Remove item row with animation
+                        $('#cart-item-' + itemId).fadeOut(300, function() {
+                            $(this).remove();
+
+                            // Recalculate totals
+                            recalculateTotals();
+
+                            // Update cart count
+                            updateCartCount();
+
+                            // Check if cart is empty
+                            if ($('#cart-items-body tr').length === 0) {
+                                location.reload(); // Reload to show empty cart message
+                            }
+                        });
+
+                        Swal.fire('Removed!', 'Item has been removed from cart.', 'success');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Failed to remove item', 'error');
+                }
+            });
+        }
+
+        // Initial cart count load
+        updateCartCount();
+
+        // Increase quantity
+        $(document).on('click', '.increase-btn', function() {
+            const itemId = $(this).data('id');
+            const $input = $('#quantity-' + itemId);
+            let quantity = parseInt($input.val()) || 1;
+            $input.val(quantity + 1);
+            updateQuantity(itemId, quantity + 1);
+        });
+
+        // Decrease quantity
+        $(document).on('click', '.decrease-btn', function() {
+            const itemId = $(this).data('id');
+            const $input = $('#quantity-' + itemId);
+            let quantity = parseInt($input.val()) || 1;
+
+            if (quantity > 1) {
+                $input.val(quantity - 1);
+                updateQuantity(itemId, quantity - 1);
+            }
+        });
+
+        // Direct quantity input change
+        $(document).on('change', '.quantity-input', function() {
+            const itemId = $(this).data('id');
+            let quantity = parseInt($(this).val()) || 1;
+
+            if (quantity < 1) quantity = 1;
+            $(this).val(quantity);
+            updateQuantity(itemId, quantity);
+        });
 
         // Remove item from cart
         $(document).on('click', '.remove-btn', function() {
@@ -823,38 +929,7 @@
                 confirmButtonText: 'Yes, remove it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/cart/remove/' + itemId,
-                        type: 'DELETE',
-                        success: function(response) {
-                            if (response.success) {
-                                // Remove item row with animation
-                                $('#cart-item-' + itemId).fadeOut(300, function() {
-                                    $(this).remove();
-
-                                    // Update totals
-                                    updateCartTotals();
-
-                                    // Update cart count
-                                    updateCartCount();
-
-                                    // Check if cart is empty
-                                    if ($('#cart-items-body tr').length ===
-                                        0) {
-                                        location
-                                            .reload(); // Reload to show empty cart message
-                                    }
-                                });
-
-                                Swal.fire('Removed!',
-                                    'Item has been removed from cart.',
-                                    'success');
-                            }
-                        },
-                        error: function() {
-                            Swal.fire('Error', 'Failed to remove item', 'error');
-                        }
-                    });
+                    removeItem(itemId);
                 }
             });
         });
@@ -872,7 +947,7 @@
                 confirmButtonText: 'Yes, checkout!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Redirect to checkout page (you can create this page later)
+                    // Redirect to checkout page
                     window.location.href = '/checkout';
                 }
             });
@@ -894,7 +969,7 @@
             @endif
         });
 
-        // Auto-update cart totals every 30 seconds
+        // Auto-update cart count every 30 seconds
         setInterval(updateCartCount, 30000);
     });
     </script>

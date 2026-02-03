@@ -164,8 +164,10 @@
                             </span>
                         </a>
                         @endif
-                        <a href="#">
+                        <!-- আপনার ন্যাভবারের কার্ট আইকন অংশটি এইভাবে পরিবর্তন করুন -->
+                        <a href="{{ route('cart.index') }}" class="cart-icon">
                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                            <span class="cart-count">{{ $cartCount ?? 0 }}</span>
                         </a>
                         <form class="form-inline ">
                             <button class="btn nav_search-btn" type="submit">
@@ -597,6 +599,37 @@
                 this.alt = "Image not found";
             };
         });
+    });
+    </script>
+    <!-- Add this script at the bottom of your index.blade.php -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to update cart count in navbar
+        function updateCartCount() {
+            fetch('/cart/count', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const cartCountElements = document.querySelectorAll('.cart-count');
+                    cartCountElements.forEach(element => {
+                        element.textContent = data.count || 0;
+                        element.style.display = 'inline-block';
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching cart count:', error);
+                });
+        }
+
+        // Update cart count on page load
+        updateCartCount();
+
+        // Update cart count every 30 seconds
+        setInterval(updateCartCount, 30000);
     });
     </script>
 </body>

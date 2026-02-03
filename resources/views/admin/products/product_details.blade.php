@@ -12,26 +12,17 @@
     <meta name="author" content="" />
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
-    <!-- Bootstrap 4 CDN (Navbar এর জন্য) -->
+    <!-- Bootstrap 4 CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Basic -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Mobile Metas -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <!-- Site Metas -->
-    <meta name="keywords" content="" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
-
-
 
     <!-- slider stylesheet -->
     <link rel="stylesheet" type="text/css"
@@ -44,11 +35,6 @@
     <link href="{{ asset('front_end/css/style.css') }}" rel="stylesheet" />
     <!-- responsive style -->
     <link href="{{ asset('front_end/css/responsive.css') }}" rel="stylesheet" />
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Local Font Awesome -->
-    <link rel="stylesheet" href="{{ asset('front_end/css/fontawesome/css/all.min.css') }}">
 
     <!-- Custom CSS -->
     <style>
@@ -100,7 +86,7 @@
         }
     }
 
-    /* আপনার existing CSS */
+    /* Product Detail Styles */
     .product-detail-container {
         max-width: 1200px;
         margin: 40px auto;
@@ -352,6 +338,11 @@
         transform: translateY(-1px);
     }
 
+    .btn-add-cart:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
     .share-section {
         margin-top: 30px;
         text-align: center;
@@ -455,12 +446,47 @@
             font-size: 16px;
         }
     }
+
+    /* Cart count badge */
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff3368;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-icon {
+        position: relative;
+    }
+
+    /* Spinner animation */
+    .spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
     </style>
 </head>
 
 <body>
     <div class="hero_area">
-        <!-- header section strats -->
+        <!-- header section -->
         <header class="header_section">
             <nav class="navbar navbar-expand-lg custom_nav-container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -489,7 +515,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
-                         <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                         </li>
                     </ul>
@@ -509,7 +535,7 @@
                             <span>Register</span>
                         </a>
                         @endif
-                        <a href="#" class="cart-icon">
+                        <a href="{{ route('cart.index') }}" class="cart-icon">
                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
                             <span class="cart-count">0</span>
                         </a>
@@ -637,7 +663,7 @@
 
                                 <button class="btn-add-cart" id="add-to-cart-btn" data-product-id="{{ $product->id }}">
                                     <i class="fas fa-shopping-cart"></i>
-                                    Add to Cart
+                                    <span id="add-to-cart-text">Add to Cart</span>
                                 </button>
                             </div>
 
@@ -762,161 +788,86 @@
         <!-- footer section -->
     </section>
 
-    <!-- Bootstrap 4 JS (Navbar এর জন্য) -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JavaScript -->
     <script>
-    // Add to Cart with AJAX
-    document.addEventListener('DOMContentLoaded', function() {
-        const addToCartBtn = document.getElementById('add-to-cart-btn');
+    $(document).ready(function() {
+        // CSRF token setup
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-        if (addToCartBtn) {
-            addToCartBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-
-                const productId = this.getAttribute('data-product-id');
-                const quantity = document.getElementById('quantity') ? document.getElementById(
-                    'quantity').value : 1;
-
-                // Show loading
-                const originalHTML = addToCartBtn.innerHTML;
-                addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-                addToCartBtn.disabled = true;
-
-                // CSRF token
-                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-                // AJAX request
-                fetch(`/cart/add/${productId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': token,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            quantity: quantity
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Product added to cart successfully',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-
-                        // Update cart count in navbar
-                        const cartCount = document.querySelector('.cart-count');
-                        if (cartCount) {
-                            cartCount.textContent = data.cart_count;
-                            cartCount.style.display = 'flex';
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to add product to cart'
-                        });
-                    })
-                    .finally(() => {
-                        // Reset button
-                        addToCartBtn.innerHTML = originalHTML;
-                        addToCartBtn.disabled = false;
-                    });
-            });
-        }
-    });
-
-    // SweetAlert2 include করুন head section-এ
-    </script>
-    <!-- SweetAlert CDN head-এ যোগ করুন -->
-
-    <head>
-        <!-- অন্যান্য CSS এর পরে -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    </head>
-
-    <!-- Product Details Section এর পরে নিচের সCRIPT টা যোগ করুন -->
-    <!-- Custom JavaScript -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
         // Quantity control
-        const decreaseBtn = document.getElementById('decrease-qty');
-        const increaseBtn = document.getElementById('increase-qty');
-        const quantityInput = document.getElementById('quantity');
-        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        const decreaseBtn = $('#decrease-qty');
+        const increaseBtn = $('#increase-qty');
+        const quantityInput = $('#quantity');
+        const addToCartBtn = $('#add-to-cart-btn');
+        const addToCartText = $('#add-to-cart-text');
 
         // Decrease quantity
-        if (decreaseBtn) {
-            decreaseBtn.addEventListener('click', function() {
-                let currentValue = parseInt(quantityInput.value);
+        if (decreaseBtn.length) {
+            decreaseBtn.on('click', function() {
+                let currentValue = parseInt(quantityInput.val());
                 if (currentValue > 1) {
-                    quantityInput.value = currentValue - 1;
+                    quantityInput.val(currentValue - 1);
                 }
             });
         }
 
         // Increase quantity
-        if (increaseBtn) {
-            increaseBtn.addEventListener('click', function() {
-                let currentValue = parseInt(quantityInput.value);
-                quantityInput.value = currentValue + 1;
+        if (increaseBtn.length) {
+            increaseBtn.on('click', function() {
+                let currentValue = parseInt(quantityInput.val());
+                quantityInput.val(currentValue + 1);
             });
         }
 
         // Add to cart function
-        if (addToCartBtn) {
-            addToCartBtn.addEventListener('click', function() {
-                const productId = this.getAttribute('data-product-id');
-                const quantity = parseInt(quantityInput.value) || 1;
+        if (addToCartBtn.length) {
+            addToCartBtn.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-                // Show loading
-                const originalText = addToCartBtn.innerHTML;
-                addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-                addToCartBtn.disabled = true;
+                const productId = $(this).data('product-id');
+                const quantity = parseInt(quantityInput.val()) || 1;
 
-                // CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
-                    'content');
+                // Disable button and show loading
+                addToCartBtn.prop('disabled', true);
+                const originalText = addToCartText.text();
+                addToCartText.html('<i class="fas fa-spinner fa-spin"></i> Adding...');
 
                 // Send AJAX request
-                fetch(`/cart/add/${productId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
-                            quantity: quantity,
-                            _token: csrfToken
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // Success message
+                $.ajax({
+                    url: '/cart/add/' + productId,
+                    type: 'POST',
+                    data: {
+                        quantity: quantity
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Success message - FIXED POSITION
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success!',
-                                text: data.message,
+                                text: response.message,
                                 timer: 2000,
                                 showConfirmButton: false,
+                                toast: true,
                                 position: 'top-end',
-                                toast: true
+                                timerProgressBar: true,
+                                showClass: {
+                                    popup: 'animate__animated animate__fadeInDown'
+                                },
+                                hideClass: {
+                                    popup: 'animate__animated animate__fadeOutUp'
+                                },
+                                customClass: {
+                                    container: 'swal-container-fixed'
+                                }
                             });
 
                             // Update cart count in navbar
@@ -925,76 +876,105 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: 'Something went wrong!'
+                                text: response.message || 'Something went wrong!',
+                                position: 'top-end',
+                                toast: true,
+                                timer: 3000
                             });
                         }
-                    })
-                    .catch(error => {
+                    },
+                    error: function(xhr, status, error) {
                         console.error('Error:', error);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Failed to add product to cart. Please try again.'
+                            text: 'Failed to add product to cart. Please try again.',
+                            position: 'top-end',
+                            toast: true,
+                            timer: 3000
                         });
-                    })
-                    .finally(() => {
-                        // Reset button
-                        addToCartBtn.innerHTML = originalText;
-                        addToCartBtn.disabled = false;
-                    });
+                    },
+                    complete: function() {
+                        // Re-enable button
+                        addToCartBtn.prop('disabled', false);
+                        addToCartText.text(originalText);
+                    }
+                });
             });
         }
 
         // Function to update cart count in navbar
         function updateCartCount() {
-            fetch('/cart/count', {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const cartCountElements = document.querySelectorAll('.cart-count');
-                    cartCountElements.forEach(element => {
-                        element.textContent = data.count;
-                        element.style.display = 'inline-block';
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching cart count:', error);
-                });
+            $.ajax({
+                url: '/cart/count',
+                type: 'GET',
+                success: function(data) {
+                    $('.cart-count').text(data.count || 0);
+                }
+            });
         }
 
         // Initial cart count load
         updateCartCount();
 
         // Also update when page loads
-        window.addEventListener('load', function() {
+        $(window).on('load', function() {
             updateCartCount();
         });
     });
     </script>
 
-    <!-- Navbar-এ cart count দেখানোর জন্য CSS যোগ করুন -->
+    <!-- SweetAlert Custom CSS for fixed positioning -->
     <style>
-    .cart-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #ff3368;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        display: none;
-        align-items: center;
-        justify-content: center;
+    .swal2-container.swal2-top-end {
+        padding-top: 60px !important;
+        /* Adjust based on your navbar height */
     }
 
-    .cart-icon {
-        position: relative;
+    .swal2-popup.swal2-toast {
+        margin-top: 60px !important;
+        z-index: 99999 !important;
+    }
+
+    /* Ensure popup stays on top of navbar */
+    .swal2-container {
+        z-index: 99999 !important;
+    }
+
+    /* Optional: Add animation for better UX */
+    .animate__animated {
+        animation-duration: 0.5s;
+    }
+
+    .animate__fadeInDown {
+        animation-name: fadeInDown;
+    }
+
+    .animate__fadeOutUp {
+        animation-name: fadeOutUp;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translate3d(0, -100%, 0);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    @keyframes fadeOutUp {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+            transform: translate3d(0, -100%, 0);
+        }
     }
     </style>
 </body>
