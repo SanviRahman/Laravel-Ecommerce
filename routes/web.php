@@ -1,16 +1,30 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [UserController::class, 'home'])->name('index');
 
 Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('products/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name('viewallproducts');
+
+
+
+// Order Routes
+// Guest Order Routes (No Auth Required)
+Route::post('/confirm-order', [CartController::class, 'confirmOrder'])->name('confirm_order');
+Route::get('/order-success/{id}', [CartController::class, 'orderSuccess'])->name('order.success');
+
+// Track Order (Optional)
+Route::get('/track-order', [CartController::class, 'trackOrder'])->name('order.track');
+Route::post('/track-order', [CartController::class, 'trackOrderPost'])->name('order.track.post');
+
+
+
 
 // Cart Routes
 Route::prefix('cart')->group(function () {
@@ -46,6 +60,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/products/{id}', [AdminController::class, 'productUpdate'])->name('products.update');
     Route::delete('/products/{id}', [AdminController::class, 'productDelete'])->name('products.delete');
     Route::get('/product/search', [AdminController::class, 'productSearch'])->name('products.search');
+
+    // View Orders Route
+    //Route::get('/orders', [AdminController::class, 'viewOrders'])->name('admin.orders');
+    Route::get('/orders', [AdminController::class, 'viewOrders'])->name('orders.view');
+    Route::get('/orders/search', [AdminController::class, 'viewOrders'])->name('orders.search');
+    Route::get('/orders/{id}', [AdminController::class, 'viewOrder'])->name('orders.show');
+    Route::get('/orders/{id}/edit', [AdminController::class, 'editOrder'])->name('orders.edit');
+    Route::put('/orders/{id}', [AdminController::class, 'updateOrder'])->name('orders.update');
+    
+    // Order Status Management
+    Route::get('/orders/{id}/status', [AdminController::class, 'getOrderStatus'])->name('orders.status');
+    Route::post('/orders/{id}/update-status', [AdminController::class, 'updateOrderStatus'])->name('orders.update-status');
+    
+    // Export
+    Route::get('/orders/export', [AdminController::class, 'exportOrders'])->name('orders.export');
 
 });
 

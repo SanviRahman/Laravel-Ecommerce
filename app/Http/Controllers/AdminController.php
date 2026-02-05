@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\ConfirmOrder;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -81,30 +82,30 @@ class AdminController extends Controller
     //                                             <========= Product Methods =======>
 
     // Product Index
-  // Product Index
-public function productIndex(Request $request)
-{
-    $search = $request->input('search');
-    $searchType = $request->input('search_type', 'product_title');
-    
-    $query = Product::with('category');
-    
-    if ($search) {
-        if ($searchType == 'product_category') {
-            // Search by category name through relationship
-            $query->whereHas('category', function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            });
-        } else {
-            // Search by product fields
-            $query->where($searchType, 'like', '%' . $search . '%');
+    // Product Index
+    public function productIndex(Request $request)
+    {
+        $search     = $request->input('search');
+        $searchType = $request->input('search_type', 'product_title');
+
+        $query = Product::with('category');
+
+        if ($search) {
+            if ($searchType == 'product_category') {
+                // Search by category name through relationship
+                $query->whereHas('category', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                });
+            } else {
+                // Search by product fields
+                $query->where($searchType, 'like', '%' . $search . '%');
+            }
         }
+
+        $products = $query->paginate(10);
+
+        return view('admin.products.index', compact('products', 'search', 'searchType'));
     }
-    
-    $products = $query->paginate(10);
-    
-    return view('admin.products.index', compact('products', 'search', 'searchType'));
-}
 
     // Product Create View
     public function productCreate()
@@ -256,5 +257,219 @@ public function productIndex(Request $request)
         $products = $query->latest()->paginate(10);
 
         return view('admin.products.index', compact('products', 'search', 'searchType'));
+    }
+
+    //                                              <========= Order Methods =======>
+
+    public function viewOrders(Request $request)
+    {
+        $query = ConfirmOrder::with('items')->latest();
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', "%$search%")
+                    ->orWhere('name', 'like', "%$search%")
+                    ->orWhere('email', 'like', "%$search%")
+                    ->orWhere('phone', 'like', "%$search%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by customer type
+        if ($request->has('customer_type') && $request->customer_type) {
+            $query->where('customer_type', $request->customer_type);
+        }
+
+        $orders = $query->paginate(20);
+
+        // Calculate statistics
+        $stats = [
+            'total_orders'   => ConfirmOrder::count(),
+            'total_revenue'  => ConfirmOrder::sum('total'),
+            'pending_orders' => ConfirmOrder::where('status', 'pending')->count(),
+            'guest_orders'   => ConfirmOrder::where('customer_type', 'guest')->count(),
+        ];
+
+        return view('admin.orders.vieworders', compact('orders', 'stats'));
+    }
+
+    /**
+     * View single order details
+     */
+    public function viewOrder($id)
+    {
+        $order = ConfirmOrder::with(['items.product'])->findOrFail($id);
+
+        return view('admin.orders.view', compact('order'));
+    }
+
+    /**
+     * Edit order view
+     */
+    public function editOrder($id)
+    {
+        $order = ConfirmOrder::with('items.product')->findOrFail($id);
+
+        return view('admin.orders.edit', compact('order'));
+    }
+
+    /**
+     * Update order
+     */
+    public function updateOrder(Request $request, $id)
+    {
+        $order = ConfirmOrder::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|max:255',
+            'phone'          => 'required|string|max:20',
+            'address'        => 'required|string',
+            'status'         => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'payment_status' => 'required|in:pending,paid,failed',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $order->update([
+            'name'           => $request->name,
+            'email'          => $request->email,
+            'phone'          => $request->phone,
+            'address'        => $request->address,
+            'notes'          => $request->notes,
+            'status'         => $request->status,
+            'payment_status' => $request->payment_status,
+        ]);
+
+        return redirect()->route('orders.view')
+            ->with('success', 'Order updated successfully!');
+    }
+
+    /**
+     * Get order status for modal (AJAX)
+     */
+    public function getOrderStatus($id)
+    {
+        $order = ConfirmOrder::findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'order'   => [
+                'status'         => $order->status,
+                'payment_status' => $order->payment_status,
+                'notes'          => $order->notes,
+            ],
+        ]);
+    }
+
+    /**
+     * Update order status via AJAX (Modal)
+     */
+    public function updateOrderStatus(Request $request, $id)
+    {
+        $order = ConfirmOrder::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'status'         => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'payment_status' => 'required|in:pending,paid,failed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $order->update([
+            'status'         => $request->status,
+            'payment_status' => $request->payment_status,
+            'notes'          => $request->admin_notes ? ($order->notes . "\n[Admin: " . $request->admin_notes . "]") : $order->notes,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order status updated successfully!',
+        ]);
+    }
+
+    /**
+     * Export orders to CSV
+     */
+    public function exportOrders()
+    {
+        $orders = ConfirmOrder::with('items')->latest()->get();
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="orders_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($orders) {
+            $file = fopen('php://output', 'w');
+
+            // Add CSV headers
+            fputcsv($file, [
+                'Order Number',
+                'Customer Name',
+                'Email',
+                'Phone',
+                'Address',
+                'Product(s)',
+                'Quantity',
+                'Subtotal',
+                'Tax',
+                'Shipping',
+                'Total',
+                'Status',
+                'Payment Status',
+                'Customer Type',
+                'Order Date',
+            ]);
+
+            // Add data rows
+            foreach ($orders as $order) {
+                $products   = [];
+                $quantities = [];
+
+                foreach ($order->items as $item) {
+                    $products[]   = $item->product_title;
+                    $quantities[] = $item->quantity;
+                }
+
+                fputcsv($file, [
+                    $order->order_number,
+                    $order->name,
+                    $order->email,
+                    $order->phone,
+                    $order->address,
+                    implode(', ', $products),
+                    implode(', ', $quantities),
+                    $order->subtotal,
+                    $order->tax,
+                    $order->shipping,
+                    $order->total,
+                    ucfirst($order->status),
+                    ucfirst($order->payment_status),
+                    ucfirst($order->customer_type),
+                    $order->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

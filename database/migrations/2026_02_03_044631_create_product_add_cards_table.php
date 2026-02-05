@@ -16,14 +16,10 @@ return new class extends Migration
             $table->integer('quantity')->default(1);
             $table->decimal('price', 10, 2);
             $table->string('product_title');
-            
+            $table->timestamps();
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->timestamps();
-            
-            // Add unique constraint to prevent duplicates
-            $table->unique(['session_id', 'product_id'], 'session_product_unique');
-            $table->unique(['user_id', 'product_id'], 'user_product_unique');
         });
     }
 

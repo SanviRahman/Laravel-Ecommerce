@@ -138,6 +138,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -161,8 +164,9 @@
                             </span>
                         </a>
                         @endif
-                        <a href="#">
+                        <a href="{{ route('cart.index') }}" class="cart-icon">
                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                            <span class="cart-count">0</span>
                         </a>
                         <form class="form-inline ">
                             <button class="btn nav_search-btn" type="submit">
@@ -554,8 +558,9 @@
                     <!-- Add to Cart Button - Now properly sized and consistent -->
                     <button class="add-to-cart-btn" data-product-id="{{ $product->id }}"
                         data-product-title="{{ $product->product_title }}"
-                        data-product-price="{{ $product->product_price }}" >
-                        <a href="{{ route('product.details', $product->id) }}" style="color: white; text-decoration: none;">View Details</a>
+                        data-product-price="{{ $product->product_price }}">
+                        <a href="{{ route('product.details', $product->id) }}"
+                            style="color: white; text-decoration: none;">View Details</a>
                     </button>
                 </div>
                 @endforeach

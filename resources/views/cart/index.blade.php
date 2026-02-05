@@ -12,24 +12,15 @@
     <meta name="author" content="" />
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
-    <!-- Bootstrap 4 CDN (Navbar এর জন্য) -->
+    <!-- Bootstrap 4 CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Basic -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Mobile Metas -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <!-- Site Metas -->
-    <meta name="keywords" content="" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
     <!-- slider stylesheet -->
     <link rel="stylesheet" type="text/css"
@@ -343,6 +334,76 @@
         border-color: #ccc;
     }
 
+    /* Customer Information Form Styles */
+    .customer-info-form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        margin-top: 20px;
+    }
+
+    .customer-info-form h5 {
+        color: #333;
+        font-weight: 600;
+        font-size: 18px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .customer-info-form .form-group {
+        margin-bottom: 15px;
+    }
+
+    .customer-info-form label {
+        font-weight: 500;
+        color: #555;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .customer-info-form .form-control {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .customer-info-form .form-control:focus {
+        border-color: #4a5de0;
+        box-shadow: 0 0 0 0.2rem rgba(74, 93, 224, 0.25);
+    }
+
+    .customer-info-form textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .customer-info-form .form-check-label {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .customer-info-form .form-check-input {
+        margin-top: 0.25rem;
+    }
+
+    /* Terms Modal */
+    .terms-modal .modal-content {
+        border-radius: 10px;
+    }
+
+    .terms-modal .modal-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+
+    .terms-modal .modal-body {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .cart-table thead {
@@ -390,6 +451,10 @@
         .quantity-control {
             justify-content: flex-end;
         }
+
+        .customer-info-form {
+            padding: 15px;
+        }
     }
 
     /* Cart count badge */
@@ -431,6 +496,32 @@
         100% {
             transform: rotate(360deg);
         }
+    }
+
+    /* Status Badges */
+    .badge-pending {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .badge-processing {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .badge-shipped {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .badge-delivered {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-cancelled {
+        background-color: #dc3545;
+        color: white;
     }
     </style>
 </head>
@@ -599,7 +690,7 @@
                     </div>
                 </div>
 
-                <!-- Cart Summary -->
+                <!-- Cart Summary with Customer Information -->
                 <div class="col-lg-4">
                     <div class="cart-card cart-summary">
                         <h4 class="mb-4">Order Summary</h4>
@@ -629,17 +720,111 @@
                             <span class="summary-value" id="cart-total">${{ number_format($total, 2) }}</span>
                         </div>
 
-                        <button class="checkout-btn" id="checkout-btn">
-                            <i class="fas fa-lock"></i> Proceed to Checkout
-                        </button>
+                        <hr class="my-4">
+
+                        <!-- Customer Information Form -->
+                        <div class="customer-info-form">
+                            <h5>Shipping Details</h5>
+
+                            <form action="{{ route('confirm_order') }}" method="POST">
+                                @csrf
+                                <div class="form-group">
+                                    <label for="customer_name">Full Name *</label>
+                                    <input type="text" class="form-control" id="customer_name" name="name"
+                                        placeholder="Enter your full name" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="customer_email">Email Address *</label>
+                                    <input type="email" class="form-control" id="customer_email" name="email"
+                                        placeholder="your@email.com" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="customer_phone">Phone Number *</label>
+                                    <input type="text" class="form-control" id="customer_phone" name="phone"
+                                        placeholder="01XXXXXXXXX" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="customer_address">Shipping Address *</label>
+                                    <textarea class="form-control" id="customer_address" name="address" rows="3"
+                                        placeholder="Full shipping address including city and postal code"
+                                        required></textarea>
+                                </div>
+
+                                <!-- Order Notes (Optional) -->
+                                <div class="form-group">
+                                    <label for="customer_notes">Order Notes (Optional)</label>
+                                    <textarea class="form-control" id="customer_notes" name="notes" rows="2"
+                                        placeholder="Special instructions, delivery preferences, etc."></textarea>
+                                </div>
+
+                                <!-- Terms and Conditions -->
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="customer_terms" name="terms"
+                                        value="on" required>
+                                    <label class="form-check-label" for="customer_terms">
+                                        I agree to the <a href="#" class="text-primary" data-toggle="modal"
+                                            data-target="#termsModal">Terms and Conditions</a>
+                                    </label>
+                                </div>
+                                <button class="checkout-btn" id="checkout-btn">
+                                    <i class="fas fa-lock"></i> Confirm & Place Order
+                                </button>
+                            </form>
+                        </div>
+
+
 
                         <p class="text-center mt-3 text-muted small">
-                            <i class="fas fa-lock"></i> Secure checkout
+                            <i class="fas fa-lock"></i> Secure checkout • No login required
                         </p>
                     </div>
                 </div>
             </div>
             @endif
+        </div>
+
+        <!-- Terms and Conditions Modal -->
+        <div class="modal fade terms-modal" id="termsModal" tabindex="-1" role="dialog"
+            aria-labelledby="termsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>1. Order Acceptance</h6>
+                        <p>Your receipt of an electronic or other form of order confirmation does not signify our
+                            acceptance of your order, nor does it constitute confirmation of our offer to sell.</p>
+
+                        <h6>2. Pricing</h6>
+                        <p>Prices are subject to change without notice. We reserve the right to modify or discontinue
+                            products without notice at any time.</p>
+
+                        <h6>3. Shipping Policy</h6>
+                        <p>Shipping costs are calculated based on weight and destination. Delivery times are estimates
+                            and not guaranteed.</p>
+
+                        <h6>4. Returns & Refunds</h6>
+                        <p>We accept returns within 30 days of delivery. Items must be in original condition with tags
+                            attached.</p>
+
+                        <h6>5. Privacy Policy</h6>
+                        <p>We respect your privacy and are committed to protecting your personal information.</p>
+
+                        <h6>6. Payment Security</h6>
+                        <p>All payments are processed securely through encrypted connections.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">I Understand</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -747,8 +932,9 @@
     <!-- Bootstrap 4 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Cart JavaScript -->
+    <!-- Cart & Order Confirmation JavaScript -->
     <script>
+    // Remove the existing JavaScript and replace with this simplified version
     $(document).ready(function() {
         // Initialize CSRF token for all AJAX requests
         $.ajaxSetup({
@@ -757,7 +943,7 @@
             }
         });
 
-        // Function to update cart count in navbar
+        // Update cart count
         function updateCartCount() {
             $.ajax({
                 url: '{{ route("cart.count") }}',
@@ -768,123 +954,173 @@
             });
         }
 
-        // Function to recalculate totals from UI
-        function recalculateTotals() {
-            let subtotal = 0;
-            let itemCount = 0;
-
-            // Calculate subtotal and item count from all items
-            $('.item-total').each(function() {
-                const totalText = $(this).text().replace('$', '').replace(',', '');
-                subtotal += parseFloat(totalText);
-            });
-
-            // Calculate item quantities
-            $('.quantity-input').each(function() {
-                itemCount += parseInt($(this).val()) || 0;
-            });
-
-            // Get shipping (you can make this dynamic)
-            const shipping = 0;
-
-            // Calculate tax (10% for example)
-            const tax = subtotal * 0.10;
-            const total = subtotal + shipping + tax;
-
-            // Update display
-            $('#subtotal').text('$' + subtotal.toFixed(2));
-            $('#shipping').text('$' + shipping.toFixed(2));
-            $('#tax').text('$' + tax.toFixed(2));
-            $('#cart-total').text('$' + total.toFixed(2));
-            $('#item-count').text(itemCount + ' items');
-        }
-
-        // Function to update quantity via AJAX
-        function updateQuantity(itemId, quantity) {
-            const $input = $('#quantity-' + itemId);
-            const originalValue = $input.val();
-
-            // Show loading
-            $input.prop('disabled', true);
-
-            $.ajax({
-                url: '/cart/update/' + itemId,
-                type: 'PUT',
-                data: {
-                    quantity: quantity
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Update item total
-                        $('#total-' + itemId).text('$' + response.new_total);
-
-                        // Recalculate and update all totals
-                        recalculateTotals();
-
-                        // Update cart count in navbar
-                        updateCartCount();
-
-                        // Show success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                            position: 'top-end',
-                            toast: true
-                        });
-                    } else {
-                        Swal.fire('Error', 'Failed to update quantity', 'error');
-                        $input.val(originalValue);
-                    }
-                },
-                error: function(xhr) {
-                    Swal.fire('Error', 'Failed to update quantity. Please try again.', 'error');
-                    $input.val(originalValue);
-                },
-                complete: function() {
-                    $input.prop('disabled', false);
-                }
-            });
-        }
-
-        // Function to remove item from cart
-        function removeItem(itemId) {
-            $.ajax({
-                url: '/cart/remove/' + itemId,
-                type: 'DELETE',
-                success: function(response) {
-                    if (response.success) {
-                        // Remove item row with animation
-                        $('#cart-item-' + itemId).fadeOut(300, function() {
-                            $(this).remove();
-
-                            // Recalculate totals
-                            recalculateTotals();
-
-                            // Update cart count
-                            updateCartCount();
-
-                            // Check if cart is empty
-                            if ($('#cart-items-body tr').length === 0) {
-                                location.reload(); // Reload to show empty cart message
-                            }
-                        });
-
-                        Swal.fire('Removed!', 'Item has been removed from cart.', 'success');
-                    }
-                },
-                error: function() {
-                    Swal.fire('Error', 'Failed to remove item', 'error');
-                }
-            });
-        }
-
         // Initial cart count load
         updateCartCount();
 
-        // Increase quantity
+        // Form validation and submission
+        $('form').on('submit', function(e) {
+            e.preventDefault(); // Prevent normal form submission
+
+            // Basic validation
+            const name = $('#customer_name').val().trim();
+            const email = $('#customer_email').val().trim();
+            const phone = $('#customer_phone').val().trim();
+            const address = $('#customer_address').val().trim();
+            const terms = $('#customer_terms').is(':checked');
+
+            if (!name || !email || !phone || !address) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please fill all required fields.',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+
+            if (!terms) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terms Not Accepted',
+                    text: 'You must agree to the Terms and Conditions.',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                $('#customer_email').focus();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Email',
+                    text: 'Please enter a valid email address.',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+
+            // Phone validation
+            if (phone.length < 10) {
+                $('#customer_phone').focus();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Phone',
+                    text: 'Please enter a valid phone number (minimum 10 digits).',
+                    confirmButtonText: 'OK'
+                });
+                return false;
+            }
+
+            // Show loading
+            const $checkoutBtn = $('#checkout-btn');
+            $checkoutBtn.prop('disabled', true)
+                .html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+            // Collect form data using FormData (proper way)
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('phone', phone);
+            formData.append('address', address);
+            formData.append('notes', $('#customer_notes').val().trim());
+            formData.append('terms', 'on'); // Since we already checked the checkbox
+
+            // Submit form via AJAX
+            $.ajax({
+                url: '{{ route("confirm_order") }}',
+                type: 'POST',
+                data: formData,
+                processData: false, // Important for FormData
+                contentType: false, // Important for FormData
+                success: function(response) {
+                    if (response.success && response.redirect) {
+                        // Show success message before redirecting
+                        Swal.fire({
+                            icon: 'success',
+                            title: '🎉 Order Confirmed!',
+                            html: `
+                            <div style="text-align: center;">
+                                <p>${response.message}</p>
+                                <p><strong>Thank you for your order!</strong></p>
+                                <p>You will be redirected to order details page in a few seconds...</p>
+                            </div>
+                        `,
+                            showConfirmButton: true,
+                            confirmButtonText: 'View Order Details',
+                            showCancelButton: true,
+                            cancelButtonText: 'Stay Here',
+                            timer: 5000,
+                            timerProgressBar: true,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            allowEnterKey: false,
+                            willClose: () => {
+                                // Auto-redirect after timer
+                                window.location.href = response.redirect;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = response.redirect;
+                            } else if (result.dismiss === Swal.DismissReason
+                                .cancel) {
+                                $checkoutBtn.prop('disabled', false)
+                                    .html(
+                                        '<i class="fas fa-lock"></i> Confirm & Place Order'
+                                        );
+                            } else {
+                                window.location.href = response.redirect;
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message ||
+                                'Unexpected response from server.'
+                        });
+                        $checkoutBtn.prop('disabled', false)
+                            .html('<i class="fas fa-lock"></i> Confirm & Place Order');
+                    }
+                },
+                error: function(xhr) {
+                    // Handle validation errors
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        let errorMessage = '';
+                        for (const field in errors) {
+                            errorMessage += `${errors[field][0]}\n`;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            text: errorMessage
+                        });
+                    } else if (xhr.status === 400 || xhr.status === 500) {
+                        // Handle other errors
+                        const response = xhr.responseJSON;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message ||
+                                'Failed to place order. Please try again.'
+                        });
+                    } else {
+                        // Handle unexpected errors
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred. Please try again.'
+                        });
+                    }
+                    $checkoutBtn.prop('disabled', false)
+                        .html('<i class="fas fa-lock"></i> Confirm & Place Order');
+                }
+            });
+        });
+
+        // Handle quantity updates
         $(document).on('click', '.increase-btn', function() {
             const itemId = $(this).data('id');
             const $input = $('#quantity-' + itemId);
@@ -893,84 +1129,55 @@
             updateQuantity(itemId, quantity + 1);
         });
 
-        // Decrease quantity
         $(document).on('click', '.decrease-btn', function() {
             const itemId = $(this).data('id');
             const $input = $('#quantity-' + itemId);
             let quantity = parseInt($input.val()) || 1;
-
             if (quantity > 1) {
                 $input.val(quantity - 1);
                 updateQuantity(itemId, quantity - 1);
             }
         });
 
-        // Direct quantity input change
-        $(document).on('change', '.quantity-input', function() {
-            const itemId = $(this).data('id');
-            let quantity = parseInt($(this).val()) || 1;
+        function updateQuantity(itemId, quantity) {
+            $.ajax({
+                url: '/cart/update/' + itemId,
+                type: 'PUT',
+                data: {
+                    quantity: quantity
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }
+            });
+        }
 
-            if (quantity < 1) quantity = 1;
-            $(this).val(quantity);
-            updateQuantity(itemId, quantity);
-        });
-
-        // Remove item from cart
+        // Remove item
         $(document).on('click', '.remove-btn', function() {
             const itemId = $(this).data('id');
 
             Swal.fire({
-                title: 'Remove Item',
-                text: 'Are you sure you want to remove this item from your cart?',
+                title: 'Remove Item?',
+                text: 'Are you sure?',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Yes, remove it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    removeItem(itemId);
+                    $.ajax({
+                        url: '/cart/remove/' + itemId,
+                        type: 'DELETE',
+                        success: function(response) {
+                            if (response.success) {
+                                location.reload();
+                            }
+                        }
+                    });
                 }
             });
         });
-
-        // Checkout button
-        $('#checkout-btn').click(function() {
-            @if(Auth::check())
-            Swal.fire({
-                title: 'Proceed to Checkout?',
-                text: 'You will be redirected to the checkout page.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#2f3ad1',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, checkout!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Redirect to checkout page
-                    window.location.href = '/checkout';
-                }
-            });
-            @else
-            Swal.fire({
-                title: 'Login Required',
-                text: 'Please login or register to proceed with checkout.',
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonColor: '#2f3ad1',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Login',
-                cancelButtonText: 'Continue as Guest'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '{{ route("login") }}';
-                }
-            });
-            @endif
-        });
-
-        // Auto-update cart count every 30 seconds
-        setInterval(updateCartCount, 30000);
     });
     </script>
 </body>

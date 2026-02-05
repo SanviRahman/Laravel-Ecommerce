@@ -153,6 +153,7 @@
                     <ul id="exampleDropdown" class="collapse list-unstyled">
                         <li><a href="{{ route('products.index') }}">View All Products</a></li>
                         <li><a href="{{ route('products.create') }}">Add Product</a></li>
+                        <li><a href="{{ route('orders.view') }}">View All Orders</a></li>
                     </ul>
                 </li>
             </ul>
