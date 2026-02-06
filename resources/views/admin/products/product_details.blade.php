@@ -504,19 +504,15 @@
                             <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('products.index') }}">Shop</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Why Us</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Testimonial</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('guest.track.order') }}" class="nav-link">
+                                My Order
+                            </a>
                         </li>
                     </ul>
                     <div class="user_option">

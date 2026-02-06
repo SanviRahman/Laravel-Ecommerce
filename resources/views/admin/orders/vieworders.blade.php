@@ -54,9 +54,6 @@
                                     <i class="fa fa-search"></i> Search
                                 </button>
                             </form>
-                            <a href="{{ route('orders.export') }}" class="btn btn-sm btn-success">
-                                <i class="fa fa-download"></i> Export
-                            </a>
                         </div>
                     </div>
                     <div class="block-body">
