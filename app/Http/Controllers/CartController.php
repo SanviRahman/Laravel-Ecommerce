@@ -537,50 +537,7 @@ class CartController extends Controller
         }
     }
 
-    /**
-     * Track Order Page (GET)
-     */
-    public function trackOrder()
-    {
-        return view('cart.order_track');
-    }
-
-    /**
-     * Track Order (POST)
-     */
-    public function trackOrderPost(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'order_number' => 'required_without:email|string',
-            'email'        => 'required_without:order_number|email',
-        ], [
-            'order_number.required_without' => 'Order number is required when email is not provided.',
-            'email.required_without'        => 'Email is required when order number is not provided.',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $query = ConfirmOrder::with('items');
-
-        if ($request->filled('order_number')) {
-            $query->where('order_number', $request->order_number);
-        }
-
-        if ($request->filled('email')) {
-            $query->where('email', $request->email);
-        }
-
-        $order = $query->first();
-
-        if ($order) {
-            return view('cart.order_track', compact('order'));
-        }
-
-        return back()->with('error', 'Order not found. Please check your order number and email.');
-    }
-
+   
     /**
      * Clear Cart
      */

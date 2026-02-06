@@ -207,6 +207,17 @@
             </div>
         </div>
     </div>
+    <div class="alert alert-info mt-4">
+        <h6><i class="fas fa-info-circle"></i> Track Your Order Later</h6>
+        <p>You can track your order anytime using:</p>
+        <ul>
+            <li><strong>Order Number:</strong> {{ $order->order_number }}</li>
+            <li><strong>Email:</strong> {{ $order->email }}</li>
+        </ul>
+        <a href="{{ route('guest.track.order') }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-search"></i> Track Order Anytime
+        </a>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>

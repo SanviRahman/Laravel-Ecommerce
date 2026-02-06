@@ -121,25 +121,15 @@
                             <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                Shop
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                Why Us
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                Testimonial
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="#">Contact Us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('guest.track.order') }}" class="nav-link">
+                                My Order
+                            </a>
                         </li>
                     </ul>
                     <div class="user_option">
@@ -583,6 +573,55 @@
 
     <!-- end shop section -->
 
+    <!-- contact section -->
+    <section class="contact_section">
+        <div class="container">
+            <div class="heading_container text-center mb-5">
+                <h2 style="color: #333; font-size: 36px; font-weight: 700;">
+                    Contact Us
+                </h2>
+            </div>
+            <div class="container-bg">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-md-6 mb-4 mb-md-0">
+                        <div class="map_container">
+                            <div class="map-responsive">
+                                <iframe
+                                    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France"
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="contact_form">
+                            <form action="#">
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Name">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <input type="email" class="form-control" placeholder="Your Email">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Phone">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <textarea class="form-control message-box" rows="4"
+                                        placeholder="Your Message"></textarea>
+                                </div>
+                                <div class="d-flex">
+                                    <button type="submit">
+                                        SEND MESSAGE
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- info section -->
     <br><br>
     <section class="info_section layout_padding2-top"
@@ -764,6 +803,46 @@
     .fab,
     .fa {
         font-family: 'Font Awesome 6 Brands', 'Font Awesome 6 Free' !important;
+    }
+    </style>
+     <style>
+    /* Consistent dimensions for all sections */
+    .order-container,
+    .contact_section,
+    .info_section {
+        width: 96%;
+        border-radius: 10px;
+        margin: 30px auto 40px;
+    }
+
+    .order-container {
+        background-color: #d1c9c9;
+        padding: 60px 0;
+    }
+
+    .contact_section {
+        background-color: #d1c9c9;
+        padding: 60px 0;
+    }
+
+    .info_section {
+        background-color: #2c2c2c;
+        padding: 60px 0 20px;
+    }
+
+    .btn-primary {
+        background: #f7444e;
+        border: none;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+        border-radius: 25px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
+        background: #d43c45;
     }
     </style>
 

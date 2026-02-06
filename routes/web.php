@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\GuestOrderController;
 
 Route::get('/', [UserController::class, 'home'])->name('index');
 
@@ -36,10 +37,23 @@ Route::prefix('cart')->group(function () {
     Route::get('/data', [CartController::class, 'getCartData'])->name('cart.data');
 });
 
+
+// User Profile Routes (Auth Required)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+
+
+//Guest user order tracking routes (No Auth Required)
+Route::prefix('track-order')->name('guest.')->group(function () {
+    Route::get('/', [GuestOrderController::class, 'trackOrder'])->name('track.order');
+    Route::post('/', [GuestOrderController::class, 'trackOrderPost'])->name('track.order.post');
+    Route::get('/{order_number}', [GuestOrderController::class, 'showOrderDetails'])->name('order.details');
+    Route::get('/{order_number}/invoice', [GuestOrderController::class, 'downloadInvoice'])->name('order.invoice');
+    Route::post('/{order_number}/send-details', [GuestOrderController::class, 'sendOrderDetails'])->name('order.send.details');
 });
 
 // Admin Routes
@@ -61,8 +75,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/products/{id}', [AdminController::class, 'productDelete'])->name('products.delete');
     Route::get('/product/search', [AdminController::class, 'productSearch'])->name('products.search');
 
-    // View Orders Route
-    //Route::get('/orders', [AdminController::class, 'viewOrders'])->name('admin.orders');
+    // Admin View Orders Route
     Route::get('/orders', [AdminController::class, 'viewOrders'])->name('orders.view');
     Route::get('/orders/search', [AdminController::class, 'viewOrders'])->name('orders.search');
     Route::get('/orders/{id}', [AdminController::class, 'viewOrder'])->name('orders.show');
