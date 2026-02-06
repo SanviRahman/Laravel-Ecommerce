@@ -228,6 +228,99 @@
         }
     }
 
+    /* Slider Section - NAV BAR ER MOTO HEIGHT AND WIDTH */
+    .slider_section {
+        position: relative;
+        padding: 0;
+        margin-left: 43px;
+        width: 95.4%;
+    }
+
+    .slider_container {
+        position: relative;
+        width: 100%;
+        margin: 0;
+    }
+
+    .carousel {
+        width: 100%;
+        margin: 0;
+    }
+
+    .carousel-inner {
+        width: 100%;
+        margin: 0;
+    }
+
+    .carousel-item {
+        width: 100%;
+        margin: 0;
+    }
+
+    .container-fluid {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+
+    .row {
+        margin: 0;
+        width: 100%;
+    }
+
+    .detail-box {
+        padding: 40px 20px;
+        width: 100%;
+    }
+
+    .detail-box h1 {
+        font-size: 48px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+
+    .detail-box p {
+        font-size: 16px;
+        color: white;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        max-width: 90%;
+    }
+
+    .detail-box a {
+        display: inline-block;
+        padding: 12px 35px;
+        background: #f7444e;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .detail-box a:hover {
+        background: #d43c45;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
+    }
+
+    .img-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        width: 100%;
+    }
+
+    .img-box img {
+        max-width: 100%;
+        border-radius: 10px;
+        height: auto;
+    }
+
     /* Consistent dimensions for all sections */
     .order-container,
     .contact_section,
@@ -243,7 +336,7 @@
     }
 
     .contact_section {
-        background-color: #d1c9c9;
+        background-color: #f8f9fa;
         padding: 60px 0;
     }
 
@@ -605,6 +698,7 @@
                     <button onclick="window.print()" class="btn btn-print">
                         <i class="fas fa-print me-2"></i> Print Order
                     </button>
+                    <!-- এভাবে ব্যবহার করুন: -->
                     <a href="{{ route('guest.order.invoice', $order->order_number) }}" class="btn btn-invoice"
                         target="_blank">
                         <i class="fas fa-download me-2"></i> Download Invoice
@@ -723,7 +817,8 @@
                                 <div class="mb-3">
                                     <input type="email" placeholder="Enter your email">
                                 </div>
-                                <button type="submit">
+                                <button type="submit"
+                                    style="background: #f7444e; border: none; padding: 10px 20px; color: white; font-weight: 600;">
                                     Subscribe
                                 </button>
                             </form>

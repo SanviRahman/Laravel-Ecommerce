@@ -586,7 +586,7 @@
                 </div>
             </nav>
         </header>
-         <!-- slider section -->
+        <!-- slider section -->
         <section class="slider_section">
             <div class="slider_container">
                 <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
@@ -615,7 +615,7 @@
                                         <div class="img-box">
                                             <img style="width:600px"
                                                 src="https://cdn.pixabay.com/photo/2021/11/22/20/20/online-6817350_1280.jpg"
-                                                alt="" style="border-radius: 10px;"/>
+                                                alt="" style="border-radius: 10px;" />
                                         </div>
                                     </div>
                                 </div>
@@ -868,7 +868,6 @@
         <!-- contact section -->
         <style>
         /* Consistent dimensions for all sections */
-        .order-container,
         .contact_section,
         .info_section {
             width: 96%;
@@ -882,7 +881,7 @@
         }
 
         .contact_section {
-            background-color: #d1c9c9;
+            background-color: #f8f9fa;
             padding: 60px 0;
         }
 
@@ -907,7 +906,7 @@
         }
         </style>
         <section class="contact_section"
-            style="background-color: #d1c9c9; padding: 60px 0; height: auto; weight: normal;">
+            style="background-color: #f8f9fa; padding: 60px 0; height: auto; weight: normal;">
             <div class="container">
                 <div class="heading_container text-center mb-5">
                     <h2 style="color: #333; font-size: 36px; font-weight: 700;">

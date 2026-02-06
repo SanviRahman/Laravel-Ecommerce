@@ -128,7 +128,7 @@
                         </li>
                         <li>
                             <a href="{{ route('guest.track.order') }}" class="nav-link">
-                               My Order
+                                My Order
                             </a>
                         </li>
                     </ul>
@@ -313,7 +313,7 @@
 
     <br><br>
     <!-- contact section -->
-    <section class="contact_section" style="background-color: #d1c9c9; padding: 60px 0; height: auto; weight: normal;">
+    <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto; weight: normal;">
         <div class="container">
             <div class="heading_container text-center mb-5">
                 <h2 style="color: #333; font-size: 36px; font-weight: 700;">

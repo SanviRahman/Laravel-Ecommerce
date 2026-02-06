@@ -121,7 +121,99 @@
         margin: 30px auto 40px;
     }
 
-    /* CONTACT SECTION STYLE FOOTER ER MOTO */
+    /* Slider Section - NAV BAR ER MOTO HEIGHT AND WIDTH */
+    .slider_section {
+        position: relative;
+        padding: 0;
+        margin-left: 43px;
+        width: 95.4%;
+    }
+
+    .slider_container {
+        position: relative;
+        width: 100%;
+        margin: 0;
+    }
+
+    .carousel {
+        width: 100%;
+        margin: 0;
+    }
+
+    .carousel-inner {
+        width: 100%;
+        margin: 0;
+    }
+
+    .carousel-item {
+        width: 100%;
+        margin: 0;
+    }
+
+    .container-fluid {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+
+    .row {
+        margin: 0;
+        width: 100%;
+    }
+
+    .detail-box {
+        padding: 40px 20px;
+        width: 100%;
+    }
+
+    .detail-box h1 {
+        font-size: 48px;
+        font-weight: 700;
+        color:white;
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+
+    .detail-box p {
+        font-size: 16px;
+        color:white;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        max-width: 90%;
+    }
+
+    .detail-box a {
+        display: inline-block;
+        padding: 12px 35px;
+        background: #f7444e;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .detail-box a:hover {
+        background: #d43c45;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
+    }
+
+    .img-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        width: 100%;
+    }
+
+    .img-box img {
+        max-width: 100%;
+        border-radius: 10px;
+        height: auto;
+    }
+
     /* Consistent dimensions for all sections */
     .order-container,
     .contact_section,
@@ -137,7 +229,7 @@
     }
 
     .contact_section {
-        background-color: #d1c9c9;
+        background-color: #f8f9fa;
         padding: 60px 0;
     }
 
@@ -146,50 +238,42 @@
         padding: 60px 0 20px;
     }
 
-    .btn-primary {
-        background: #f7444e;
-        border: none;
-        padding: 12px 30px;
-        font-weight: 600;
-        transition: all 0.3s;
-        border-radius: 25px;
-    }
+    /* Responsive Design */
+    @media (max-width: 991px) {
+        .detail-box h1 {
+            font-size: 36px;
+        }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
-        background: #d43c45;
-    }
+        .detail-box {
+            padding: 30px 15px;
+        }
 
-
-    /* Footer er width and height moto */
-    .info_section {
-        background-color: #2c2c2c;
-        color: white;
-        padding: 60px 0 20px;
-        /* contact section er moto padding */
-        width: 100%;
-        /* same width */
-    }
-
-    /* Ensure both sections have same height */
-    .contact_section,
-    .info_section {
-        width: 100%;
-        margin: 0;
-        box-sizing: border-box;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
+        .img-box {
+            padding: 15px;
+        }
 
         .contact_section,
         .info_section {
-            padding: 40px 0 20px !important;
+            padding: 40px 0 !important;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .detail-box h1 {
+            font-size: 28px;
         }
 
-        .contact_section .container-bg {
-            padding: 20px !important;
+        .detail-box p {
+            font-size: 14px;
+        }
+
+        .detail-box a {
+            padding: 10px 25px;
+        }
+
+        .contact_section,
+        .info_section {
+            padding: 30px 0 !important;
         }
 
         .track-container {
@@ -276,6 +360,7 @@
         </header>
         <!-- end header section -->
     </div>
+
     <!-- slider section -->
     <section class="slider_section">
         <div class="slider_container">
@@ -318,7 +403,6 @@
         </div>
     </section>
     <!-- end slider section -->
-
 
     <!-- Track Order Section -->
     <section class="track-container">
@@ -396,24 +480,19 @@
         </div>
     </section>
 
-
     <!-- contact section -->
-    <section class="contact_section"
-        style="background-color: white; padding: 40px 0; min-height: 400px; width: 96%; border-radius: 10px; margin: 30px auto 40px;">
+    <section class="contact_section">
         <div class="container">
-            <div class="heading_container text-center mb-4">
-                <h2 style="color: #333; font-size: 32px; font-weight: 700; margin-bottom: 30px;">
+            <div class="heading_container text-center mb-5">
+                <h2 style="color: #333; font-size: 36px; font-weight: 700;">
                     Contact Us
                 </h2>
             </div>
-            <div class="container-bg"
-                style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 30px; min-height: 350px; border: 1px solid #eee;">
-                <div class="row align-items-center h-100">
-                    <div class="col-lg-6 col-md-6 mb-4 mb-md-0 h-100">
-                        <div class="map_container h-100"
-                            style="border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1); height: 100%;">
-                            <div class="map-responsive"
-                                style="position: relative; overflow: hidden; padding-top: 100%;">
+            <div class="container-bg">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-md-6 mb-4 mb-md-0">
+                        <div class="map_container">
+                            <div class="map-responsive">
                                 <iframe
                                     src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France"
                                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
@@ -422,28 +501,24 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6 col-md-6 h-100">
-                        <div class="contact_form" style="padding: 15px; height: 100%;">
-                            <form action="#" style="height: 100%; display: flex; flex-direction: column;">
+                    <div class="col-lg-6 col-md-6">
+                        <div class="contact_form">
+                            <form action="#">
                                 <div class="form-group mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Name"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
-                                </div>
-                                <div class="form-group mb-3">
-                                    <input type="email" class="form-control" placeholder="Your Email"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                    <input type="text" class="form-control" placeholder="Your Name">
                                 </div>
                                 <div class="form-group mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Phone"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                    <input type="email" class="form-control" placeholder="Your Email">
                                 </div>
-                                <div class="form-group mb-3 flex-grow-1">
-                                    <textarea class="form-control message-box h-100" rows="4" placeholder="Your Message"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%; min-height: 120px; resize: vertical;"></textarea>
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Phone">
                                 </div>
-                                <div class="d-flex mt-3">
-                                    <button type="submit"
-                                        style="background: #333; color: white; border: none; padding: 12px 35px; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%;">
+                                <div class="form-group mb-3">
+                                    <textarea class="form-control message-box" rows="4"
+                                        placeholder="Your Message"></textarea>
+                                </div>
+                                <div class="d-flex">
+                                    <button type="submit">
                                         SEND MESSAGE
                                     </button>
                                 </div>
@@ -458,8 +533,8 @@
     <!-- info section -->
     <br><br>
     <section class="info_section layout_padding2-top"
-        style="background-color: #2c2c2c; color: white; padding: 60px 0 20px; min-height: 400px; width: 96%; border-radius: 10px; margin: 0 auto 20px;">
-        <div class="container h-100">
+        style="background-color: #2c2c2c; color: white; padding: 60px 0 20px;">
+        <div class="container">
             <div class="social_container text-center mb-4">
                 <div class="social_box d-flex justify-content-center">
                     <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
@@ -477,70 +552,62 @@
                 </div>
             </div>
 
-            <div class="info_container" style="padding: 40px 0; min-height: 300px;">
-                <div class="row h-100">
-                    <div class="col-md-6 col-lg-3 mb-4 h-100">
-                        <div class="h-100 d-flex flex-column">
-                            <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
-                                ABOUT US
-                            </h6>
-                            <p style="color: #aaa; line-height: 1.6; flex-grow: 1;">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit
-                                amet,
-                                consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
-                            </p>
-                        </div>
+            <div class="info_container" style="padding: 40px 0;">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            ABOUT US
+                        </h6>
+                        <p style="color: #aaa; line-height: 1.6;">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                        </p>
                     </div>
-                    <div class="col-md-6 col-lg-3 mb-4 h-100">
-                        <div class="info_form h-100 d-flex flex-column">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="info_form">
                             <h5 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
                                 Newsletter
                             </h5>
-                            <form action="#" class="h-100 d-flex flex-column">
-                                <div class="mb-3 flex-grow-1">
+                            <form action="#">
+                                <div class="mb-3">
                                     <input type="email" placeholder="Enter your email"
-                                        style="border: 1px solid #555; background: #444; color: white; border-radius: 5px; padding: 12px 15px; width: 100%; height: 50px;">
+                                        style="border: 1px solid #555; background: #444; color: white; border-radius: 5px; padding: 10px 15px; width: 100%;">
                                 </div>
                                 <button type="submit"
-                                    style="background: #f7444e; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: auto;">
+                                    style="background: #f7444e; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer;">
                                     Subscribe
                                 </button>
                             </form>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3 mb-4 h-100">
-                        <div class="h-100 d-flex flex-column">
-                            <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
-                                NEED HELP
-                            </h6>
-                            <p style="color: #aaa; line-height: 1.6; flex-grow: 1;">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit
-                                amet,
-                                consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
-                            </p>
-                        </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            NEED HELP
+                        </h6>
+                        <p style="color: #aaa; line-height: 1.6;">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                        </p>
                     </div>
-                    <div class="col-md-6 col-lg-3 mb-4 h-100">
-                        <div class="info_link-box h-100 d-flex flex-column">
-                            <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
-                                CONTACT US
-                            </h6>
-                            <div class="d-flex flex-column" style="flex-grow: 1;">
-                                <a href="#"
-                                    style="color: #aaa; text-decoration: none; display: block; margin-bottom: 15px; flex-grow: 1;">
-                                    <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                    <span style="margin-left: 10px;">Gb road 123 london Uk</span>
-                                </a>
-                                <a href="#"
-                                    style="color: #aaa; text-decoration: none; display: block; margin-bottom: 15px; flex-grow: 1;">
-                                    <i class="fa fa-phone" aria-hidden="true"></i>
-                                    <span style="margin-left: 10px;">+01 12345678901</span>
-                                </a>
-                                <a href="#" style="color: #aaa; text-decoration: none; display: block; flex-grow: 1;">
-                                    <i class="fa fa-envelope" aria-hidden="true"></i>
-                                    <span style="margin-left: 10px;">demo@gmail.com</span>
-                                </a>
-                            </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            CONTACT US
+                        </h6>
+                        <div class="info_link-box">
+                            <a href="#"
+                                style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">Gb road 123 london Uk</span>
+                            </a>
+                            <a href="#"
+                                style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">+01 12345678901</span>
+                            </a>
+                            <a href="#" style="color: #aaa; text-decoration: none; display: block;">
+                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">demo@gmail.com</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -548,7 +615,7 @@
         </div>
 
         <!-- footer section -->
-        <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 20px;">
+        <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
             <div class="container text-center">
                 <p style="color: #aaa; margin: 0;">
                     &copy; <span id="displayYear"></span> All Rights Reserved By

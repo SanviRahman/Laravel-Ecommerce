@@ -8,7 +8,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GuestOrderController;
 
 Route::get('/', [UserController::class, 'home'])->name('index');
-
 Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('products/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name('viewallproducts');
@@ -19,11 +18,6 @@ Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name
 // Guest Order Routes (No Auth Required)
 Route::post('/confirm-order', [CartController::class, 'confirmOrder'])->name('confirm_order');
 Route::get('/order-success/{id}', [CartController::class, 'orderSuccess'])->name('order.success');
-
-// Track Order (Optional)
-Route::get('/track-order', [CartController::class, 'trackOrder'])->name('order.track');
-Route::post('/track-order', [CartController::class, 'trackOrderPost'])->name('order.track.post');
-
 
 
 
@@ -85,9 +79,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Order Status Management
     Route::get('/orders/{id}/status', [AdminController::class, 'getOrderStatus'])->name('orders.status');
     Route::post('/orders/{id}/update-status', [AdminController::class, 'updateOrderStatus'])->name('orders.update-status');
-    
-    // Export
-    Route::get('/orders/export', [AdminController::class, 'exportOrders'])->name('orders.export');
 
 });
 
