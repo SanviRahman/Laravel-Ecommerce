@@ -805,46 +805,6 @@
         font-family: 'Font Awesome 6 Brands', 'Font Awesome 6 Free' !important;
     }
     </style>
-     <style>
-    /* Consistent dimensions for all sections */
-    .order-container,
-    .contact_section,
-    .info_section {
-        width: 96%;
-        border-radius: 10px;
-        margin: 30px auto 40px;
-    }
-
-    .order-container {
-        background-color: #d1c9c9;
-        padding: 60px 0;
-    }
-
-    .contact_section {
-        background-color: #d1c9c9;
-        padding: 60px 0;
-    }
-
-    .info_section {
-        background-color: #2c2c2c;
-        padding: 60px 0 20px;
-    }
-
-    .btn-primary {
-        background: #f7444e;
-        border: none;
-        padding: 12px 30px;
-        font-weight: 600;
-        transition: all 0.3s;
-        border-radius: 25px;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
-        background: #d43c45;
-    }
-    </style>
 
     <script>
     // Set current year in footer

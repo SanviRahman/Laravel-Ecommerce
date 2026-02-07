@@ -545,6 +545,48 @@
             </nav>
         </header>
 
+        <!-- slider section -->
+        <section class="slider_section">
+            <div class="slider_container">
+                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="detail-box">
+                                            <h1>
+                                                Welcome To Our <br>
+                                                Gift Shop
+                                            </h1>
+                                            <p>
+                                                Sequi perspiciatis nulla reiciendis, rem, tenetur impedit, eveniet non
+                                                necessitatibus error distinctio mollitia suscipit. Nostrum fugit
+                                                doloribus consequatur distinctio esse, possimus maiores aliquid repellat
+                                                beatae cum, perspiciatis enim, accusantium perferendis.
+                                            </p>
+                                            <a href="#">
+                                                Contact Us
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 ">
+                                        <div class="img-box">
+                                            <img style="width:600px"
+                                                src="https://cdn.pixabay.com/photo/2021/11/22/20/20/online-6817350_1280.jpg"
+                                                alt="" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
         <!-- Product Detail Section -->
         <div class="product-detail-container">
             <!-- Back Button -->
@@ -688,6 +730,142 @@
         </div>
     </div>
 
+    <!-- contact section -->
+    <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto; weight: normal;">
+        <div class="container">
+            <div class="heading_container text-center mb-5">
+                <h2 style="color: #333; font-size: 36px; font-weight: 700;">
+                    Contact Us
+                </h2>
+            </div>
+            <div class="container-bg">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-md-6 mb-4 mb-md-0">
+                        <div class="map_container">
+                            <div class="map-responsive">
+                                <iframe
+                                    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France"
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="contact_form">
+                            <form action="#">
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Name">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <input type="email" class="form-control" placeholder="Your Email">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Your Phone">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <textarea class="form-control message-box" rows="4"
+                                        placeholder="Your Message"></textarea>
+                                </div>
+                                <div class="d-flex">
+                                    <button type="submit">
+                                        SEND MESSAGE
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <style>
+    /* Common Styles for Both Sections */
+    .contact_section,
+    .info_section {
+        width: 96%;
+        border-radius: 10px;
+        margin: 0 auto 40px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    /* Form Controls */
+    .form-control:focus {
+        outline: none;
+        border-color: #f7444e;
+        box-shadow: 0 0 0 2px rgba(247, 68, 78, 0.2);
+    }
+
+    /* Button Hover Effects */
+    button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+
+    /* Social Icons Hover */
+    .social_box a:hover {
+        color: #f7444e !important;
+        transform: scale(1.1);
+        transition: all 0.3s ease;
+    }
+
+    /* Links Hover */
+    .info_link-box a:hover {
+        color: #f7444e !important;
+        transition: color 0.3s ease;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 991px) {
+
+        .contact_section,
+        .info_section {
+            padding: 40px 0 !important;
+        }
+
+        .container-bg {
+            padding: 30px !important;
+        }
+
+        .col-md-6,
+        .col-lg-3 {
+            margin-bottom: 30px;
+        }
+    }
+
+    @media (max-width: 767px) {
+
+        .contact_section,
+        .info_section {
+            padding: 30px 0 !important;
+        }
+
+        .container-bg {
+            padding: 20px !important;
+        }
+
+        .heading_container h2 {
+            font-size: 28px !important;
+        }
+
+        .social_box a {
+            margin: 0 10px !important;
+            font-size: 20px !important;
+        }
+    }
+
+    /* Font Awesome Fix */
+    .fab,
+    .fa {
+        font-family: 'Font Awesome 6 Brands', 'Font Awesome 6 Free' !important;
+    }
+    </style>
     <!-- Footer -->
     <br><br>
     <section class="info_section layout_padding2-top"
