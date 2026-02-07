@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\ConfirmOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
+
 
 class GuestOrderController extends Controller
 {
@@ -102,28 +101,4 @@ class GuestOrderController extends Controller
         ]);
     }
 
-     /**
-     * Download order invoice (PDF)
-     */
-
-    public function downloadInvoice($order_number)
-    {
-        try {
-            // Find the order
-            $order = ConfirmOrder::where('order_number', $order_number)->with('items')->first();
-
-            if (!$order) {
-                return redirect()->route('guest.track.order')->with('error', 'Order not found!');
-            }
-
-            // Generate PDF invoice
-            $pdf = Pdf::loadView('invoices.guest_invoice', compact('order'));
-            
-            // Download the PDF
-            return $pdf->download('invoice-' . $order->order_number . '.pdf');
-            
-        } catch (\Exception $e) {
-            return redirect()->route('guest.track.order')->with('error', 'Failed to generate invoice: ' . $e->getMessage());
-        }
-    }
 }

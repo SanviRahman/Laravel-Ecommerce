@@ -70,6 +70,7 @@
                                         <th>Status</th>
                                         <th>Date</th>
                                         <th>Actions</th>
+                                        <th>Download Invoice</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -104,7 +105,7 @@
                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"
                                                         title="{{ $item->product_title }} (Qty: {{ $item->quantity }})">
                                                     @else
-                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 4px; 
+                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 4px;
                                                                   display: flex; align-items: center; justify-content: center;"
                                                         title="{{ $item->product_title }} (Qty: {{ $item->quantity }})">
                                                         <i class="fa fa-box text-muted"></i>
@@ -177,18 +178,24 @@
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('orders.edit', $order->id) }}"
                                                     class="btn btn-sm btn-warning" title="Edit Order">
-                                                    Edit Order
+                                                    <i class="fa fa-edit"></i> Edit
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-success"
-                                                    onclick="updateStatus({{ $order->id }})" title="Update Status">
-                                                    Update Status
-                                                </button>
+                                                <a href="{{ route('orders.update-status.form', $order->id) }}"
+                                                    class="btn btn-sm btn-success" title="Update Status">
+                                                    <i class="fa fa-sync-alt"></i> Status
+                                                </a>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('order.invoice', $order->order_number) }}"
+                                                class="btn btn-sm btn-info" target="_blank">
+                                                <i class="fas fa-download"></i> PDF
+                                            </a>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="9" class="text-center">
+                                        <td colspan="10" class="text-center">
                                             <div class="py-4">
                                                 <i class="fa fa-shopping-cart fa-3x text-muted mb-3"></i>
                                                 <h5>No orders found</h5>
@@ -207,7 +214,7 @@
                                 <div class="card bg-primary text-white">
                                     <div class="card-body">
                                         <h6 class="card-title">Total Orders</h6>
-                                        <h3>{{ $orders->count() }}</h3>
+                                        <h3>{{ $stats['total_orders'] ?? $orders->count() }}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -215,7 +222,8 @@
                                 <div class="card bg-success text-white">
                                     <div class="card-body">
                                         <h6 class="card-title">Total Revenue</h6>
-                                        <h3>${{ number_format($orders->sum('total'), 2) }}</h3>
+                                        <h3>${{ number_format($stats['total_revenue'] ?? $orders->sum('total'), 2) }}
+                                        </h3>
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +231,8 @@
                                 <div class="card bg-info text-white">
                                     <div class="card-body">
                                         <h6 class="card-title">Pending Orders</h6>
-                                        <h3>{{ $orders->where('status', 'pending')->count() }}</h3>
+                                        <h3>{{ $stats['pending_orders'] ?? $orders->where('status', 'pending')->count() }}
+                                        </h3>
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +240,8 @@
                                 <div class="card bg-warning text-white">
                                     <div class="card-body">
                                         <h6 class="card-title">Guest Orders</h6>
-                                        <h3>{{ $orders->where('customer_type', 'guest')->count() }}</h3>
+                                        <h3>{{ $stats['guest_orders'] ?? $orders->where('customer_type', 'guest')->count() }}
+                                        </h3>
                                     </div>
                                 </div>
                             </div>
@@ -249,112 +259,7 @@
         </div>
     </div>
 </section>
-
-<!-- Status Update Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <form id="statusForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-header">
-                    <h5 class="modal-title" id="statusModalLabel">Update Order Status</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="order_id" id="order_id">
-                    <div class="form-group">
-                        <label for="status">Order Status</label>
-                        <select class="form-control" id="status" name="status" required>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="payment_status">Payment Status</label>
-                        <select class="form-control" id="payment_status" name="payment_status" required>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="failed">Failed</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="notes">Admin Notes (Optional)</label>
-                        <textarea class="form-control" id="admin_notes" name="admin_notes" rows="3"
-                            placeholder="Add any additional notes..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
-
-@push('scripts')
-<script>
-function updateStatus(orderId) {
-    // Fetch current order status
-    fetch(`/admin/orders/${orderId}/status`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Populate modal fields
-                document.getElementById('order_id').value = orderId;
-                document.getElementById('status').value = data.order.status;
-                document.getElementById('payment_status').value = data.order.payment_status;
-                document.getElementById('admin_notes').value = data.order.admin_notes || '';
-
-                // Set form action
-                document.getElementById('statusForm').action = `/admin/orders/${orderId}/update-status`;
-
-                // Show modal
-                $('#statusModal').modal('show');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to load order details.');
-        });
-}
-
-// Handle form submission
-document.getElementById('statusForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-
-    fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                $('#statusModal').modal('hide');
-                location.reload();
-            } else {
-                alert(data.message || 'Failed to update status.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to update status.');
-        });
-});
-</script>
 
 @push('styles')
 <style>
@@ -395,6 +300,16 @@ document.getElementById('statusForm').addEventListener('submit', function(e) {
 .card h3 {
     margin: 0;
     font-weight: bold;
+}
+
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
 }
 </style>
 @endpush

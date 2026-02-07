@@ -698,11 +698,6 @@
                     <button onclick="window.print()" class="btn btn-print">
                         <i class="fas fa-print me-2"></i> Print Order
                     </button>
-                    <!-- এভাবে ব্যবহার করুন: -->
-                    <a href="{{ route('guest.order.invoice', $order->order_number) }}" class="btn btn-invoice"
-                        target="_blank">
-                        <i class="fas fa-download me-2"></i> Download Invoice
-                    </a>
                     <a href="{{ route('guest.track.order') }}" class="btn btn-back">
                         <i class="fas fa-arrow-left me-2"></i> Track Another Order
                     </a>

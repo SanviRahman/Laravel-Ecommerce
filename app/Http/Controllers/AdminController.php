@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\ConfirmOrder;
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class AdminController extends Controller
@@ -81,7 +83,6 @@ class AdminController extends Controller
 
     //                                             <========= Product Methods =======>
 
-    // Product Index
     // Product Index
     public function productIndex(Request $request)
     {
@@ -300,13 +301,41 @@ class AdminController extends Controller
     }
 
     /**
-     * View single order details
+     * Show update status form
      */
-    public function viewOrder($id)
+    public function showUpdateStatusForm($id)
     {
-        $order = ConfirmOrder::with(['items.product'])->findOrFail($id);
+        $order = ConfirmOrder::with('items')->findOrFail($id);
+        return view('admin.orders.update-status', compact('order'));
+    }
 
-        return view('admin.orders.view', compact('order'));
+    /**
+     * Update order status (POST request)
+     */
+    public function updateOrderStatus(Request $request, $id)
+    {
+        $order = ConfirmOrder::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'status'         => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'payment_status' => 'required|in:pending,paid,failed',
+            'admin_notes'    => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $order->update([
+            'status'         => $request->status,
+            'payment_status' => $request->payment_status,
+            'notes'          => $request->admin_notes ? ($order->notes . "\n[Admin: " . $request->admin_notes . "]") : $order->notes,
+        ]);
+
+        return redirect()->route('orders.view')
+            ->with('success', 'Order status updated successfully!');
     }
 
     /**
@@ -315,7 +344,6 @@ class AdminController extends Controller
     public function editOrder($id)
     {
         $order = ConfirmOrder::with('items.product')->findOrFail($id);
-
         return view('admin.orders.edit', compact('order'));
     }
 
@@ -355,53 +383,25 @@ class AdminController extends Controller
             ->with('success', 'Order updated successfully!');
     }
 
-    /**
-     * Get order status for modal (AJAX)
-     */
-    public function getOrderStatus($id)
+    //Download order invoice (PDF)
+    public function downloadInvoice($order_number)
     {
-        $order = ConfirmOrder::findOrFail($id);
+        try {
+            // Find the order
+            $order = ConfirmOrder::where('order_number', $order_number)->with('items')->first();
 
-        return response()->json([
-            'success' => true,
-            'order'   => [
-                'status'         => $order->status,
-                'payment_status' => $order->payment_status,
-                'notes'          => $order->notes,
-            ],
-        ]);
-    }
+            if (! $order) {
+                return redirect()->route('guest.track.order')->with('error', 'Order not found!');
+            }
 
-    /**
-     * Update order status via AJAX (Modal)
-     */
-    public function updateOrderStatus(Request $request, $id)
-    {
-        $order = ConfirmOrder::findOrFail($id);
+            // Generate PDF invoice
+            $pdf = Pdf::loadView('admin.invoices.guest_invoice', compact('order'));
 
-        $validator = Validator::make($request->all(), [
-            'status'         => 'required|in:pending,processing,shipped,delivered,cancelled',
-            'payment_status' => 'required|in:pending,paid,failed',
-        ]);
+            // Download the PDF
+            return $pdf->download('invoice-' . $order->order_number . '.pdf');
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors'  => $validator->errors(),
-            ], 422);
+        } catch (\Exception $e) {
+            return redirect()->route('guest.track.order')->with('error', 'Failed to generate invoice: ' . $e->getMessage());
         }
-
-        $order->update([
-            'status'         => $request->status,
-            'payment_status' => $request->payment_status,
-            'notes'          => $request->admin_notes ? ($order->notes . "\n[Admin: " . $request->admin_notes . "]") : $order->notes,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order status updated successfully!',
-        ]);
     }
-
 }
