@@ -1,17 +1,845 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+<!DOCTYPE html>
+<html>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ Auth::user()->name }} logged in!
+<head>
+    <!-- Basic -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Mobile Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Site Metas -->
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+
+    <title>
+        My Dashboard - Giftos
+    </title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- slider stylesheet -->
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+
+    <!-- bootstrap core css -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('front_end/css/bootstrap.css') }}" />
+
+    <!-- Custom styles for this template -->
+    <link href="{{ asset('front_end/css/style.css') }}" rel="stylesheet" />
+    <!-- responsive style -->
+    <link href="{{ asset('front_end/css/responsive.css') }}" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Dashboard Styles */
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 15px;
+    }
+
+    .dashboard-header {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .dashboard-header h1 {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    /* Statistics Cards */
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+        transition: transform 0.3s;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-card h3 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .stats-card p {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    /* Order Table Styles */
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .order-table thead th {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 2px solid #eee;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    .order-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-table tbody tr:hover {
+        background-color: #fafafa;
+    }
+
+    .order-table td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .badge-pending {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .badge-processing {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .badge-shipped {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .badge-delivered {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-cancelled {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* Profile Section */
+    .profile-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .profile-info h3 {
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .profile-info p {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .profile-info i {
+        width: 20px;
+        margin-right: 10px;
+    }
+
+    /* Navbar Mobile Fix */
+    .navbar-toggler {
+        border: 1px solid #2f3ad1;
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 51, 104, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    @media (max-width: 991px) {
+        .navbar-collapse {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-nav {
+            flex-direction: column;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .nav-link:hover {
+            background: #ff3368;
+            color: white !important;
+        }
+
+        .user_option {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+    }
+
+    /* Cart count badge */
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff3368;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-icon {
+        position: relative;
+    }
+
+    /* Button Styles */
+    .btn-view {
+        background: linear-gradient(135deg, #2f3ad1, #4a5de0);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(47, 58, 209, 0.3);
+        color: white;
+    }
+
+    .btn-logout {
+        color: black;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 5px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 51, 104, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 80px;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #666;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #999;
+        margin-bottom: 25px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="hero_area">
+        <!-- header section strats -->
+        <header class="header_section">
+            <nav class="navbar navbar-expand-lg custom_nav-container">
+                <a class="navbar-brand" href="{{ url('/') }}">
+                    <span>Giftos</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('/') }}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('guest.track.order') }}">
+                                My Order
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="user_option">
+                        <a href="{{ route('dashboard') }}" class="active">
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ route('cart.index') }}" class="cart-icon">
+                            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                            <span class="cart-count">{{ $cartCount ?? 0 }}</span>
+                        </a>
+                        <!-- Logout Form -->
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn-logout">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <!-- slider section -->
+        <section class="slider_section">
+            <div class="slider_container">
+                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="detail-box">
+                                            <h1>
+                                                Welcome To Your <br>
+                                                Dashboard
+                                            </h1>
+                                            <p>
+                                                Manage your orders, track shipments, and update your profile information
+                                                from one place. Stay updated with your purchase history and order
+                                                status.
+                                            </p>
+                                            <a href="{{ route('cart.index') }}">
+                                                Continue Shopping
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 ">
+                                        <div class="img-box">
+                                            <img style="width:600px;border-radius: 10px;"
+                                                src="https://cdn.pixabay.com/photo/2021/11/22/20/20/online-6817350_1280.jpg"
+                                                alt="" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-container">
+            <!-- Success Message -->
+            @if(session('success'))
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fa fa-check-circle"></i> {{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Error Message -->
+            @if(session('error'))
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <div class="dashboard-header">
+                <h1><i class="fas fa-tachometer-alt"></i> My Dashboard</h1>
+                <p>Welcome back, {{ Auth::user()->name }}! Here's an overview of your account.</p>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="row mb-5">
+                <div class="col-lg-4">
+                    <div class="profile-section">
+                        <div class="profile-info">
+                            <h3><i class="fas fa-user-circle"></i> My Profile</h3>
+                            <p><i class="fas fa-user"></i> {{ Auth::user()->name }}</p>
+                            <p><i class="fas fa-envelope"></i> {{ Auth::user()->email }}</p>
+                            <p><i class="fas fa-calendar-alt"></i> Member since:
+                                {{ Auth::user()->created_at->format('M d, Y') }}</p>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="dashboard-card">
+                        @php
+                        // Get orders for the current user
+                        $userOrders = \App\Models\ConfirmOrder::where('user_id', Auth::id())
+                        ->orWhere('email', Auth::user()->email)
+                        ->with('items')
+                        ->latest()
+                        ->paginate(10, ['*'], 'page', request('page', 1));
+                        @endphp
+
+                        @if($userOrders->count() > 0)
+                        <div class="table-responsive">
+                            <table class="order-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($userOrders as $order)
+                                    <tr>
+                                        <td>
+                                            <strong class="text-primary">{{ $order->order_number }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ $order->created_at->format('M d, Y') }}
+                                            <br>
+                                            <small class="text-muted">{{ $order->created_at->format('h:i A') }}</small>
+                                        </td>
+                                        <td>
+                                            {{ $order->items->count() }} item(s)
+                                            <br>
+                                            <small class="text-muted">
+                                                @foreach($order->items->take(2) as $item)
+                                                {{ $item->product_title }}{{ !$loop->last ? ', ' : '' }}
+                                                @endforeach
+                                                @if($order->items->count() > 2)
+                                                +{{ $order->items->count() - 2 }} more
+                                                @endif
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <strong>${{ number_format($order->total, 2) }}</strong>
+                                        </td>
+                                        <td>
+                                            @php
+                                            $statusBadges = [
+                                            'pending' => 'badge-pending',
+                                            'processing' => 'badge-processing',
+                                            'shipped' => 'badge-shipped',
+                                            'delivered' => 'badge-delivered',
+                                            'cancelled' => 'badge-cancelled',
+                                            ];
+                                            $statusClass = $statusBadges[$order->status] ?? 'badge-secondary';
+                                            @endphp
+                                            <span class="badge {{ $statusClass }}">
+                                                {{ ucfirst($order->status) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn-view">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if($userOrders->hasPages())
+                        <div class="mt-3">
+                            {{ $userOrders->links() }}
+                        </div>
+                        @endif
+
+                        @else
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-cart"></i>
+                            <h3>No Orders Yet</h3>
+                            <p>You haven't placed any orders yet. Start shopping now!</p>
+                            <a href="{{ url('/') }}" class="btn btn-primary">
+                                <i class="fas fa-shopping-bag"></i> Start Shopping
+                            </a>
+                        </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
+        <br><br>
+
+        <!-- Contact Section -->
+        <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
+            <div class="container">
+                <div class="heading_container text-center mb-5">
+                    <h2 style="color: #333; font-size: 36px; font-weight: 700;">
+                        Contact Us
+                    </h2>
+                    <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
+                        possible.</p>
+                </div>
+
+                @if(session('success'))
+                <div class="row mb-4">
+                    <div class="col-lg-8 offset-lg-2">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($errors->any())
+                <div class="row mb-4">
+                    <div class="col-lg-8 offset-lg-2">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+                            <ul class="mb-0">
+                                @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <div class="container-bg"
+                    style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6 col-md-6 mb-4 mb-md-0">
+                            <div class="map_container"
+                                style="border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                                <div class="map-responsive"
+                                    style="position: relative; overflow: hidden; padding-top: 75%;">
+                                    <iframe
+                                        src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France"
+                                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </div>
+
+                            <div class="contact-info mt-4">
+                                <h5 style="color: #333; font-weight: 600; margin-bottom: 15px;">
+                                    <i class="fa fa-info-circle"></i> Contact Information
+                                </h5>
+                                <div class="info-item mb-2">
+                                    <i class="fa fa-map-marker-alt text-primary mr-2"></i>
+                                    <span>123 Main Street, Dhaka, Bangladesh</span>
+                                </div>
+                                <div class="info-item mb-2">
+                                    <i class="fa fa-phone text-primary mr-2"></i>
+                                    <span>+880 1234 567890</span>
+                                </div>
+                                <div class="info-item mb-2">
+                                    <i class="fa fa-envelope text-primary mr-2"></i>
+                                    <span>info@giftos.com</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fa fa-clock text-primary mr-2"></i>
+                                    <span>Mon - Fri: 9:00 AM - 6:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6">
+                            <div class="contact_form" style="padding: 20px;">
+                                <form action="{{ route('contact.store') }}" method="POST">
+                                    @csrf
+
+                                    <div class="form-group mb-3">
+                                        <label for="name" class="form-label">Your Name *</label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                            id="name" name="name" placeholder="Enter your full name"
+                                            value="{{ old('name') }}" required
+                                            style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                        @error('name')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                            id="email" name="email" placeholder="your@email.com"
+                                            value="{{ old('email') }}" required
+                                            style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                        @error('email')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="phone" class="form-label">Phone Number (Optional)</label>
+                                        <input type="text" class="form-control @error('phone') is-invalid @enderror"
+                                            id="phone" name="phone" placeholder="+880 1234 567890"
+                                            value="{{ old('phone') }}"
+                                            style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                        @error('phone')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="subject" class="form-label">Subject (Optional)</label>
+                                        <input type="text" class="form-control @error('subject') is-invalid @enderror"
+                                            id="subject" name="subject" placeholder="What is this regarding?"
+                                            value="{{ old('subject') }}"
+                                            style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                        @error('subject')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="message" class="form-label">Your Message *</label>
+                                        <textarea class="form-control @error('message') is-invalid @enderror"
+                                            id="message" name="message" rows="4"
+                                            placeholder="Please enter your message here..." required
+                                            style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%; resize: vertical;">{{ old('message') }}</textarea>
+                                        @error('message')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="d-flex">
+                                        <button type="submit"
+                                            style="background: #333; color: white; border: none; padding: 12px 35px; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background 0.3s;">
+                                            <i class="fa fa-paper-plane"></i> SEND MESSAGE
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Section -->
+        <br><br>
+        <section class="info_section layout_padding2-top"
+            style="background-color: #2c2c2c; color: white; padding: 60px 0 20px; border-radius: 10px;">
+            <div class="container">
+                <div class="social_container text-center mb-4">
+                    <div class="social_box d-flex justify-content-center">
+                        <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="info_container" style="padding: 40px 0;">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                                ABOUT US
+                            </h6>
+                            <p style="color: #aaa; line-height: 1.6;">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit
+                                amet,
+                                consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            </p>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <div class="info_form">
+                                <h5 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                                    Newsletter
+                                </h5>
+                                <form action="#">
+                                    <div class="mb-3">
+                                        <input type="email" placeholder="Enter your email"
+                                            style="border: 1px solid #555; background: #444; color: white; border-radius: 5px; padding: 10px 15px; width: 100%;">
+                                    </div>
+                                    <button type="submit"
+                                        style="background: #f7444e; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer;">
+                                        Subscribe
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                                NEED HELP
+                            </h6>
+                            <p style="color: #aaa; line-height: 1.6;">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit
+                                amet,
+                                consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            </p>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                                CONTACT US
+                            </h6>
+                            <div class="info_link-box">
+                                <a href="#"
+                                    style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                    <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                    <span style="margin-left: 10px;">Gb road 123 london Uk</span>
+                                </a>
+                                <a href="#"
+                                    style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                    <i class="fa fa-phone" aria-hidden="true"></i>
+                                    <span style="margin-left: 10px;">+01 12345678901</span>
+                                </a>
+                                <a href="#" style="color: #aaa; text-decoration: none; display: block;">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                    <span style="margin-left: 10px;">demo@gmail.com</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer section -->
+            <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
+                <div class="container text-center">
+                    <p style="color: #aaa; margin: 0;">
+                        &copy; <span id="displayYear"></span> All Rights Reserved By
+                        <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">Web Tech
+                            Knowledge</a>
+                    </p>
+                </div>
+            </footer>
+            <!-- footer section -->
+        </section>
     </div>
-</x-app-layout>
+
+    <!-- Profile Update Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="#" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="profileModalLabel">Update Profile</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                value="{{ Auth::user()->name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                value="{{ Auth::user()->email }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number (Optional)</label>
+                            <input type="text" class="form-control" id="phone" name="phone"
+                                value="{{ Auth::user()->phone ?? '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Address (Optional)</label>
+                            <textarea class="form-control" id="address" name="address"
+                                rows="3">{{ Auth::user()->address ?? '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>

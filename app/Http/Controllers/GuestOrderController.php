@@ -101,4 +101,9 @@ class GuestOrderController extends Controller
         ]);
     }
 
+    public function contactMethod()
+    {
+        return view('contact');
+    }
+
 }

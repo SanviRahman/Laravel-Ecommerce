@@ -121,7 +121,7 @@
                             <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Contact Us</a>
+                            <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
@@ -154,16 +154,10 @@
                             </span>
                         </a>
                         @endif
-                        <!-- আপনার ন্যাভবারের কার্ট আইকন অংশটি এইভাবে পরিবর্তন করুন -->
                         <a href="{{ route('cart.index') }}" class="cart-icon">
                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
                             <span class="cart-count">{{ $cartCount ?? 0 }}</span>
                         </a>
-                        <form class="form-inline ">
-                            <button class="btn nav_search-btn" type="submit">
-                                <i class="fa fa-search" aria-hidden="true"></i>
-                            </button>
-                        </form>
                     </div>
                 </div>
             </nav>
@@ -313,13 +307,48 @@
 
     <br><br>
     <!-- contact section -->
-    <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto; weight: normal;">
+    <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
         <div class="container">
             <div class="heading_container text-center mb-5">
                 <h2 style="color: #333; font-size: 36px; font-weight: 700;">
                     Contact Us
                 </h2>
+                <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
+                    possible.</p>
             </div>
+
+            <!-- Success/Error Messages -->
+            @if(session('success'))
+            <div class="row mb-4">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fa fa-check-circle"></i> {{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($errors->any())
+            <div class="row mb-4">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <div class="container-bg"
                 style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
                 <div class="row align-items-center">
@@ -334,30 +363,103 @@
                                 </iframe>
                             </div>
                         </div>
+
+                        <div class="contact-info mt-4">
+                            <h5 style="color: #333; font-weight: 600; margin-bottom: 15px;">
+                                <i class="fa fa-info-circle"></i> Contact Information
+                            </h5>
+                            <div class="info-item mb-2">
+                                <i class="fa fa-map-marker-alt text-primary mr-2"></i>
+                                <span>123 Main Street, Dhaka, Bangladesh</span>
+                            </div>
+                            <div class="info-item mb-2">
+                                <i class="fa fa-phone text-primary mr-2"></i>
+                                <span>+880 1234 567890</span>
+                            </div>
+                            <div class="info-item mb-2">
+                                <i class="fa fa-envelope text-primary mr-2"></i>
+                                <span>info@giftos.com</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa fa-clock text-primary mr-2"></i>
+                                <span>Mon - Fri: 9:00 AM - 6:00 PM</span>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="col-lg-6 col-md-6">
                         <div class="contact_form" style="padding: 20px;">
-                            <form action="#">
+                            <form action="{{ route('contact.store') }}" method="POST">
+                                @csrf
+
                                 <div class="form-group mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Name"
+                                    <label for="name" class="form-label">Your Name *</label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                        id="name" name="name" placeholder="Enter your full name"
+                                        value="{{ old('name') }}" required
                                         style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                    @error('name')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
                                 </div>
+
                                 <div class="form-group mb-3">
-                                    <input type="email" class="form-control" placeholder="Your Email"
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                        id="email" name="email" placeholder="your@email.com" value="{{ old('email') }}"
+                                        required
                                         style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                    @error('email')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
                                 </div>
+
                                 <div class="form-group mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Phone"
+                                    <label for="phone" class="form-label">Phone Number (Optional)</label>
+                                    <input type="text" class="form-control @error('phone') is-invalid @enderror"
+                                        id="phone" name="phone" placeholder="+880 1234 567890"
+                                        value="{{ old('phone') }}"
                                         style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                    @error('phone')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
                                 </div>
+
                                 <div class="form-group mb-3">
-                                    <textarea class="form-control message-box" rows="4" placeholder="Your Message"
-                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%; resize: vertical;"></textarea>
+                                    <label for="subject" class="form-label">Subject (Optional)</label>
+                                    <input type="text" class="form-control @error('subject') is-invalid @enderror"
+                                        id="subject" name="subject" placeholder="What is this regarding?"
+                                        value="{{ old('subject') }}"
+                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%;">
+                                    @error('subject')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
                                 </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="message" class="form-label">Your Message *</label>
+                                    <textarea class="form-control @error('message') is-invalid @enderror" id="message"
+                                        name="message" rows="4" placeholder="Please enter your message here..." required
+                                        style="border: 1px solid #ddd; border-radius: 5px; padding: 12px 15px; width: 100%; resize: vertical;">{{ old('message') }}</textarea>
+                                    @error('message')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+
                                 <div class="d-flex">
                                     <button type="submit"
                                         style="background: #333; color: white; border: none; padding: 12px 35px; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background 0.3s;">
-                                        SEND MESSAGE
+                                        <i class="fa fa-paper-plane"></i> SEND MESSAGE
                                     </button>
                                 </div>
                             </form>

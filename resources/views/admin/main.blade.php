@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="all,follow">
-    
+
     <!-- Bootstrap CSS-->
     <link rel="stylesheet" href="{{ asset('admin/vendor/bootstrap/css/bootstrap.min.css') }}">
     <!-- Font Awesome CSS-->
@@ -21,13 +21,13 @@
     <link rel="stylesheet" href="{{ asset('admin/css/style.default.css') }}" id="theme-stylesheet">
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="{{ asset('admin/css/custom.css') }}">
-    
+
     <!-- Add this line for push styles -->
     @stack('styles')
-    
+
     <!-- Favicon-->
     <link rel="shortcut icon" href="{{ asset('admin/img/favicon.ico') }}">
-    
+
     <!-- Tweaks for older IEs-->
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -37,9 +37,9 @@
 
 <body>
     @php
-        $currentRoute = Route::currentRouteName();
+    $currentRoute = Route::currentRouteName();
     @endphp
-    
+
     <header class="header">
         <nav class="navbar navbar-expand-lg">
             <div class="search-panel">
@@ -73,14 +73,13 @@
                             <i class="icon-magnifying-glass-browser"></i>
                         </a>
                     </div>
-                    
+
                     <!-- Log out -->
                     <div class="list-inline-item logout">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault(); this.closest('form').submit();" 
-                                class="nav-link">
+                                onclick="event.preventDefault(); this.closest('form').submit();" class="nav-link">
                                 Logout <i class="icon-logout"></i>
                             </a>
                         </form>
@@ -89,7 +88,7 @@
             </div>
         </nav>
     </header>
-    
+
     <div class="d-flex align-items-stretch">
         <!-- Sidebar Navigation-->
         <nav id="sidebar">
@@ -103,51 +102,49 @@
                     <p>E-Commerce</p>
                 </div>
             </div>
-            
+
             <!-- Sidebar Navidation Menus-->
             <ul class="list-unstyled">
                 <!-- Dashboard Menu -->
                 <li class="{{ $currentRoute == 'dashboard' ? 'active' : '' }}">
-                    <a href="{{ route('dashboard') }}"> 
-                        <i class="icon-home"></i>Home 
+                    <a href="{{ route('dashboard') }}">
+                        <i class="icon-home"></i>Home
                     </a>
                 </li>
 
                 <!-- Category Menu -->
                 <li class="{{ 
-                    str_contains($currentRoute, 'categories') || 
-                    str_contains($currentRoute, 'category') ? 'active' : '' 
-                }}">
+    str_contains($currentRoute, 'categories') || 
+    str_contains($currentRoute, 'category') ? 'active' : '' 
+}}">
                     <a href="#categoryDropdown" aria-expanded="{{ 
-                        str_contains($currentRoute, 'categories') || 
-                        str_contains($currentRoute, 'category') ? 'true' : 'false' 
-                    }}" 
-                    data-toggle="collapse"
-                    class="{{ 
-                        str_contains($currentRoute, 'categories') || 
-                        str_contains($currentRoute, 'category') ? '' : 'collapsed' 
-                    }}">
+        str_contains($currentRoute, 'categories') || 
+        str_contains($currentRoute, 'category') ? 'true' : 'false' 
+    }}" data-toggle="collapse" class="{{ 
+        str_contains($currentRoute, 'categories') || 
+        str_contains($currentRoute, 'category') ? '' : 'collapsed' 
+    }}">
                         <i class="icon-windows"></i>Category
                     </a>
                     <ul id="categoryDropdown" class="collapse list-unstyled {{ 
-                        str_contains($currentRoute, 'categories') || 
-                        str_contains($currentRoute, 'category') ? 'show' : '' 
-                    }}">
-                        <li><a href="{{ route('categories.index') }}" 
-                              class="{{ $currentRoute == 'categories.index' ? 'active' : '' }}">
-                              View All Categories
-                          </a></li>
-                        <li><a href="{{ route('categories.create') }}" 
-                              class="{{ $currentRoute == 'categories.create' ? 'active' : '' }}">
-                              Add Category
-                          </a></li>
+        str_contains($currentRoute, 'categories') || 
+        str_contains($currentRoute, 'category') ? 'show' : '' 
+    }}">
+                        <li><a href="{{ route('categories.index') }}"
+                                class="{{ $currentRoute == 'categories.index' ? 'active' : '' }}">
+                                View All Categories
+                            </a>
+                        </li>
+                        <li><a href="{{ route('categories.create') }}"
+                                class="{{ $currentRoute == 'categories.create' ? 'active' : '' }}">
+                                Add Category
+                            </a>
+                        </li>
                     </ul>
                 </li>
-
                 <!-- Example dropdown -->
                 <li>
-                    <a href="#exampleDropdown" aria-expanded="false" 
-                       data-toggle="collapse" class="collapsed">
+                    <a href="#exampleDropdown" aria-expanded="false" data-toggle="collapse" class="collapsed">
                         <i class="icon-windows"></i>Product
                     </a>
                     <ul id="exampleDropdown" class="collapse list-unstyled">
@@ -157,24 +154,30 @@
                     </ul>
                 </li>
             </ul>
+            <!-- Contact Messages Menu (Separate from Category) -->
+            <li class="{{ request()->is('admin/contacts*') ? 'active' : '' }}">
+                <a href="{{ url('/admin/contacts') }}">
+                    <i class="icon-email"></i>View All Messages
+                </a>
+            </li>
         </nav>
         <!-- Sidebar Navigation end-->
-        
+
         <div class="page-content">
             <!-- Dynamic Page Header -->
             @hasSection('page-header')
-                @yield('page-header')
+            @yield('page-header')
             @endif
-            
+
             <!-- Content Area -->
             @yield('content')
-            
+
             <!-- footer -->
             <footer class="footer">
                 <div class="footer__block block no-margin-bottom">
                     <div class="container-fluid text-center">
                         <p class="no-margin-bottom">
-                            {{ date('Y') }} &copy; Your company. 
+                            {{ date('Y') }} &copy; Your company.
                             Download From <a target="_blank" href="https://templateshub.net">Templates Hub</a>.
                         </p>
                     </div>
@@ -182,7 +185,7 @@
             </footer>
         </div>
     </div>
-    
+
     <!-- JavaScript files-->
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/popper.js/umd/popper.min.js') }}"></script>
@@ -192,7 +195,7 @@
     <script src="{{ asset('admin/vendor/jquery-validation/jquery.validate.min.js') }}"></script>
     <script src="{{ asset('admin/js/charts-home.js') }}"></script>
     <script src="{{ asset('admin/js/front.js') }}"></script>
-    
+
     <!-- Add this line for push scripts -->
     @stack('scripts')
 </body>

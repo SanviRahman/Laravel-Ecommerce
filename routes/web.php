@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\GuestOrderController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\GuestOrderController;
 
 Route::get('/', [UserController::class, 'home'])->name('index');
 Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -17,9 +18,23 @@ Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name
 Route::post('/confirm-order', [CartController::class, 'confirmOrder'])->name('confirm_order');
 Route::get('/order-success/{id}', [CartController::class, 'orderSuccess'])->name('order.success');
 
+// Contact Routes (Public)
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+
+// Admin Contact Management
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/contacts', [ContactController::class, 'adminIndex'])->name('contacts.index');
+    Route::get('/contacts/{id}', [ContactController::class, 'adminShow'])->name('contacts.show');
+    Route::put('/contacts/{id}', [ContactController::class, 'adminUpdate'])->name('contacts.update');
+    Route::delete('/contacts/{id}', [ContactController::class, 'adminDestroy'])->name('contacts.destroy');
+    Route::post('/contacts/mark-all-read', [ContactController::class, 'adminMarkAllRead'])->name('contacts.mark-all-read');
+});
+
+
 // Cart Routes
 Route::prefix('cart')->group(function () {
-    Route::get('/showallcarts', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/showallcarts', [CartController::class, 'viewCart'])->name('cart.index');
     Route::post('/add/{product}', [CartController::class, 'addToCart'])->name('cart.add');
     Route::delete('/remove/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
     Route::put('/update/{id}', [CartController::class, 'updateCart'])->name('cart.update');
@@ -27,12 +42,14 @@ Route::prefix('cart')->group(function () {
     Route::get('/data', [CartController::class, 'getCartData'])->name('cart.data');
 });
 
+
 // User Profile Routes (Auth Required)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
 
 //Guest user order tracking routes (No Auth Required)
 Route::prefix('track-order')->name('guest.')->group(function () {
@@ -42,7 +59,7 @@ Route::prefix('track-order')->name('guest.')->group(function () {
     Route::post('/{order_number}/send-details', [GuestOrderController::class, 'sendOrderDetails'])->name('order.send.details');
 });
 
-// Admin Routes
+
 // Admin Routes
 Route::middleware(['auth', 'admin'])->group(function () {
     // Category Routes
@@ -75,4 +92,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
     //Download Invoice Route
     Route::get('/{order_number}/invoice', [AdminController::class, 'downloadInvoice'])->name('order.invoice');
 });
+
 require __DIR__ . '/auth.php';
