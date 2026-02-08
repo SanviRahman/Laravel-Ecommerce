@@ -500,13 +500,13 @@
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav">
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
                         </li>
-                        <li class="nav-item active">
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                         </li>
                         <li>
@@ -560,7 +560,7 @@
                                                 doloribus consequatur distinctio esse, possimus maiores aliquid repellat
                                                 beatae cum, perspiciatis enim, accusantium perferendis.
                                             </p>
-                                            <a href="#">
+                                            <a href="{{ route('contact') }}" class="btn btn-primary">
                                                 Contact Us
                                             </a>
                                         </div>

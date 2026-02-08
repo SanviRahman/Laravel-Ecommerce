@@ -5,7 +5,6 @@ use App\Models\ConfirmOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-
 class GuestOrderController extends Controller
 {
     /**
@@ -37,11 +36,23 @@ class GuestOrderController extends Controller
                 ->with('error', 'Please correct the errors below.');
         }
 
+        // Track BOTH guest and authenticated user orders
         $order = ConfirmOrder::with(['items.product'])
             ->where('order_number', $request->order_number)
             ->where('email', $request->email)
-            ->where('customer_type', 'guest')
             ->first();
+
+        // If order exists but is for an authenticated user and email doesn't match
+        if ($order && $order->customer_type !== 'guest') {
+            // You can add additional checks here if needed
+            // For example, check if the order belongs to the logged-in user
+            if (auth()->check() && $order->user_id !== auth()->id()) {
+                // If the order belongs to another authenticated user
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Order not found or access denied.');
+            }
+        }
 
         if (! $order) {
             return redirect()->back()
@@ -70,7 +81,6 @@ class GuestOrderController extends Controller
         return view('guest.orders.details', compact('order'));
     }
 
-   
     /**
      * Send order details to email
      */

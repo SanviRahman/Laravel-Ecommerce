@@ -529,7 +529,7 @@
                                             doloribus consequatur distinctio esse, possimus maiores aliquid repellat
                                             beatae cum, perspiciatis enim, accusantium perferendis.
                                         </p>
-                                        <a href="#">
+                                        <a href="{{ route('contact') }}">
                                             Contact Us
                                         </a>
                                     </div>
