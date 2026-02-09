@@ -257,7 +257,7 @@
         .carousel-item {
             height: 600px;
         }
-        
+
         .img-box img {
             max-height: 500px;
             max-width: 600px;
@@ -269,22 +269,24 @@
         .slider_section {
             padding: 0 35px;
         }
-        
+
         .carousel-item {
             height: 500px;
         }
-        
+
         .detail-box h1 {
             font-size: 36px;
-            text-align: left; /* Don't center on tablet */
+            text-align: left;
+            /* Don't center on tablet */
         }
 
         .detail-box p {
             font-size: 15px;
-            text-align: left; /* Don't center on tablet */
+            text-align: left;
+            /* Don't center on tablet */
             max-width: 100%;
         }
-        
+
         .detail-box a {
             display: inline-block;
             width: auto;
@@ -293,13 +295,14 @@
 
         .detail-box {
             padding: 30px 15px;
-            text-align: left; /* Don't center on tablet */
+            text-align: left;
+            /* Don't center on tablet */
         }
 
         .img-box {
             padding: 15px;
         }
-        
+
         .img-box img {
             max-height: 350px;
             max-width: 100%;
@@ -320,39 +323,41 @@
         .slider_section {
             padding: 0 24px;
         }
-        
+
         .carousel-item {
             height: auto;
             min-height: 600px;
         }
-        
+
         .row {
             flex-direction: column;
         }
-        
-        .col-md-7, .col-md-5 {
+
+        .col-md-7,
+        .col-md-5 {
             width: 100%;
             max-width: 100%;
         }
-        
+
         .detail-box {
             order: 2;
             padding: 20px 10px;
-            text-align: center; /* Center on mobile */
+            text-align: center;
+            /* Center on mobile */
         }
-        
+
         .img-box {
             order: 1;
             padding: 30px 20px;
             height: 300px;
         }
-        
+
         .img-box img {
             max-height: 250px;
             width: 100%;
             max-width: 500px;
         }
-        
+
         .detail-box h1 {
             font-size: 28px;
             margin-top: 10px;
@@ -399,11 +404,11 @@
         .slider_section {
             padding: 0 25px;
         }
-        
+
         .carousel-item {
             min-height: 550px;
         }
-        
+
         .detail-box h1 {
             font-size: 24px;
             margin-bottom: 15px;
@@ -413,17 +418,17 @@
             font-size: 13px;
             line-height: 1.5;
         }
-        
+
         .detail-box a {
             padding: 8px 20px;
             font-size: 13px;
         }
-        
+
         .img-box {
             height: 250px;
             padding: 20px 15px;
         }
-        
+
         .img-box img {
             max-height: 200px;
             max-width: 400px;
@@ -439,28 +444,27 @@
         .carousel-item {
             min-height: 500px;
         }
-        
+
         .detail-box h1 {
             font-size: 22px;
         }
-        
+
         .img-box {
             height: 200px;
         }
-        
+
         .img-box img {
             max-height: 180px;
             max-width: 350px;
         }
     }
 
-     /* Footer section */
+    /* Footer section */
     .footer_section {
         border-top: 1px solid #444;
         padding: 20px 0;
         margin-top: 40px;
     }
-
     </style>
 </head>
 
@@ -494,6 +498,12 @@
                         <li class="nav-item active">
                             <a class="nav-link" href="{{ route('guest.track.order') }}">
                                 <span>Track Order</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('payment.options') }}">
+                                <i class="fas fa-credit-card mr-1"></i>
+                                <span>Payment</span>
                             </a>
                         </li>
                     </ul>
@@ -575,6 +585,7 @@
     <!-- end slider section -->
 
     <!-- Track Order Section -->
+    <!-- Track Order Section -->
     <section class="track-container">
         <div class="container">
             <div class="track-card">
@@ -622,12 +633,31 @@
                         @enderror
                     </div>
 
-                    <div class="d-grid gap-2">
+                    <div class="d-grid gap-2 mb-4">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-search me-2"></i> Track Order
                         </button>
                     </div>
                 </form>
+
+                <!-- NEW: Payment Button Section -->
+                <div class="payment-button-section mb-4">
+                    <div class="text-center mb-3">
+                        <h5 class="text-muted mb-3">OR</h5>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('payment.options') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-credit-card me-2"></i> Proceed to Payment
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-lock me-1"></i> Secure payment with Stripe, bKash, and more
+                        </small>
+                    </div>
+                </div>
 
                 <!-- Help Information -->
                 <div class="info-box">

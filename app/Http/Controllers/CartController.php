@@ -21,30 +21,50 @@ class CartController extends Controller
      */
     protected function getSessionId()
     {
-        // First, check if we already have a cart session ID
         $sessionId = session('cart_session_id');
 
         if (! $sessionId) {
-            // Create a unique session ID for cart
             $sessionId = 'cart_' . Str::random(20) . '_' . time();
-
-            // Store it in session
             session(['cart_session_id' => $sessionId]);
-
-            Log::info('New cart session ID created', ['session_id' => $sessionId]);
         }
 
-        // Also store the regular session ID for backup
-        $regularSessionId = session()->getId();
-
-        Log::info('Session IDs', [
-            'cart_session_id'    => $sessionId,
-            'regular_session_id' => $regularSessionId,
-            'user_id'            => Auth::id(),
-            'session_data'       => session()->all(),
-        ]);
-
         return $sessionId;
+    }
+
+    /**
+     * Get cart items for the current session/user
+     * This method handles both Auth and Guest users
+     */
+    private function getCartItems()
+    {
+        $sessionId = $this->getSessionId();
+
+        $cartItems = ProductAddCard::where(function ($query) use ($sessionId) {
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
+            } else {
+                $query->where('session_id', $sessionId);
+            }
+        })->with('product')->get();
+
+        // Convert to array format for consistency
+        $items = [];
+        foreach ($cartItems as $cartItem) {
+            if ($cartItem->product) {
+                $items[] = [
+                    'product_id'    => $cartItem->product_id,
+                    'cart_item_id'  => $cartItem->id,
+                    'product_title' => $cartItem->product_title ?: $cartItem->product->product_title,
+                    'price'         => $cartItem->price ?: $cartItem->product->product_price,
+                    'quantity'      => $cartItem->quantity,
+                    'total'         => ($cartItem->price ?: $cartItem->product->product_price) * $cartItem->quantity,
+                    'image'         => $cartItem->product->product_image,
+                    'product'       => $cartItem->product,
+                ];
+            }
+        }
+
+        return $items;
     }
 
     /**
@@ -138,11 +158,14 @@ class CartController extends Controller
             // Store cart count in session for quick access
             session(['cart_count' => $cartCount]);
 
+            // Get cart items
+            $cartItemsData = $this->getCartItems();
+
             return response()->json([
                 'success'    => true,
                 'message'    => 'Product added to cart successfully!',
                 'cart_count' => $cartCount,
-                'cart_items' => $this->getCartItems(),
+                'cart_items' => $cartItemsData,
             ]);
 
         } catch (\Exception $e) {
@@ -162,39 +185,61 @@ class CartController extends Controller
         // Get session ID
         $sessionId = $this->getSessionId();
 
-        Log::info('Viewing cart', [
-            'cart_session_id' => $sessionId,
-            'user_id'         => Auth::id(),
-        ]);
-
-        // Get cart items
-        $cartItems = ProductAddCard::where(function ($query) use ($sessionId) {
-            if (Auth::check()) {
-                $query->where('user_id', Auth::id());
-            } else {
-                $query->where('session_id', $sessionId);
-            }
-        })->with('product')->get();
+        // Get cart items from database
+        $cartItems = $this->getCartItemsFromDatabase();
 
         // Calculate totals
         $subtotal  = 0;
         $itemCount = 0;
 
         foreach ($cartItems as $item) {
-            $subtotal  += $item->price * $item->quantity;
-            $itemCount += $item->quantity;
+            $subtotal  += $item['price'] * $item['quantity'];
+            $itemCount += $item['quantity'];
         }
 
         $tax   = $subtotal * 0.10;
         $total = $subtotal + $tax;
 
-        Log::info('Cart view details', [
-            'item_count' => $cartItems->count(),
-            'subtotal'   => $subtotal,
-            'total'      => $total,
-        ]);
-
+        // Pass database items to view
         return view('cart.index', compact('cartItems', 'subtotal', 'tax', 'total', 'itemCount'));
+    }
+
+    // This method is used internally to get cart items directly from the database for operations like update and remove
+    private function getCartItemsFromDatabase()
+    {
+        $sessionId = $this->getSessionId();
+
+        if (Auth::check()) {
+            $cartItems = ProductAddCard::where('user_id', Auth::id())
+                ->with('product')
+                ->get();
+        } else {
+            if (! Session::has('cart_session_id')) {
+                return [];
+            }
+
+            $sessionId = Session::get('cart_session_id');
+            $cartItems = ProductAddCard::where('session_id', $sessionId)
+                ->with('product')
+                ->get();
+        }
+
+        $items = [];
+        foreach ($cartItems as $cartItem) {
+            if ($cartItem->product) {
+                $items[] = [
+                    'id'            => $cartItem->id,
+                    'product_id'    => $cartItem->product_id,
+                    'product_title' => $cartItem->product_title ?: $cartItem->product->product_title,
+                    'price'         => $cartItem->price ?: $cartItem->product->product_price,
+                    'quantity'      => $cartItem->quantity,
+                    'total'         => ($cartItem->price ?: $cartItem->product->product_price) * $cartItem->quantity,
+                    'product'       => $cartItem->product, // Keep product object for image access
+                ];
+            }
+        }
+
+        return $items;
     }
 
     /**
@@ -240,7 +285,7 @@ class CartController extends Controller
 
             // Get updated cart items
             $cartItems = $this->getCartItems();
-            $cartCount = $cartItems->sum('quantity');
+            $cartCount = collect($cartItems)->sum('quantity');
 
             session(['cart_count' => $cartCount]);
 
@@ -289,7 +334,7 @@ class CartController extends Controller
 
             // Get updated cart items
             $cartItems = $this->getCartItems();
-            $cartCount = $cartItems->sum('quantity');
+            $cartCount = collect($cartItems)->sum('quantity');
 
             session(['cart_count' => $cartCount]);
 
@@ -335,22 +380,6 @@ class CartController extends Controller
         return response()->json([
             'count' => $cartCount,
         ]);
-    }
-
-    /**
-     * Get cart items for the current session/user
-     */
-    private function getCartItems()
-    {
-        $sessionId = $this->getSessionId();
-
-        return ProductAddCard::where(function ($query) use ($sessionId) {
-            if (Auth::check()) {
-                $query->where('user_id', Auth::id());
-            } else {
-                $query->where('session_id', $sessionId);
-            }
-        })->with('product')->get();
     }
 
     /**
@@ -450,33 +479,10 @@ class CartController extends Controller
                 'user_id'            => Auth::id(),
             ]);
 
-            // Get cart items with more flexible query
-            $cartItems = ProductAddCard::where(function ($query) use ($sessionId) {
-                if (Auth::check()) {
-                    // For logged in users, check both session and user_id
-                    $query->where('user_id', Auth::id())
-                        ->orWhere('session_id', $sessionId);
-                } else {
-                    // For guests, only check session
-                    $query->where('session_id', $sessionId);
-                }
-            })->with('product')->get();
+            // Get cart items
+            $cartItemsData = $this->getCartItems();
 
-            Log::info('Cart items found for order', [
-                'count' => $cartItems->count(),
-                'items' => $cartItems->map(function ($item) {
-                    return [
-                        'id'            => $item->id,
-                        'product_id'    => $item->product_id,
-                        'product_title' => $item->product_title,
-                        'quantity'      => $item->quantity,
-                        'price'         => $item->price,
-                    ];
-                }),
-            ]);
-
-            // Check if cart is empty
-            if ($cartItems->isEmpty()) {
+            if (empty($cartItemsData)) {
                 Log::warning('Cart is empty when trying to place order', [
                     'session_id'           => $sessionId,
                     'user_id'              => Auth::id(),
@@ -490,14 +496,15 @@ class CartController extends Controller
             }
 
             // Check stock before proceeding
-            foreach ($cartItems as $item) {
-                if ($item->product && $item->product->product_quantity < $item->quantity) {
-                    $productName = $item->product_title;
-                    $available   = $item->product->product_quantity;
+            foreach ($cartItemsData as $item) {
+                $product = Product::find($item['product_id']);
+                if ($product && $product->product_quantity < $item['quantity']) {
+                    $productName = $item['product_title'];
+                    $available   = $product->product_quantity;
 
                     Log::warning('Insufficient stock', [
                         'product'   => $productName,
-                        'requested' => $item->quantity,
+                        'requested' => $item['quantity'],
                         'available' => $available,
                     ]);
 
@@ -512,9 +519,9 @@ class CartController extends Controller
             $subtotal  = 0;
             $itemCount = 0;
 
-            foreach ($cartItems as $item) {
-                $subtotal  += $item->price * $item->quantity;
-                $itemCount += $item->quantity;
+            foreach ($cartItemsData as $item) {
+                $subtotal  += $item['price'] * $item['quantity'];
+                $itemCount += $item['quantity'];
             }
 
             $shipping = 0;
@@ -561,30 +568,30 @@ class CartController extends Controller
             ]);
 
             // Create order items and update product stock
-            foreach ($cartItems as $cartItem) {
+            foreach ($cartItemsData as $item) {
                 // Create order item
                 OrderItem::create([
                     'order_id'      => $order->id,
-                    'product_id'    => $cartItem->product_id,
-                    'product_title' => $cartItem->product_title,
-                    'price'         => $cartItem->price,
-                    'quantity'      => $cartItem->quantity,
-                    'total'         => $cartItem->price * $cartItem->quantity,
+                    'product_id'    => $item['product_id'],
+                    'product_title' => $item['product_title'],
+                    'price'         => $item['price'],
+                    'quantity'      => $item['quantity'],
+                    'total'         => $item['price'] * $item['quantity'],
                 ]);
 
                 // Update product stock
-                if ($cartItem->product) {
-                    $product                   = $cartItem->product;
-                    $newQuantity               = $product->product_quantity - $cartItem->quantity;
+                $product = Product::find($item['product_id']);
+                if ($product) {
+                    $newQuantity               = $product->product_quantity - $item['quantity'];
                     $product->product_quantity = max(0, $newQuantity);
                     $product->save();
 
                     Log::info('Product stock updated', [
                         'product_id'   => $product->id,
                         'product_name' => $product->product_title,
-                        'old_quantity' => $product->product_quantity + $cartItem->quantity,
+                        'old_quantity' => $product->product_quantity + $item['quantity'],
                         'new_quantity' => $product->product_quantity,
-                        'deducted'     => $cartItem->quantity,
+                        'deducted'     => $item['quantity'],
                     ]);
                 }
             }
@@ -757,5 +764,73 @@ class CartController extends Controller
                 Log::error('Error merging cart: ' . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * Checkout - Redirect to payment options
+     * Add this method to your CartController
+     */
+    public function checkout()
+    {
+        // Get cart items
+        $cartItems = $this->getCartItems();
+
+        if (empty($cartItems)) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
+        // Calculate totals for session storage
+        $subtotal = 0;
+        foreach ($cartItems as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+
+        $shipping = 50;
+        $tax      = $subtotal * 0.05;
+        $total    = $subtotal + $shipping + $tax;
+
+        // Store order summary in session for payment options page
+        session(['order_summary' => [
+            'subtotal'   => $subtotal,
+            'shipping'   => $shipping,
+            'tax'        => $tax,
+            'total'      => $total,
+            'item_count' => count($cartItems),
+        ]]);
+
+        return redirect()->route('payment.options');
+    }
+
+    /**
+     * Helper method to get cart count for views
+     * This is different from getCartCount() which returns JSON
+     */
+    protected function getCartCountForView()
+    {
+        $sessionId = $this->getSessionId();
+
+        return ProductAddCard::where(function ($query) use ($sessionId) {
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
+            } else {
+                $query->where('session_id', $sessionId);
+            }
+        })->sum('quantity');
+    }
+
+    /**
+     * Get raw cart items from database (for internal use)
+     */
+    private function getRawCartItems()
+    {
+        $sessionId = $this->getSessionId();
+
+        return ProductAddCard::where(function ($query) use ($sessionId) {
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
+            } else {
+                $query->where('session_id', $sessionId);
+            }
+        })->with('product')->get();
     }
 }

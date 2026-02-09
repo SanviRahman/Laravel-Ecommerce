@@ -556,6 +556,12 @@
                                 My Order
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('payment.options') }}">
+                                <i class="fas fa-credit-card mr-1"></i>
+                                <span>Payment</span>
+                            </a>
+                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -630,7 +636,13 @@
                 <p>Review your items and proceed to checkout</p>
             </div>
 
-            @if($cartItems->isEmpty())
+            @php
+                // Check if cart is empty using count() for arrays or isEmpty() for collections
+                $cartIsEmpty = (is_array($cartItems) && count($cartItems) === 0) || 
+                               (is_object($cartItems) && method_exists($cartItems, 'isEmpty') && $cartItems->isEmpty());
+            @endphp
+
+            @if($cartIsEmpty)
             <!-- Empty Cart -->
             <div class="cart-card empty-cart">
                 <i class="fas fa-shopping-cart"></i>
@@ -646,8 +658,11 @@
             $subtotal = 0;
             $itemCount = 0;
             foreach($cartItems as $item) {
-            $subtotal += $item->price * $item->quantity;
-            $itemCount += $item->quantity;
+                // Handle both array and object access
+                $price = is_array($item) ? $item['price'] : $item->price;
+                $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
+                $subtotal += $price * $quantity;
+                $itemCount += $quantity;
             }
             $shipping = 0;
             $tax = $subtotal * 0.10; // 10% tax
@@ -671,41 +686,49 @@
                             <tbody id="cart-items-body">
                                 @foreach($cartItems as $item)
                                 @php
-                                $itemTotal = $item->price * $item->quantity;
+                                // Handle both array and object access
+                                $itemId = is_array($item) ? $item['id'] : $item->id;
+                                $productId = is_array($item) ? $item['product_id'] : $item->product_id;
+                                $productTitle = is_array($item) ? $item['product_title'] : $item->product_title;
+                                $price = is_array($item) ? $item['price'] : $item->price;
+                                $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
+                                $itemTotal = $price * $quantity;
+                                
+                                // Handle product object
+                                $product = is_array($item) ? $item['product'] : $item->product;
+                                $imagePath = $product ? ($product->product_image ?? 'images/default-product.jpg') : 'images/default-product.jpg';
+                                $imageExists = $product ? file_exists(public_path($imagePath)) : false;
                                 @endphp
-                                <tr class="cart-item" id="cart-item-{{ $item->id }}">
+                                
+                                <tr class="cart-item" id="cart-item-{{ $itemId }}">
                                     <td data-label="Product">
                                         <div class="product-info">
-                                            @php
-                                            $imagePath = $item->product->product_image ?? 'images/default-product.jpg';
-                                            $imageExists = file_exists(public_path($imagePath));
-                                            @endphp
                                             <img src="{{ $imageExists ? asset($imagePath) : asset('images/default-product.jpg') }}"
-                                                alt="{{ $item->product_title }}" class="product-image">
+                                                alt="{{ $productTitle }}" class="product-image">
                                             <div class="product-details">
-                                                <h4>{{ $item->product_title }}</h4>
-                                                @if($item->product)
-                                                <p>SKU: {{ $item->product->product_sku ?? 'N/A' }}</p>
+                                                <h4>{{ $productTitle }}</h4>
+                                                @if($product)
+                                                <p>SKU: {{ $product->product_sku ?? 'N/A' }}</p>
                                                 @endif
                                             </div>
                                         </div>
                                     </td>
-                                    <td data-label="Price" class="price">${{ number_format($item->price, 2) }}</td>
+                                    <td data-label="Price" class="price">${{ number_format($price, 2) }}</td>
                                     <td data-label="Quantity">
                                         <div class="quantity-control">
                                             <button class="quantity-btn decrease-btn"
-                                                data-id="{{ $item->id }}">-</button>
-                                            <input type="number" class="quantity-input" value="{{ $item->quantity }}"
-                                                min="1" data-id="{{ $item->id }}" id="quantity-{{ $item->id }}">
+                                                data-id="{{ $itemId }}">-</button>
+                                            <input type="number" class="quantity-input" value="{{ $quantity }}"
+                                                min="1" data-id="{{ $itemId }}" id="quantity-{{ $itemId }}">
                                             <button class="quantity-btn increase-btn"
-                                                data-id="{{ $item->id }}">+</button>
+                                                data-id="{{ $itemId }}">+</button>
                                         </div>
                                     </td>
-                                    <td data-label="Total" class="price item-total" id="total-{{ $item->id }}">
+                                    <td data-label="Total" class="price item-total" id="total-{{ $itemId }}">
                                         ${{ number_format($itemTotal, 2) }}
                                     </td>
                                     <td data-label="Action">
-                                        <button class="remove-btn" data-id="{{ $item->id }}">
+                                        <button class="remove-btn" data-id="{{ $itemId }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -807,8 +830,6 @@
                             </form>
                         </div>
 
-
-
                         <p class="text-center mt-3 text-muted small">
                             <i class="fas fa-lock"></i> Secure checkout • No login required
                         </p>
@@ -900,6 +921,7 @@
             background: #d43c45;
         }
         </style>
+        
         <!-- contact section -->
         <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
             <div class="container">
@@ -1065,6 +1087,7 @@
                 </div>
             </div>
         </section>
+        
         <!-- Footer -->
         <br><br>
         <section class="info_section layout_padding2-top"
@@ -1172,7 +1195,6 @@
 
     <!-- Cart & Order Confirmation JavaScript -->
     <script>
-    // Remove the existing JavaScript and replace with this simplified version
     $(document).ready(function() {
         // Initialize CSRF token for all AJAX requests
         $.ajaxSetup({
@@ -1197,7 +1219,7 @@
 
         // Form validation and submission
         $('form').on('submit', function(e) {
-            e.preventDefault(); // Prevent normal form submission
+            e.preventDefault();
 
             // Basic validation
             const name = $('#customer_name').val().trim();
@@ -1256,25 +1278,24 @@
             $checkoutBtn.prop('disabled', true)
                 .html('<i class="fas fa-spinner fa-spin"></i> Processing...');
 
-            // Collect form data using FormData (proper way)
+            // Collect form data using FormData
             const formData = new FormData();
             formData.append('name', name);
             formData.append('email', email);
             formData.append('phone', phone);
             formData.append('address', address);
             formData.append('notes', $('#customer_notes').val().trim());
-            formData.append('terms', 'on'); // Since we already checked the checkbox
+            formData.append('terms', 'on');
 
             // Submit form via AJAX
             $.ajax({
                 url: '{{ route("confirm_order") }}',
                 type: 'POST',
                 data: formData,
-                processData: false, // Important for FormData
-                contentType: false, // Important for FormData
+                processData: false,
+                contentType: false,
                 success: function(response) {
                     if (response.success && response.redirect) {
-                        // Show success message before redirecting
                         Swal.fire({
                             icon: 'success',
                             title: '🎉 Order Confirmed!',
@@ -1295,18 +1316,14 @@
                             allowEscapeKey: false,
                             allowEnterKey: false,
                             willClose: () => {
-                                // Auto-redirect after timer
                                 window.location.href = response.redirect;
                             }
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 window.location.href = response.redirect;
-                            } else if (result.dismiss === Swal.DismissReason
-                                .cancel) {
+                            } else if (result.dismiss === Swal.DismissReason.cancel) {
                                 $checkoutBtn.prop('disabled', false)
-                                    .html(
-                                        '<i class="fas fa-lock"></i> Confirm & Place Order'
-                                    );
+                                    .html('<i class="fas fa-lock"></i> Confirm & Place Order');
                             } else {
                                 window.location.href = response.redirect;
                             }
@@ -1315,15 +1332,13 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: response.message ||
-                                'Unexpected response from server.'
+                            text: response.message || 'Unexpected response from server.'
                         });
                         $checkoutBtn.prop('disabled', false)
                             .html('<i class="fas fa-lock"></i> Confirm & Place Order');
                     }
                 },
                 error: function(xhr) {
-                    // Handle validation errors
                     if (xhr.status === 422) {
                         const errors = xhr.responseJSON.errors;
                         let errorMessage = '';
@@ -1336,16 +1351,13 @@
                             text: errorMessage
                         });
                     } else if (xhr.status === 400 || xhr.status === 500) {
-                        // Handle other errors
                         const response = xhr.responseJSON;
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: response.message ||
-                                'Failed to place order. Please try again.'
+                            text: response.message || 'Failed to place order. Please try again.'
                         });
                     } else {
-                        // Handle unexpected errors
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
@@ -1419,5 +1431,4 @@
     });
     </script>
 </body>
-
 </html>

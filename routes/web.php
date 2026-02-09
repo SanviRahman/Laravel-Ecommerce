@@ -5,6 +5,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GuestOrderController;
 
@@ -92,5 +93,30 @@ Route::middleware(['auth', 'admin'])->group(function () {
     //Download Invoice Route
     Route::get('/{order_number}/invoice', [AdminController::class, 'downloadInvoice'])->name('order.invoice');
 });
+
+
+// Payment Routes
+Route::get('/payment/options', [PaymentController::class, 'showPaymentOptions'])->name('payment.options');
+
+// Stripe Payment
+Route::post('/payment/stripe', [PaymentController::class, 'processStripePayment'])->name('payment.stripe');
+Route::get('/payment/stripe/success/{order_id}', [PaymentController::class, 'stripeSuccess'])->name('payment.stripe.success');
+Route::get('/payment/stripe/cancel/{order_id}', [PaymentController::class, 'stripeCancel'])->name('payment.stripe.cancel');
+
+// Cash on Delivery
+Route::post('/payment/cash-on-delivery', [PaymentController::class, 'processCashOnDelivery'])->name('payment.cod');
+
+// Mobile Banking
+Route::post('/payment/mobile-banking', [PaymentController::class, 'processMobileBanking'])->name('payment.mobile.banking');
+
+// Bank Transfer
+Route::post('/payment/bank-transfer', [PaymentController::class, 'processBankTransfer'])->name('payment.bank.transfer');
+
+// Stripe Webhook (for production)
+Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook'])->name('stripe.webhook');
+
+
+
+
 
 require __DIR__ . '/auth.php';

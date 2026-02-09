@@ -131,6 +131,12 @@
                                 My Order
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('payment.options') }}">
+                                <i class="fas fa-credit-card mr-1"></i>
+                                <span>Payment</span>
+                            </a>
+                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -954,4 +960,5 @@
     });
     </script>
 </body>
+
 </html>
