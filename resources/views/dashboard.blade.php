@@ -452,7 +452,6 @@
                                         <th>Items</th>
                                         <th>Total</th>
                                         <th>Status</th>
-                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -495,11 +494,6 @@
                                             <span class="badge {{ $statusClass }}">
                                                 {{ ucfirst($order->status) }}
                                             </span>
-                                        </td>
-                                        <td>
-                                            <a href="#" class="btn-view">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
                                         </td>
                                     </tr>
                                     @endforeach

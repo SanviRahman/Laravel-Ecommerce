@@ -38,6 +38,118 @@
         min-height: 100vh;
     }
 
+    /* ========== HEADER & HERO AREA ========== */
+    .hero_area {
+        min-height: auto;
+        position: relative;
+    }
+
+    .slider_section {
+        position: relative;
+        width: 100%;
+        margin: 0;
+        padding: 0 44px;
+    }
+
+    .slider_container {
+        position: relative;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .carousel {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .carousel-inner {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .carousel-item {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        height: 500px;
+    }
+
+    .container-fluid {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .row {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+    }
+
+    .detail-box {
+        padding: 20px;
+        width: 100%;
+    }
+
+    .detail-box h1 {
+        font-size: 48px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+
+    .detail-box p {
+        font-size: 16px;
+        color: white;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        max-width: 90%;
+    }
+
+    .detail-box a {
+        display: inline-block;
+        padding: 12px 35px;
+        background: #f7444e;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .detail-box a:hover {
+        background: #d43c45;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
+    }
+
+    .img-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Important: Make exactly same as index.blade.php */
+    .img-box img {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        max-height: 400px;
+        border-radius: 15px;
+        object-fit: cover;
+    }
+
+    /* ========== TRACK ORDER SECTION ========== */
     .track-card {
         background: white;
         border-radius: 15px;
@@ -121,111 +233,12 @@
         margin: 30px auto 40px;
     }
 
-    /* Slider Section - NAV BAR ER MOTO HEIGHT AND WIDTH */
-    .slider_section {
-        position: relative;
-        padding: 0;
-        margin-left: 43px;
-        width: 95.4%;
-    }
-
-    .slider_container {
-        position: relative;
-        width: 100%;
-        margin: 0;
-    }
-
-    .carousel {
-        width: 100%;
-        margin: 0;
-    }
-
-    .carousel-inner {
-        width: 100%;
-        margin: 0;
-    }
-
-    .carousel-item {
-        width: 100%;
-        margin: 0;
-    }
-
-    .container-fluid {
-        padding: 0;
-        margin: 0;
-        width: 100%;
-    }
-
-    .row {
-        margin: 0;
-        width: 100%;
-    }
-
-    .detail-box {
-        padding: 40px 20px;
-        width: 100%;
-    }
-
-    .detail-box h1 {
-        font-size: 48px;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 20px;
-        line-height: 1.2;
-    }
-
-    .detail-box p {
-        font-size: 16px;
-        color: white;
-        line-height: 1.6;
-        margin-bottom: 30px;
-        max-width: 90%;
-    }
-
-    .detail-box a {
-        display: inline-block;
-        padding: 12px 35px;
-        background: #f7444e;
-        color: white;
-        text-decoration: none;
-        border-radius: 25px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border: none;
-    }
-
-    .detail-box a:hover {
-        background: #d43c45;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
-    }
-
-    .img-box {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        width: 100%;
-    }
-
-    .img-box img {
-        max-width: 100%;
-        border-radius: 10px;
-        height: auto;
-    }
-
-    /* Consistent dimensions for all sections */
-    .order-container,
+    /* ========== CONTACT & INFO SECTIONS ========== */
     .contact_section,
     .info_section {
         width: 96%;
         border-radius: 10px;
-        margin: 30px auto 40px;
-    }
-
-    .order-container {
-        background-color: #d1c9c9;
-        padding: 60px 0;
+        margin: 0 auto 40px;
     }
 
     .contact_section {
@@ -238,37 +251,126 @@
         padding: 60px 0 20px;
     }
 
-    /* Responsive Design */
+    /* ========== RESPONSIVE DESIGN ========== */
+    /* Large devices (desktops, 992px and up) */
+    @media (min-width: 992px) {
+        .carousel-item {
+            height: 600px;
+        }
+        
+        .img-box img {
+            max-height: 500px;
+            max-width: 600px;
+        }
+    }
+
+    /* Medium devices (tablets, 768px to 991px) */
     @media (max-width: 991px) {
+        .slider_section {
+            padding: 0 35px;
+        }
+        
+        .carousel-item {
+            height: 500px;
+        }
+        
         .detail-box h1 {
             font-size: 36px;
+            text-align: left; /* Don't center on tablet */
+        }
+
+        .detail-box p {
+            font-size: 15px;
+            text-align: left; /* Don't center on tablet */
+            max-width: 100%;
+        }
+        
+        .detail-box a {
+            display: inline-block;
+            width: auto;
+            margin: 0;
         }
 
         .detail-box {
             padding: 30px 15px;
+            text-align: left; /* Don't center on tablet */
         }
 
         .img-box {
             padding: 15px;
+        }
+        
+        .img-box img {
+            max-height: 350px;
+            max-width: 100%;
         }
 
         .contact_section,
         .info_section {
             padding: 40px 0 !important;
         }
+
+        .track-card {
+            padding: 30px;
+        }
     }
 
+    /* Small devices (landscape phones, 576px to 767px) */
     @media (max-width: 767px) {
+        .slider_section {
+            padding: 0 24px;
+        }
+        
+        .carousel-item {
+            height: auto;
+            min-height: 600px;
+        }
+        
+        .row {
+            flex-direction: column;
+        }
+        
+        .col-md-7, .col-md-5 {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .detail-box {
+            order: 2;
+            padding: 20px 10px;
+            text-align: center; /* Center on mobile */
+        }
+        
+        .img-box {
+            order: 1;
+            padding: 30px 20px;
+            height: 300px;
+        }
+        
+        .img-box img {
+            max-height: 250px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
         .detail-box h1 {
             font-size: 28px;
+            margin-top: 10px;
+            text-align: center;
         }
 
         .detail-box p {
             font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .detail-box a {
             padding: 10px 25px;
+            font-size: 14px;
+            margin: 0 auto;
+            display: block;
+            width: fit-content;
         }
 
         .contact_section,
@@ -284,14 +386,87 @@
 
         .track-card {
             padding: 20px;
+            margin: 30px auto;
+        }
+
+        .track-icon {
+            font-size: 3rem;
         }
     }
+
+    /* Extra small devices (portrait phones, less than 576px) */
+    @media (max-width: 576px) {
+        .slider_section {
+            padding: 0 25px;
+        }
+        
+        .carousel-item {
+            min-height: 550px;
+        }
+        
+        .detail-box h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .detail-box p {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .detail-box a {
+            padding: 8px 20px;
+            font-size: 13px;
+        }
+        
+        .img-box {
+            height: 250px;
+            padding: 20px 15px;
+        }
+        
+        .img-box img {
+            max-height: 200px;
+            max-width: 400px;
+        }
+
+        .track-card {
+            padding: 15px;
+        }
+    }
+
+    /* Very small devices (less than 400px) */
+    @media (max-width: 400px) {
+        .carousel-item {
+            min-height: 500px;
+        }
+        
+        .detail-box h1 {
+            font-size: 22px;
+        }
+        
+        .img-box {
+            height: 200px;
+        }
+        
+        .img-box img {
+            max-height: 180px;
+            max-width: 350px;
+        }
+    }
+
+     /* Footer section */
+    .footer_section {
+        border-top: 1px solid #444;
+        padding: 20px 0;
+        margin-top: 40px;
+    }
+
     </style>
 </head>
 
 <body>
     <div class="hero_area">
-        <!-- header section strats -->
+        <!-- header section -->
         <header class="header_section">
             <nav class="navbar navbar-expand-lg custom_nav-container ">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -356,6 +531,7 @@
     </div>
 
     <!-- slider section -->
+
     <section class="slider_section">
         <div class="slider_container">
             <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
