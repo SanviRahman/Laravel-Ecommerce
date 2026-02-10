@@ -18,6 +18,8 @@ Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name
 // Guest Order Routes (No Auth Required)
 Route::post('/confirm-order', [CartController::class, 'confirmOrder'])->name('confirm_order');
 Route::get('/order-success/{id}', [CartController::class, 'orderSuccess'])->name('order.success');
+Route::get('/order/confirm', [CartController::class, 'showOrderConfirmForm'])->name('cart.confirm');
+Route::post('/order/confirm', [CartController::class, 'processOrderConfirmation'])->name('cart.confirm.process');
 
 // Contact Routes (Public)
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');

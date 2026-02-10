@@ -556,12 +556,6 @@
                                 My Order
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('payment.options') }}">
-                                <i class="fas fa-credit-card mr-1"></i>
-                                <span>Payment</span>
-                            </a>
-                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -581,7 +575,7 @@
                         @endif
                         <a href="{{ route('cart.index') }}" class="cart-icon">
                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-                            <span class="cart-count">0</span>
+                            <span class="cart-count">{{ $cartCount ?? 0 }}</span>
                         </a>
                     </div>
                 </div>
@@ -637,9 +631,9 @@
             </div>
 
             @php
-                // Check if cart is empty using count() for arrays or isEmpty() for collections
-                $cartIsEmpty = (is_array($cartItems) && count($cartItems) === 0) || 
-                               (is_object($cartItems) && method_exists($cartItems, 'isEmpty') && $cartItems->isEmpty());
+            // Check if cart is empty using count() for arrays or isEmpty() for collections
+            $cartIsEmpty = (is_array($cartItems) && count($cartItems) === 0) ||
+            (is_object($cartItems) && method_exists($cartItems, 'isEmpty') && $cartItems->isEmpty());
             @endphp
 
             @if($cartIsEmpty)
@@ -658,11 +652,11 @@
             $subtotal = 0;
             $itemCount = 0;
             foreach($cartItems as $item) {
-                // Handle both array and object access
-                $price = is_array($item) ? $item['price'] : $item->price;
-                $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
-                $subtotal += $price * $quantity;
-                $itemCount += $quantity;
+            // Handle both array and object access
+            $price = is_array($item) ? $item['price'] : $item->price;
+            $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
+            $subtotal += $price * $quantity;
+            $itemCount += $quantity;
             }
             $shipping = 0;
             $tax = $subtotal * 0.10; // 10% tax
@@ -693,13 +687,14 @@
                                 $price = is_array($item) ? $item['price'] : $item->price;
                                 $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
                                 $itemTotal = $price * $quantity;
-                                
+
                                 // Handle product object
                                 $product = is_array($item) ? $item['product'] : $item->product;
-                                $imagePath = $product ? ($product->product_image ?? 'images/default-product.jpg') : 'images/default-product.jpg';
+                                $imagePath = $product ? ($product->product_image ?? 'images/default-product.jpg') :
+                                'images/default-product.jpg';
                                 $imageExists = $product ? file_exists(public_path($imagePath)) : false;
                                 @endphp
-                                
+
                                 <tr class="cart-item" id="cart-item-{{ $itemId }}">
                                     <td data-label="Product">
                                         <div class="product-info">
@@ -716,12 +711,10 @@
                                     <td data-label="Price" class="price">${{ number_format($price, 2) }}</td>
                                     <td data-label="Quantity">
                                         <div class="quantity-control">
-                                            <button class="quantity-btn decrease-btn"
-                                                data-id="{{ $itemId }}">-</button>
-                                            <input type="number" class="quantity-input" value="{{ $quantity }}"
-                                                min="1" data-id="{{ $itemId }}" id="quantity-{{ $itemId }}">
-                                            <button class="quantity-btn increase-btn"
-                                                data-id="{{ $itemId }}">+</button>
+                                            <button class="quantity-btn decrease-btn" data-id="{{ $itemId }}">-</button>
+                                            <input type="number" class="quantity-input" value="{{ $quantity }}" min="1"
+                                                data-id="{{ $itemId }}" id="quantity-{{ $itemId }}">
+                                            <button class="quantity-btn increase-btn" data-id="{{ $itemId }}">+</button>
                                         </div>
                                     </td>
                                     <td data-label="Total" class="price item-total" id="total-{{ $itemId }}">
@@ -776,60 +769,11 @@
                         </div>
 
                         <hr class="my-4">
-
-                        <!-- Customer Information Form -->
-                        <div class="customer-info-form">
-                            <h5>Shipping Details</h5>
-
-                            <form action="{{ route('confirm_order') }}" method="POST">
-                                @csrf
-                                <div class="form-group">
-                                    <label for="customer_name">Full Name *</label>
-                                    <input type="text" class="form-control" id="customer_name" name="name"
-                                        placeholder="Enter your full name" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="customer_email">Email Address *</label>
-                                    <input type="email" class="form-control" id="customer_email" name="email"
-                                        placeholder="your@email.com" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="customer_phone">Phone Number *</label>
-                                    <input type="text" class="form-control" id="customer_phone" name="phone"
-                                        placeholder="01XXXXXXXXX" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="customer_address">Shipping Address *</label>
-                                    <textarea class="form-control" id="customer_address" name="address" rows="3"
-                                        placeholder="Full shipping address including city and postal code"
-                                        required></textarea>
-                                </div>
-
-                                <!-- Order Notes (Optional) -->
-                                <div class="form-group">
-                                    <label for="customer_notes">Order Notes (Optional)</label>
-                                    <textarea class="form-control" id="customer_notes" name="notes" rows="2"
-                                        placeholder="Special instructions, delivery preferences, etc."></textarea>
-                                </div>
-
-                                <!-- Terms and Conditions -->
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="customer_terms" name="terms"
-                                        value="on" required>
-                                    <label class="form-check-label" for="customer_terms">
-                                        I agree to the <a href="#" class="text-primary" data-toggle="modal"
-                                            data-target="#termsModal">Terms and Conditions</a>
-                                    </label>
-                                </div>
-                                <button class="checkout-btn" id="checkout-btn">
-                                    <i class="fas fa-lock"></i> Confirm & Place Order
-                                </button>
-                            </form>
+                        <div class="text-right mt-4">
+                            <a href="{{ route('index') }}" class="btn btn-secondary">Continue Shopping</a>
+                            <pre></pre>
+                            <a href="{{ route('cart.confirm') }}" class="btn btn-primary">Confirm Order and Payment</a>
                         </div>
-
                         <p class="text-center mt-3 text-muted small">
                             <i class="fas fa-lock"></i> Secure checkout • No login required
                         </p>
@@ -838,50 +782,38 @@
             </div>
             @endif
         </div>
-
-        <!-- Terms and Conditions Modal -->
-        <div class="modal fade terms-modal" id="termsModal" tabindex="-1" role="dialog"
-            aria-labelledby="termsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <h6>1. Order Acceptance</h6>
-                        <p>Your receipt of an electronic or other form of order confirmation does not signify our
-                            acceptance of your order, nor does it constitute confirmation of our offer to sell.</p>
-
-                        <h6>2. Pricing</h6>
-                        <p>Prices are subject to change without notice. We reserve the right to modify or discontinue
-                            products without notice at any time.</p>
-
-                        <h6>3. Shipping Policy</h6>
-                        <p>Shipping costs are calculated based on weight and destination. Delivery times are estimates
-                            and not guaranteed.</p>
-
-                        <h6>4. Returns & Refunds</h6>
-                        <p>We accept returns within 30 days of delivery. Items must be in original condition with tags
-                            attached.</p>
-
-                        <h6>5. Privacy Policy</h6>
-                        <p>We respect your privacy and are committed to protecting your personal information.</p>
-
-                        <h6>6. Payment Security</h6>
-                        <p>All payments are processed securely through encrypted connections.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">I Understand</button>
-                    </div>
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+        <div class="row mb-4">
+            <div class="col-lg-8 offset-lg-2">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa fa-check-circle"></i> {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             </div>
         </div>
-        <br><br>
+        @endif
 
-        <!-- contact section -->
+        @if($errors->any())
+        <div class="row mb-4">
+            <div class="col-lg-8 offset-lg-2">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <style>
         /* Consistent dimensions for all sections */
         .contact_section,
@@ -921,7 +853,9 @@
             background: #d43c45;
         }
         </style>
-        
+
+
+
         <!-- contact section -->
         <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
             <div class="container">
@@ -932,38 +866,6 @@
                     <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
                         possible.</p>
                 </div>
-
-                <!-- Success/Error Messages -->
-                @if(session('success'))
-                <div class="row mb-4">
-                    <div class="col-lg-8 offset-lg-2">
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fa fa-check-circle"></i> {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-                @if($errors->any())
-                <div class="row mb-4">
-                    <div class="col-lg-8 offset-lg-2">
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                @endif
 
                 <div class="container-bg"
                     style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
@@ -1087,7 +989,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Footer -->
         <br><br>
         <section class="info_section layout_padding2-top"
@@ -1321,9 +1223,12 @@
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 window.location.href = response.redirect;
-                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            } else if (result.dismiss === Swal.DismissReason
+                                .cancel) {
                                 $checkoutBtn.prop('disabled', false)
-                                    .html('<i class="fas fa-lock"></i> Confirm & Place Order');
+                                    .html(
+                                        '<i class="fas fa-lock"></i> Confirm & Place Order'
+                                    );
                             } else {
                                 window.location.href = response.redirect;
                             }
@@ -1332,7 +1237,8 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: response.message || 'Unexpected response from server.'
+                            text: response.message ||
+                                'Unexpected response from server.'
                         });
                         $checkoutBtn.prop('disabled', false)
                             .html('<i class="fas fa-lock"></i> Confirm & Place Order');
@@ -1355,7 +1261,8 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: response.message || 'Failed to place order. Please try again.'
+                            text: response.message ||
+                                'Failed to place order. Please try again.'
                         });
                     } else {
                         Swal.fire({
@@ -1431,4 +1338,5 @@
     });
     </script>
 </body>
+
 </html>

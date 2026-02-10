@@ -2,8 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConfirmOrder;
-use App\Models\OrderItem;
-use App\Models\Product;
 use App\Models\ProductAddCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,33 +42,66 @@ class PaymentController extends Controller
     /**
      * Show payment options page
      */
-    // PaymentController.php - showPaymentOptions method
     public function showPaymentOptions(Request $request)
     {
-        // Get cart items from database
-        $cartItems = $this->getCartItems();
+        // Check if we have order_id in query parameter or session
+        $orderId = $request->query('order_id') ?? session('current_order_id');
 
-        if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        if (! $orderId) {
+            return redirect()->route('cart.confirm')
+                ->with('error', 'Please confirm your order first.');
         }
 
-        // Calculate totals
-        $subtotal = $this->calculateSubtotal($cartItems);
-        $shipping = 50;               // Fixed shipping cost
-        $tax      = $subtotal * 0.05; // 5% tax
-        $total    = $subtotal + $shipping + $tax;
+        // Get order
+        $order = ConfirmOrder::with('items')->find($orderId);
 
-        // Store order summary in session
+        if (! $order) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Order not found.');
+        }
+
+        // Security check
+        if (Auth::check()) {
+            if ($order->user_id !== Auth::id()) {
+                abort(403, 'Unauthorized access.');
+            }
+        } else {
+            $sessionOrderId = session('current_order_id');
+            if ($sessionOrderId != $orderId) {
+                abort(403, 'Unauthorized access.');
+            }
+        }
+
+        // Check if order is already paid
+        if ($order->payment_status === 'paid') {
+            return redirect()->route('order.success', ['id' => $order->id])
+                ->with('info', 'This order is already paid.');
+        }
+
+        // Prepare order summary from order data
         $orderSummary = [
-            'subtotal'   => $subtotal,
-            'shipping'   => $shipping,
-            'tax'        => $tax,
-            'total'      => $total,
-            'item_count' => count($cartItems),
-            'cart_items' => $cartItems, // This contains all cart items with details
+            'subtotal'     => $order->subtotal,
+            'shipping'     => $order->shipping,
+            'tax'          => $order->tax,
+            'total'        => $order->total,
+            'item_count'   => $order->items->count(),
+            'order_id'     => $order->id,
+            'order_number' => $order->order_number,
+            'cart_items'   => $order->items->map(function ($item) {
+                return [
+                    'product_title' => $item->product_title,
+                    'price'         => $item->price,
+                    'quantity'      => $item->quantity,
+                    'total'         => $item->total,
+                ];
+            })->toArray(),
         ];
 
-        session(['order_summary' => $orderSummary]);
+        // Store in session
+        session([
+            'current_order_id' => $order->id,
+            'order_summary'    => $orderSummary,
+        ]);
 
         // Get cart count
         $cartCount = $this->getCartCount();
@@ -78,7 +109,56 @@ class PaymentController extends Controller
         // Get user data if logged in
         $user = Auth::user();
 
-        return view('payment.options', compact('orderSummary', 'cartCount', 'user'));
+        return view('payment.options', compact('orderSummary', 'cartCount', 'user', 'order'));
+    }
+
+    private function handleSuccessfulPayment($order, $paymentData = [])
+    {
+        DB::beginTransaction();
+
+        try {
+            // Update order status and payment info
+            $order->update([
+                'status'         => 'processing',
+                'payment_status' => 'paid',
+                'payment_method' => $paymentData['method'] ?? 'unknown',
+                'paid_amount'    => $order->total,
+                'payment_date'   => now(),
+                'is_paid'        => true,
+            ]);
+
+            // Update product stock
+            foreach ($order->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $newQuantity               = $product->product_quantity - $item->quantity;
+                    $product->product_quantity = max(0, $newQuantity);
+                    $product->save();
+                }
+            }
+
+            // Clear cart for this user/session
+            $sessionId = session('cart_session_id');
+            ProductAddCard::where(function ($query) use ($sessionId) {
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                } else {
+                    $query->where('session_id', $sessionId);
+                }
+            })->delete();
+
+            // Clear cart count from session
+            session(['cart_count' => 0]);
+
+            DB::commit();
+
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error handling successful payment: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -95,66 +175,62 @@ class PaymentController extends Controller
             'notes'   => 'nullable|string',
         ]);
 
-        // Get order summary from session
-        $orderSummary = session('order_summary');
-
-        if (! $orderSummary) {
-            return redirect()->route('cart.index')->with('error', 'Session expired. Please add items to cart again.');
+        // Get order from session
+        $orderId = session('current_order_id');
+        if (! $orderId) {
+            return redirect()->route('order.confirm')
+                ->with('error', 'Please confirm your order first.');
         }
 
-        // Check if cart items still exist
-        $cartItems = $this->getCartItems();
-        if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        $order = ConfirmOrder::with('items')->find($orderId);
+        if (! $order) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Order not found.');
         }
 
         DB::beginTransaction();
 
         try {
-            // Create order in database (with pending status)
-            $order = $this->createOrder($validated, $cartItems, $orderSummary, 'stripe');
-
-            // Prepare line items for Stripe
+            // Prepare line items for Stripe from order items
             $lineItems = [];
 
-            // Add product items
-            foreach ($cartItems as $item) {
+            foreach ($order->items as $item) {
                 $lineItems[] = [
                     'price_data' => [
                         'currency'     => 'usd',
                         'product_data' => [
-                            'name'        => $item['product_title'],
-                            'description' => 'Quantity: ' . $item['quantity'],
+                            'name'        => $item->product_title,
+                            'description' => 'Quantity: ' . $item->quantity,
                         ],
-                        'unit_amount'  => round($item['price'] * 100), // Convert to cents
+                        'unit_amount'  => round($item->price * 100), // Convert to cents
                     ],
-                    'quantity'   => $item['quantity'],
+                    'quantity'   => $item->quantity,
                 ];
             }
 
             // Add shipping as a line item
-            if ($orderSummary['shipping'] > 0) {
+            if ($order->shipping > 0) {
                 $lineItems[] = [
                     'price_data' => [
                         'currency'     => 'usd',
                         'product_data' => [
                             'name' => 'Shipping Fee',
                         ],
-                        'unit_amount'  => round($orderSummary['shipping'] * 100),
+                        'unit_amount'  => round($order->shipping * 100),
                     ],
                     'quantity'   => 1,
                 ];
             }
 
             // Add tax as a line item
-            if ($orderSummary['tax'] > 0) {
+            if ($order->tax > 0) {
                 $lineItems[] = [
                     'price_data' => [
                         'currency'     => 'usd',
                         'product_data' => [
                             'name' => 'Tax (5%)',
                         ],
-                        'unit_amount'  => round($orderSummary['tax'] * 100),
+                        'unit_amount'  => round($order->tax * 100),
                     ],
                     'quantity'   => 1,
                 ];
@@ -162,30 +238,30 @@ class PaymentController extends Controller
 
             // Create Stripe Checkout Session
             $checkoutSession = StripeSession::create([
-                'payment_method_types'        => ['card'],
-                'line_items'                  => $lineItems,
-                'mode'                        => 'payment',
-                'success_url'                 => url('/payment/stripe/success/' . $order->id) . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url'                  => url('/payment/stripe/cancel/' . $order->id),
-                'customer_email'              => $validated['email'],
-                'client_reference_id'         => $order->order_number,
-                'metadata'                    => [
+                'payment_method_types' => ['card'],
+                'line_items'           => $lineItems,
+                'mode'                 => 'payment',
+                'success_url'          => route('payment.stripe.success', ['order_id' => $order->id]) . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url'           => route('payment.stripe.cancel', ['order_id' => $order->id]),
+                'customer_email'       => $order->email,
+                'client_reference_id'  => $order->order_number,
+                'metadata'             => [
                     'order_id'       => $order->id,
                     'order_number'   => $order->order_number,
-                    'customer_name'  => $validated['name'],
-                    'customer_email' => $validated['email'],
-                ],
-                'shipping_address_collection' => [
-                    'allowed_countries' => ['US', 'CA', 'GB', 'BD'], // Add more countries as needed
-                ],
-                'phone_number_collection'     => [
-                    'enabled' => true,
+                    'customer_name'  => $order->name,
+                    'customer_email' => $order->email,
                 ],
             ]);
 
             // Update order with Stripe session ID
             $order->update([
+                'name'              => $validated['name'],
+                'email'             => $validated['email'],
+                'phone'             => $validated['phone'],
+                'address'           => $validated['address'],
+                'notes'             => $validated['notes'] ?? $order->notes,
                 'stripe_session_id' => $checkoutSession->id,
+                'payment_method'    => 'stripe',
                 'payment_status'    => 'pending',
             ]);
 
@@ -197,7 +273,6 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // Log error
             \Log::error('Stripe Payment Error: ' . $e->getMessage());
 
             return back()
@@ -211,40 +286,89 @@ class PaymentController extends Controller
      */
     public function stripeSuccess(Request $request, $order_id)
     {
+        DB::beginTransaction();
+
         try {
             $sessionId = $request->query('session_id');
 
             if (! $sessionId) {
-                return redirect()->route('dashboard')->with('error', 'Invalid payment session.');
+                \Log::error('Stripe Success: No session_id provided', [
+                    'order_id'     => $order_id,
+                    'query_params' => $request->query(),
+                ]);
+                return redirect()->route('dashboard')
+                    ->with('error', 'Invalid payment session. No session ID found.');
             }
 
             // Retrieve Stripe session
-            $stripeSession = StripeSession::retrieve($sessionId);
-
-            // Get order
-            $order = ConfirmOrder::findOrFail($order_id);
-
-            // Verify session matches order
-            if ($order->stripe_session_id !== $sessionId) {
-                return redirect()->route('dashboard')->with('error', 'Payment verification failed.');
+            try {
+                $stripeSession = StripeSession::retrieve($sessionId);
+                \Log::info('Stripe session retrieved', [
+                    'session_id'          => $sessionId,
+                    'payment_status'      => $stripeSession->payment_status,
+                    'payment_intent'      => $stripeSession->payment_intent,
+                    'amount_total'        => $stripeSession->amount_total,
+                    'client_reference_id' => $stripeSession->client_reference_id,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Stripe session retrieve error', [
+                    'error'      => $e->getMessage(),
+                    'session_id' => $sessionId,
+                    'order_id'   => $order_id,
+                ]);
+                return redirect()->route('dashboard')
+                    ->with('error', 'Failed to retrieve payment session. Please contact support.');
             }
 
-            // Check payment status
+            // Get order
+            $order = ConfirmOrder::find($order_id);
+
+            if (! $order) {
+                \Log::error('Stripe Success: Order not found', [
+                    'order_id'   => $order_id,
+                    'session_id' => $sessionId,
+                ]);
+                return redirect()->route('dashboard')
+                    ->with('error', 'Order not found.');
+            }
+
+            \Log::info('Order found for stripe success', [
+                'order_id'           => $order->id,
+                'order_number'       => $order->order_number,
+                'stripe_session_id'  => $order->stripe_session_id,
+                'request_session_id' => $sessionId,
+                'payment_status'     => $order->payment_status,
+            ]);
+
+            // Update order with stripe session ID if not already set
+            if (! $order->stripe_session_id) {
+                $order->stripe_session_id = $sessionId;
+            }
+
+            // Check payment status from Stripe
             if ($stripeSession->payment_status === 'paid') {
                 // Update order status
                 $order->update([
                     'status'                   => 'processing',
                     'payment_status'           => 'paid',
                     'stripe_payment_intent_id' => $stripeSession->payment_intent,
-                    'paid_amount'              => $stripeSession->amount_total / 100, // Convert from cents
+                    'paid_amount'              => $stripeSession->amount_total / 100,
                     'payment_date'             => now(),
+                    'stripe_session_id'        => $sessionId,
+                    'is_paid'                  => true,
                 ]);
 
-                // Clear cart
-                $this->clearCart();
+                // Clear session
+                Session::forget(['current_order_id', 'order_summary']);
 
-                // Clear session order summary
-                Session::forget('order_summary');
+                \Log::info('Stripe payment successful', [
+                    'order_id'       => $order->id,
+                    'order_number'   => $order->order_number,
+                    'amount_paid'    => $stripeSession->amount_total / 100,
+                    'payment_intent' => $stripeSession->payment_intent,
+                ]);
+
+                DB::commit();
 
                 return view('payment.success', [
                     'order'          => $order,
@@ -252,17 +376,36 @@ class PaymentController extends Controller
                     'transaction_id' => $stripeSession->payment_intent,
                     'amount_paid'    => $stripeSession->amount_total / 100,
                 ]);
+            } else {
+                // Payment not completed
+                \Log::warning('Stripe payment not completed', [
+                    'order_id'       => $order_id,
+                    'payment_status' => $stripeSession->payment_status,
+                ]);
+
+                $order->update([
+                    'payment_status'    => 'failed',
+                    'stripe_session_id' => $sessionId,
+                ]);
+
+                DB::commit();
+
+                return redirect()->route('payment.options')
+                    ->with('error', 'Payment was not completed. Status: ' . $stripeSession->payment_status);
             }
 
-            // If payment is not paid, show appropriate message
-            return redirect()->route('payment.options')
-                ->with('error', 'Payment was not completed. Please try again.');
-
         } catch (\Exception $e) {
-            \Log::error('Stripe Success Error: ' . $e->getMessage());
+            DB::rollBack();
+
+            \Log::error('Stripe Success Error', [
+                'error'      => $e->getMessage(),
+                'trace'      => $e->getTraceAsString(),
+                'order_id'   => $order_id,
+                'session_id' => $request->query('session_id'),
+            ]);
 
             return redirect()->route('dashboard')
-                ->with('error', 'Error verifying payment. Please contact support.');
+                ->with('error', 'Error verifying payment: ' . $e->getMessage());
         }
     }
 
@@ -277,13 +420,12 @@ class PaymentController extends Controller
             // Only cancel if still pending
             if ($order->payment_status === 'pending') {
                 $order->update([
-                    'status'         => 'cancelled',
                     'payment_status' => 'cancelled',
                 ]);
             }
 
             return redirect()->route('payment.options')
-                ->with('error', 'Payment was cancelled. You can try again with a different payment method.');
+                ->with('error', 'Payment was cancelled. You can try again.');
 
         } catch (\Exception $e) {
             return redirect()->route('cart.index')
@@ -305,32 +447,38 @@ class PaymentController extends Controller
             'notes'   => 'nullable|string',
         ]);
 
-        // Get order summary from session
-        $orderSummary = session('order_summary');
-
-        if (! $orderSummary) {
-            return redirect()->route('cart.index')->with('error', 'Session expired. Please add items to cart again.');
+        // Get order from session
+        $orderId = session('current_order_id');
+        if (! $orderId) {
+            return redirect()->route('order.confirm')
+                ->with('error', 'Please confirm your order first.');
         }
 
-        // Check if cart items still exist
-        $cartItems = $this->getCartItems();
-        if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        $order = ConfirmOrder::find($orderId);
+        if (! $order) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Order not found.');
         }
 
         DB::beginTransaction();
 
         try {
-            // Create order
-            $order = $this->createOrder($validated, $cartItems, $orderSummary, 'cash_on_delivery');
-
-            // Clear cart
-            $this->clearCart();
-
-            // Clear session order summary
-            Session::forget('order_summary');
+            // Update order details and mark as COD
+            $order->update([
+                'name'           => $validated['name'],
+                'email'          => $validated['email'],
+                'phone'          => $validated['phone'],
+                'address'        => $validated['address'],
+                'notes'          => $validated['notes'] ?? $order->notes,
+                'payment_method' => 'cash_on_delivery',
+                'payment_status' => 'pending',
+                'status'         => 'pending',
+            ]);
 
             DB::commit();
+
+            // Clear session
+            Session::forget(['current_order_id', 'order_summary']);
 
             return view('payment.success', [
                 'order'          => $order,
@@ -366,43 +514,41 @@ class PaymentController extends Controller
             'notes'                 => 'nullable|string',
         ]);
 
-        // Get order summary from session
-        $orderSummary = session('order_summary');
-
-        if (! $orderSummary) {
-            return redirect()->route('cart.index')->with('error', 'Session expired. Please add items to cart again.');
+        // Get order from session
+        $orderId = session('current_order_id');
+        if (! $orderId) {
+            return redirect()->route('order.confirm')
+                ->with('error', 'Please confirm your order first.');
         }
 
-        // Check if cart items still exist
-        $cartItems = $this->getCartItems();
-        if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        $order = ConfirmOrder::find($orderId);
+        if (! $order) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Order not found.');
         }
 
         DB::beginTransaction();
 
         try {
-            // Create order
-            $order = $this->createOrder($validated, $cartItems, $orderSummary, 'mobile_banking');
-
-            // Update with mobile banking details
+            // Update order with mobile banking details
             $order->update([
+                'name'                  => $validated['name'],
+                'email'                 => $validated['email'],
+                'phone'                 => $validated['phone'],
+                'address'               => $validated['address'],
+                'notes'                 => $validated['notes'] ?? $order->notes,
+                'payment_method'        => 'mobile_banking',
+                'payment_status'        => 'pending_verification',
+                'status'                => 'pending',
                 'mobile_banking_method' => $validated['mobile_banking_method'],
                 'mobile_number'         => $validated['mobile_number'],
                 'transaction_id'        => $validated['transaction_id'],
-                'payment_status'        => 'pending_verification',
             ]);
-
-            // Clear cart
-            $this->clearCart();
-
-            // Clear session order summary
-            Session::forget('order_summary');
 
             DB::commit();
 
-            // Send email notification (you can implement this)
-            // $this->sendMobileBankingPaymentEmail($order);
+            // Clear session
+            Session::forget(['current_order_id', 'order_summary']);
 
             return view('payment.mobile_banking_success', [
                 'order'          => $order,
@@ -440,43 +586,41 @@ class PaymentController extends Controller
             'notes'          => 'nullable|string',
         ]);
 
-        // Get order summary from session
-        $orderSummary = session('order_summary');
-
-        if (! $orderSummary) {
-            return redirect()->route('cart.index')->with('error', 'Session expired. Please add items to cart again.');
+        // Get order from session
+        $orderId = session('current_order_id');
+        if (! $orderId) {
+            return redirect()->route('order.confirm')
+                ->with('error', 'Please confirm your order first.');
         }
 
-        // Check if cart items still exist
-        $cartItems = $this->getCartItems();
-        if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        $order = ConfirmOrder::find($orderId);
+        if (! $order) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Order not found.');
         }
 
         DB::beginTransaction();
 
         try {
-            // Create order
-            $order = $this->createOrder($validated, $cartItems, $orderSummary, 'bank_transfer');
-
-            // Update with bank transfer details
+            // Update order with bank transfer details
             $order->update([
+                'name'           => $validated['name'],
+                'email'          => $validated['email'],
+                'phone'          => $validated['phone'],
+                'address'        => $validated['address'],
+                'notes'          => $validated['notes'] ?? $order->notes,
+                'payment_method' => 'bank_transfer',
+                'payment_status' => 'pending_verification',
+                'status'         => 'pending',
                 'bank_name'      => $validated['bank_name'],
                 'account_number' => $validated['account_number'],
                 'transaction_id' => $validated['transaction_id'],
-                'payment_status' => 'pending_verification',
             ]);
-
-            // Clear cart
-            $this->clearCart();
-
-            // Clear session order summary
-            Session::forget('order_summary');
 
             DB::commit();
 
-            // Send email notification (you can implement this)
-            // $this->sendBankTransferEmail($order);
+            // Clear session
+            Session::forget(['current_order_id', 'order_summary']);
 
             return view('payment.bank_transfer_success', [
                 'order'          => $order,
@@ -495,116 +639,6 @@ class PaymentController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Payment processing failed: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Helper method to get cart items
-     */
-    private function getCartItems()
-    {
-        if (Auth::check()) {
-            $cartItems = ProductAddCard::where('user_id', Auth::id())
-                ->with('product')
-                ->get();
-        } else {
-            if (! Session::has('cart_session_id')) {
-                return [];
-            }
-
-            $sessionId = Session::get('cart_session_id');
-            $cartItems = ProductAddCard::where('session_id', $sessionId)
-                ->with('product')
-                ->get();
-        }
-
-        $items = [];
-        foreach ($cartItems as $cartItem) {
-            if ($cartItem->product) {
-                $items[] = [
-                    'product_id'    => $cartItem->product_id,
-                    'product_title' => $cartItem->product->product_title,
-                    'price'         => $cartItem->product->product_price,
-                    'quantity'      => $cartItem->quantity,
-                    'total'         => $cartItem->product->product_price * $cartItem->quantity,
-                    'image'         => $cartItem->product->product_image,
-                ];
-            }
-        }
-
-        return $items;
-    }
-
-    /**
-     * Helper method to calculate subtotal
-     */
-    private function calculateSubtotal($cartItems)
-    {
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
-        }
-        return $subtotal;
-    }
-
-    /**
-     * Helper method to create order
-     */
-    private function createOrder($data, $cartItems, $orderSummary, $paymentMethod)
-    {
-        // Generate unique order number
-        $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(8));
-
-        $customerType = Auth::check() ? 'registered' : 'guest';
-
-        // Create order
-        $order = ConfirmOrder::create([
-            'order_number'   => $orderNumber,
-            'user_id'        => Auth::id(),
-            'session_id'     => Session::get('cart_session_id'),
-            'name'           => $data['name'],
-            'email'          => $data['email'],
-            'phone'          => $data['phone'],
-            'address'        => $data['address'],
-            'notes'          => $data['notes'] ?? null,
-            'subtotal'       => $orderSummary['subtotal'],
-            'shipping'       => $orderSummary['shipping'],
-            'tax'            => $orderSummary['tax'],
-            'total'          => $orderSummary['total'],
-            'status'         => 'pending',
-            'payment_method' => $paymentMethod,
-            'payment_status' => 'pending',
-            'customer_type'  => $customerType,
-        ]);
-
-        // Create order items
-        foreach ($cartItems as $item) {
-            OrderItem::create([
-                'order_id'      => $order->id,
-                'product_id'    => $item['product_id'],
-                'product_title' => $item['product_title'],
-                'price'         => $item['price'],
-                'quantity'      => $item['quantity'],
-                'total'         => $item['total'],
-            ]);
-        }
-
-        return $order;
-    }
-
-    /**
-     * Helper method to clear cart
-     */
-    private function clearCart()
-    {
-        if (Auth::check()) {
-            ProductAddCard::where('user_id', Auth::id())->delete();
-        } else {
-            if (Session::has('cart_session_id')) {
-                $sessionId = Session::get('cart_session_id');
-                ProductAddCard::where('session_id', $sessionId)->delete();
-                Session::forget('cart_session_id');
-            }
         }
     }
 
@@ -658,8 +692,6 @@ class PaymentController extends Controller
     public function handleStripeWebhook(Request $request)
     {
         // This is for handling Stripe webhooks in production
-        // You'll need to set up webhook endpoint in Stripe dashboard
-
         $payload         = $request->getContent();
         $sig_header      = $request->header('Stripe-Signature');
         $endpoint_secret = config('services.stripe.webhook.secret');
@@ -669,10 +701,8 @@ class PaymentController extends Controller
                 $payload, $sig_header, $endpoint_secret
             );
         } catch (\UnexpectedValueException $e) {
-            // Invalid payload
             return response()->json(['error' => 'Invalid payload'], 400);
         } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            // Invalid signature
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
@@ -687,8 +717,6 @@ class PaymentController extends Controller
                 $paymentIntent = $event->data->object;
                 $this->handlePaymentIntentSucceeded($paymentIntent);
                 break;
-
-                // Add more event types as needed
         }
 
         return response()->json(['status' => 'success']);
@@ -709,6 +737,7 @@ class PaymentController extends Controller
                 'paid_amount'              => $session->amount_total / 100,
                 'payment_date'             => now(),
                 'status'                   => 'processing',
+                'is_paid'                  => true,
             ]);
         }
     }
@@ -726,6 +755,7 @@ class PaymentController extends Controller
                 'payment_status' => 'paid',
                 'paid_amount'    => $paymentIntent->amount / 100,
                 'payment_date'   => now(),
+                'is_paid'        => true,
             ]);
         }
     }

@@ -514,12 +514,7 @@
                                 My Order
                             </a>
                         </li>
-                         <li class="nav-item">
-                    <a class="nav-link" href="{{ route('payment.options') }}">
-                        <i class="fas fa-credit-card mr-1"></i>
-                        <span>Payment</span>
-                    </a>
-                </li>
+                        
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -539,7 +534,7 @@
                         @endif
                         <a href="{{ route('cart.index') }}" class="cart-icon">
                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-                            <span class="cart-count">0</span>
+                            <span class="cart-count">{{ $cartCount ?? 0 }}</span>
                         </a>
                     </div>
                 </div>

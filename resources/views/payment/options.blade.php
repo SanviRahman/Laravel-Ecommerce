@@ -256,15 +256,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a href="{{ route('guest.track.order') }}" class="nav-link">
                             My Order
-                        </a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{{ route('payment.options') }}">
-                            <i class="fas fa-credit-card mr-1"></i>
-                            <span>Payment</span>
                         </a>
                     </li>
                 </ul>
@@ -341,6 +335,38 @@
         </div>
     </section>
     <!-- end slider section -->
+
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+    <div class="row mb-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa fa-check-circle"></i> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="row mb-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Payment Section -->
     <section class="payment-section">
@@ -558,28 +584,26 @@
                     </div>
                 </div>
 
-                <!-- Order Summary -->
+                <!-- Order Summary Section -->
                 <div class="col-lg-4">
                     <div class="payment-box">
                         <h4 class="mb-3">Order Summary</h4>
                         <div class="order-summary">
-                            <!-- Cart Items List -->
-                            @if(isset($orderSummary['cart_items']) && count($orderSummary['cart_items']) > 0)
-                            <div class="cart-items-summary">
-                                <h6 class="summary-header">Items in Cart</h6>
-                                @foreach($orderSummary['cart_items'] as $item)
-                                <div class="cart-item-summary">
-                                    <div class="cart-item-name">
-                                        {{ \Illuminate\Support\Str::limit($item['product_title'], 20) }}
-                                    </div>
-                                    <div class="cart-item-quantity">
-                                        x{{ $item['quantity'] }}
-                                    </div>
-                                    <div class="cart-item-price">
-                                        ${{ number_format($item['price'] * $item['quantity'], 2) }}
-                                    </div>
+                            <!-- Show order details instead of cart items -->
+                            @if(isset($order) && $order)
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Order Number:</span>
+                                    <strong>{{ $order->order_number }}</strong>
                                 </div>
-                                @endforeach
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Order Status:</span>
+                                    <span class="badge badge-warning">{{ ucfirst($order->status) }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted">Payment Status:</span>
+                                    <span class="badge badge-info">{{ ucfirst($order->payment_status) }}</span>
+                                </div>
                             </div>
                             @endif
 
@@ -601,33 +625,22 @@
                                 <span>${{ number_format($orderSummary['total'] ?? 0, 2) }}</span>
                             </div>
 
-                            <!-- Item Count -->
+                            <!-- Order ID -->
                             <div class="summary-item mt-3">
-                                <span>Total Items</span>
-                                <span class="badge badge-primary">{{ $orderSummary['item_count'] ?? 0 }} items</span>
+                                <span>Order ID</span>
+                                <span class="badge badge-secondary">#{{ $orderSummary['order_id'] ?? 'N/A' }}</span>
                             </div>
                         </div>
 
                         <!-- Order Details -->
                         <div class="mt-4">
-                            <h5>Order Details</h5>
+                            <h5>Payment Instructions</h5>
                             <ul class="list-unstyled">
+                                <li><i class="fa fa-check text-success"></i> Complete payment to confirm order</li>
+                                <li><i class="fa fa-check text-success"></i> Get instant confirmation</li>
                                 <li><i class="fa fa-check text-success"></i> Secure payment processing</li>
-                                <li><i class="fa fa-check text-success"></i> Order confirmation email</li>
                                 <li><i class="fa fa-check text-success"></i> 24/7 customer support</li>
-                                <li><i class="fa fa-check text-success"></i> Fast delivery</li>
                             </ul>
-
-                            <!-- Payment Methods Accepted -->
-                            <div class="mt-3">
-                                <small class="text-muted d-block mb-2">We Accept:</small>
-                                <div class="d-flex justify-content-center gap-2">
-                                    <i class="fab fa-cc-stripe fa-2x text-primary"></i>
-                                    <i class="fab fa-cc-visa fa-2x text-info"></i>
-                                    <i class="fab fa-cc-mastercard fa-2x text-danger"></i>
-                                    <i class="fas fa-mobile-alt fa-2x text-success"></i>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -685,38 +698,6 @@
                 <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
                     possible.</p>
             </div>
-
-            <!-- Success/Error Messages -->
-            @if(session('success'))
-            <div class="row mb-4">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fa fa-check-circle"></i> {{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            @if($errors->any())
-            <div class="row mb-4">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endif
 
             <div class="container-bg"
                 style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
@@ -841,15 +822,191 @@
 
 
     <!-- footer section -->
-    <footer class="footer_section" style="background-color: #2c2c2c; color: white; padding: 20px 0;">
-        <div class="container text-center">
-            <p style="color: #aaa; margin: 0;">
-                &copy; <span id="displayYear"></span> All Rights Reserved By
-                <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">Web Tech Knowledge</a>
-            </p>
+
+    <!-- info section -->
+
+    <br><br>
+    <section class="info_section layout_padding2-top"
+        style="background-color: #2c2c2c; color: white; padding: 60px 0 20px;">
+        <div class="container">
+            <div class="social_container text-center mb-4">
+                <div class="social_box d-flex justify-content-center">
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" style="color: white; margin: 0 15px; font-size: 24px; text-decoration: none;">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="info_container" style="padding: 40px 0;">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            ABOUT US
+                        </h6>
+                        <p style="color: #aaa; line-height: 1.6;">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                        </p>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="info_form">
+                            <h5 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                                Newsletter
+                            </h5>
+                            <form action="#">
+                                <div class="mb-3">
+                                    <input type="email" placeholder="Enter your email"
+                                        style="border: 1px solid #555; background: #444; color: white; border-radius: 5px; padding: 10px 15px; width: 100%;">
+                                </div>
+                                <button type="submit"
+                                    style="background: #f7444e; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer;">
+                                    Subscribe
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            NEED HELP
+                        </h6>
+                        <p style="color: #aaa; line-height: 1.6;">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                        </p>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <h6 style="color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 20px;">
+                            CONTACT US
+                        </h6>
+                        <div class="info_link-box">
+                            <a href="#"
+                                style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">Gb road 123 london Uk</span>
+                            </a>
+                            <a href="#"
+                                style="color: #aaa; text-decoration: none; display: block; margin-bottom: 10px;">
+                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">+01 12345678901</span>
+                            </a>
+                            <a href="#" style="color: #aaa; text-decoration: none; display: block;">
+                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                                <span style="margin-left: 10px;">demo@gmail.com</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </footer>
-    <!-- footer section -->
+
+        <!-- footer section -->
+        <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
+            <div class="container text-center">
+                <p style="color: #aaa; margin: 0;">
+                    &copy; <span id="displayYear"></span> All Rights Reserved By
+                    <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">Web Tech Knowledge</a>
+                </p>
+            </div>
+        </footer>
+        <!-- footer section -->
+    </section>
+
+    <style>
+    /* Common Styles for Both Sections */
+    .contact_section,
+    .info_section {
+        width: 96%;
+        border-radius: 10px;
+        margin: 0 auto 40px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    /* Form Controls */
+    .form-control:focus {
+        outline: none;
+        border-color: #f7444e;
+        box-shadow: 0 0 0 2px rgba(247, 68, 78, 0.2);
+    }
+
+    /* Button Hover Effects */
+    button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+
+    /* Social Icons Hover */
+    .social_box a:hover {
+        color: #f7444e !important;
+        transform: scale(1.1);
+        transition: all 0.3s ease;
+    }
+
+    /* Links Hover */
+    .info_link-box a:hover {
+        color: #f7444e !important;
+        transition: color 0.3s ease;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 991px) {
+
+        .contact_section,
+        .info_section {
+            padding: 40px 0 !important;
+        }
+
+        .container-bg {
+            padding: 30px !important;
+        }
+
+        .col-md-6,
+        .col-lg-3 {
+            margin-bottom: 30px;
+        }
+    }
+
+    @media (max-width: 767px) {
+
+        .contact_section,
+        .info_section {
+            padding: 30px 0 !important;
+        }
+
+        .container-bg {
+            padding: 20px !important;
+        }
+
+        .heading_container h2 {
+            font-size: 28px !important;
+        }
+
+        .social_box a {
+            margin: 0 10px !important;
+            font-size: 20px !important;
+        }
+    }
+
+    /* Font Awesome Fix */
+    .fab,
+    .fa {
+        font-family: 'Font Awesome 6 Brands', 'Font Awesome 6 Free' !important;
+    }
+    </style>
 
     <!-- JavaScript Files -->
     <script src="{{ asset('front_end/js/jquery-3.4.1.min.js') }}"></script>

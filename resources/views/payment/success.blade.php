@@ -206,7 +206,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a href="{{ route('guest.track.order') }}" class="nav-link">
                             My Order
                         </a>

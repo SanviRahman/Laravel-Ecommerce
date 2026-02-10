@@ -500,12 +500,6 @@
                                 <span>Track Order</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('payment.options') }}">
-                                <i class="fas fa-credit-card mr-1"></i>
-                                <span>Payment</span>
-                            </a>
-                        </li>
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -640,24 +634,6 @@
                     </div>
                 </form>
 
-                <!-- NEW: Payment Button Section -->
-                <div class="payment-button-section mb-4">
-                    <div class="text-center mb-3">
-                        <h5 class="text-muted mb-3">OR</h5>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('payment.options') }}" class="btn btn-success btn-lg">
-                            <i class="fas fa-credit-card me-2"></i> Proceed to Payment
-                        </a>
-                    </div>
-
-                    <div class="text-center mt-3">
-                        <small class="text-muted">
-                            <i class="fas fa-lock me-1"></i> Secure payment with Stripe, bKash, and more
-                        </small>
-                    </div>
-                </div>
 
                 <!-- Help Information -->
                 <div class="info-box">

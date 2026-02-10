@@ -833,4 +833,168 @@ class CartController extends Controller
             }
         })->with('product')->get();
     }
+
+    // CartController.php এর মধ্যে নিচের মেথডগুলো যোগ করুন
+
+/**
+ * Show order confirmation form (No login required)
+ */
+    public function showOrderConfirmForm()
+    {
+        // Get cart items
+        $cartItems = $this->getCartItems();
+
+        if (empty($cartItems)) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
+        // Calculate totals
+        $subtotal  = 0;
+        $itemCount = 0;
+
+        foreach ($cartItems as $item) {
+            $subtotal  += $item['price'] * $item['quantity'];
+            $itemCount += $item['quantity'];
+        }
+
+        $shipping = 50; // বা আপনার লজিক অনুযায়ী
+        $tax      = $subtotal * 0.05;
+        $total    = $subtotal + $shipping + $tax;
+
+        return view('cart.confirm-order', compact('cartItems', 'subtotal', 'shipping', 'tax', 'total', 'itemCount'));
+    }
+
+/**
+ * Process order confirmation and redirect to payment options
+ */
+    public function processOrderConfirmation(Request $request)
+    {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|max:255',
+            'phone'   => 'required|string|max:20|min:10',
+            'address' => 'required|string|min:10',
+            'notes'   => 'nullable|string|max:500',
+        ], [
+            'name.required'    => 'Please enter your full name.',
+            'email.required'   => 'Please enter your email address.',
+            'email.email'      => 'Please enter a valid email address.',
+            'phone.required'   => 'Please enter your phone number.',
+            'phone.min'        => 'Phone number must be at least 10 digits.',
+            'address.required' => 'Please enter your shipping address.',
+            'address.min'      => 'Address must be at least 10 characters.',
+        ]);
+
+        // Check terms separately
+        if (! $request->has('terms') || $request->terms !== 'on') {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'You must agree to the Terms and Conditions.');
+        }
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Get session ID
+            $sessionId = $this->getSessionId();
+
+            // Get cart items
+            $cartItemsData = $this->getCartItems();
+
+            if (empty($cartItemsData)) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Your cart is empty. Please add products to cart before confirming order.');
+            }
+
+            // Check stock before proceeding
+            foreach ($cartItemsData as $item) {
+                $product = Product::find($item['product_id']);
+                if ($product && $product->product_quantity < $item['quantity']) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Insufficient stock for {$item['product_title']}. Only {$product->product_quantity} items available.");
+                }
+            }
+
+            // Calculate totals
+            $subtotal  = 0;
+            $itemCount = 0;
+
+            foreach ($cartItemsData as $item) {
+                $subtotal  += $item['price'] * $item['quantity'];
+                $itemCount += $item['quantity'];
+            }
+
+            $shipping = 0;
+            $tax      = round($subtotal * 0.10, 2);
+            $total    = round($subtotal + $shipping + $tax, 2);
+
+            // Generate unique order number
+            $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+
+            // Create order record with pending payment
+            $orderData = [
+                'user_id'        => Auth::id(),
+                'session_id'     => $sessionId,
+                'order_number'   => $orderNumber,
+                'name'           => $request->name,
+                'email'          => $request->email,
+                'phone'          => $request->phone,
+                'address'        => $request->address,
+                'notes'          => $request->notes,
+                'subtotal'       => $subtotal,
+                'shipping'       => $shipping,
+                'tax'            => $tax,
+                'total'          => $total,
+                'status'         => 'pending',
+                'payment_method' => 'pending',
+                'payment_status' => 'pending',
+                'customer_type'  => Auth::check() ? 'registered' : 'guest',
+            ];
+
+            $order  = ConfirmOrder::create($orderData);
+
+            // Create order items but DON'T update product stock yet
+            foreach ($cartItemsData as $item) {
+                OrderItem::create([
+                    'order_id'      => $order->id,
+                    'product_id'    => $item['product_id'],
+                    'product_title' => $item['product_title'],
+                    'price'         => $item['price'],
+                    'quantity'      => $item['quantity'],
+                    'total'         => $item['price'] * $item['quantity'],
+                ]);
+
+                // Note: Stock will be updated AFTER successful payment
+            }
+
+            // Store order ID in session for payment page
+            session(['current_order_id' => $order->id]);
+
+            // DO NOT clear cart yet - wait for payment success
+            // DO NOT update product stock yet - wait for payment success
+
+            DB::commit();
+
+            // Redirect to payment options
+            return redirect()->route('payment.options', ['order_id' => $order->id])
+                ->with('success', 'Order confirmed! Please complete payment.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Order confirmation error: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to confirm order. Please try again.');
+        }
+    }
 }
