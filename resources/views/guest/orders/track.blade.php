@@ -656,6 +656,39 @@
         </div>
     </section>
 
+
+
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+    <div class="row mb-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa fa-check-circle"></i> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="row mb-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
     <!-- contact section -->
     <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
         <div class="container">
@@ -666,39 +699,6 @@
                 <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
                     possible.</p>
             </div>
-
-            <!-- Success/Error Messages -->
-            @if(session('success'))
-            <div class="row mb-4">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fa fa-check-circle"></i> {{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            @if($errors->any())
-            <div class="row mb-4">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endif
-
             <div class="container-bg"
                 style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
                 <div class="row align-items-center">

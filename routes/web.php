@@ -114,8 +114,6 @@ Route::post('/payment/mobile-banking', [PaymentController::class, 'processMobile
 // Bank Transfer
 Route::post('/payment/bank-transfer', [PaymentController::class, 'processBankTransfer'])->name('payment.bank.transfer');
 
-// Stripe Webhook (for production)
-Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook'])->name('stripe.webhook');
 
 
 

@@ -233,7 +233,7 @@
 
 <body>
     <!-- header section -->
-    <header class="header_section">
+    <header class="header_section" style="padding:0 40px">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
             <a class="navbar-brand" href="{{ url('/') }}">
                 <span>
@@ -294,7 +294,7 @@
     </header>
     <!-- end header section -->
     <!-- slider section -->
-    <section class="slider_section">
+    <section class="slider_section" style="padding:0 40px">
         <div class="slider_container">
             <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
                 <div class="carousel-inner">
@@ -355,7 +355,7 @@
         <div class="col-lg-8 offset-lg-2">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
-                <ul class="mb-0">
+                <ul class="mb-0 mt-2">
                     @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                     @endforeach
@@ -368,6 +368,18 @@
     </div>
     @endif
 
+    @if(session('error'))
+    <div class="row mb-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
     <!-- Payment Section -->
     <section class="payment-section">
         <div class="container payment-container">
@@ -386,8 +398,12 @@
                         </div>
                         @endif
 
+                        <!-- ফর্ম শুরু করুন এখানে -->
                         <form id="paymentForm" method="POST">
                             @csrf
+
+                            <!-- Hidden field যোগ করুন -->
+                            <input type="hidden" name="payment_method" id="payment_method_input">
 
                             <!-- Customer Information -->
                             <div class="mb-4">
@@ -436,7 +452,7 @@
 
                                 <!-- Stripe/Card Payment -->
                                 <label class="payment-method" for="stripe">
-                                    <input type="radio" name="payment_method" value="stripe" id="stripe">
+                                    <input type="radio" name="payment_method_radio" value="stripe" id="stripe">
                                     <div class="d-flex align-items-center">
                                         <i class="payment-icon fab fa-cc-stripe stripe-icon"></i>
                                         <div>
@@ -448,7 +464,7 @@
 
                                 <!-- Mobile Banking -->
                                 <label class="payment-method" for="mobile_banking">
-                                    <input type="radio" name="payment_method" value="mobile_banking"
+                                    <input type="radio" name="payment_method_radio" value="mobile_banking"
                                         id="mobile_banking">
                                     <div class="d-flex align-items-center">
                                         <i class="payment-icon fas fa-mobile-alt bkash-icon"></i>
@@ -461,7 +477,8 @@
 
                                 <!-- Bank Transfer -->
                                 <label class="payment-method" for="bank_transfer">
-                                    <input type="radio" name="payment_method" value="bank_transfer" id="bank_transfer">
+                                    <input type="radio" name="payment_method_radio" value="bank_transfer"
+                                        id="bank_transfer">
                                     <div class="d-flex align-items-center">
                                         <i class="payment-icon fas fa-university bank-icon"></i>
                                         <div>
@@ -473,7 +490,7 @@
 
                                 <!-- Cash on Delivery -->
                                 <label class="payment-method" for="cod">
-                                    <input type="radio" name="payment_method" value="cod" id="cod">
+                                    <input type="radio" name="payment_method_radio" value="cod" id="cod">
                                     <div class="d-flex align-items-center">
                                         <i class="payment-icon fas fa-money-bill-wave cod-icon"></i>
                                         <div>
@@ -486,7 +503,6 @@
 
                             <!-- Payment Details (Dynamic) -->
                             <div id="paymentDetails">
-                                <!-- Stripe details will be handled by Stripe checkout -->
                                 <!-- Mobile banking details -->
                                 <div id="mobileBankingDetails" class="payment-details">
                                     <h5 class="mb-3">Mobile Banking Details</h5>
@@ -494,31 +510,43 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Select Service *</label>
-                                                <select name="mobile_banking_method" class="form-control" required>
-                                                    <option value="">Choose...</option>
-                                                    <option value="bKash">bKash</option>
+                                                <select name="mobile_banking_method" id="mobile_banking_method_select"
+                                                    class="form-control">
+                                                    <option value="">Choose Service</option>
+                                                    <option value="BKash">BKash</option>
                                                     <option value="Rocket">DBBL Rocket</option>
                                                     <option value="Nagad">Nagad</option>
                                                 </select>
+                                                <div class="invalid-feedback" id="mobile_banking_method_error">
+                                                    Please select a mobile banking service
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Mobile Number *</label>
-                                                <input type="text" name="mobile_number" class="form-control"
-                                                    placeholder="01XXXXXXXXX">
+                                                <input type="text" name="mobile_number" id="mobile_number"
+                                                    class="form-control" placeholder="01XXXXXXXXX"
+                                                    value="{{ old('mobile_number') }}">
+                                                <div class="invalid-feedback" id="mobile_number_error">
+                                                    Please enter mobile number
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Transaction ID *</label>
-                                        <input type="text" name="transaction_id" class="form-control"
-                                            placeholder="Enter transaction ID">
+                                        <input type="text" name="transaction_id" id="mobile_transaction_id"
+                                            class="form-control" placeholder="Enter transaction ID"
+                                            value="{{ old('transaction_id') }}">
+                                        <div class="invalid-feedback" id="transaction_id_error">
+                                            Please enter transaction ID
+                                        </div>
                                     </div>
                                     <div class="alert alert-info">
                                         <strong>Payment Instructions:</strong>
                                         <ol class="mb-0">
-                                            <li>Send money to: <strong>01XXXXXXXXX</strong></li>
+                                            <li>Send money to: <strong>017XXXXXXXX</strong></li>
                                             <li>Use your order number as reference</li>
                                             <li>Enter the transaction ID above</li>
                                         </ol>
@@ -532,7 +560,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Bank Name *</label>
-                                                <select name="bank_name" class="form-control" required>
+                                                <select name="bank_name" id="bank_name" class="form-control">
                                                     <option value="">Select Bank</option>
                                                     <option value="City Bank">City Bank</option>
                                                     <option value="Dutch Bangla Bank">Dutch Bangla Bank</option>
@@ -540,20 +568,31 @@
                                                     <option value="Islami Bank">Islami Bank</option>
                                                     <option value="Sonali Bank">Sonali Bank</option>
                                                 </select>
+                                                <div class="invalid-feedback" id="bank_name_error">
+                                                    Please select a bank
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Account Number *</label>
-                                                <input type="text" name="account_number" class="form-control"
-                                                    placeholder="Account number">
+                                                <input type="text" name="account_number" id="account_number"
+                                                    class="form-control" placeholder="Account number"
+                                                    value="{{ old('account_number') }}">
+                                                <div class="invalid-feedback" id="account_number_error">
+                                                    Please enter account number
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Transaction ID *</label>
-                                        <input type="text" name="transaction_id" class="form-control"
-                                            placeholder="Enter transaction ID">
+                                        <input type="text" name="bank_transaction_id" id="bank_transaction_id"
+                                            class="form-control" placeholder="Enter transaction ID"
+                                            value="{{ old('bank_transaction_id') }}">
+                                        <div class="invalid-feedback" id="bank_transaction_id_error">
+                                            Please enter transaction ID
+                                        </div>
                                     </div>
                                     <div class="alert alert-info">
                                         <strong>Bank Details:</strong>
@@ -581,6 +620,7 @@
                                 Proceed to Payment
                             </button>
                         </form>
+                        <!-- ফর্ম শেষ -->
                     </div>
                 </div>
 
@@ -1023,17 +1063,29 @@
             $('.payment-method').removeClass('active');
             $(this).addClass('active');
 
-            // Hide all payment details
-            $('.payment-details').removeClass('active');
+            // Uncheck all radio buttons first
+            $('input[name="payment_method_radio"]').prop('checked', false);
 
-            // Get selected payment method
+            // Check the selected one
+            $(this).find('input').prop('checked', true);
+
+            // Get selected payment method value
             const paymentMethod = $(this).find('input').val();
+
+            // Set the hidden input value
+            $('#payment_method_input').val(paymentMethod);
+
+            // Hide all payment details
+            $('.payment-details').removeClass('active').hide();
+            $('.payment-details input, .payment-details select').prop('required', false);
 
             // Show relevant payment details
             if (paymentMethod === 'mobile_banking') {
-                $('#mobileBankingDetails').addClass('active');
+                $('#mobileBankingDetails').addClass('active').show();
+                $('#mobileBankingDetails select, #mobileBankingDetails input').prop('required', true);
             } else if (paymentMethod === 'bank_transfer') {
-                $('#bankTransferDetails').addClass('active');
+                $('#bankTransferDetails').addClass('active').show();
+                $('#bankTransferDetails select, #bankTransferDetails input').prop('required', true);
             }
 
             // Update submit button text
@@ -1049,11 +1101,15 @@
             }
 
             $('#submitPayment').text(buttonText).prop('disabled', false);
+
+            // Clear previous validation errors
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').hide();
         });
 
         // Terms checkbox
         $('#terms').change(function() {
-            if ($(this).is(':checked') && $('input[name="payment_method"]:checked').length > 0) {
+            if ($(this).is(':checked') && $('input[name="payment_method_radio"]:checked').length > 0) {
                 $('#submitPayment').prop('disabled', false);
             } else {
                 $('#submitPayment').prop('disabled', true);
@@ -1064,15 +1120,86 @@
         $('#submitPayment').click(function(e) {
             e.preventDefault();
 
+            // Reset validation
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').hide();
+
+            let isValid = true;
+
+            // Check terms
             if (!$('#terms').is(':checked')) {
                 alert('Please agree to the terms and conditions.');
                 return;
             }
 
-            const paymentMethod = $('input[name="payment_method"]:checked').val();
+            const paymentMethod = $('input[name="payment_method_radio"]:checked').val();
 
             if (!paymentMethod) {
                 alert('Please select a payment method.');
+                return;
+            }
+
+            // Ensure hidden input has value
+            $('#payment_method_input').val(paymentMethod);
+
+            // Client-side validation for mobile banking
+            if (paymentMethod === 'mobile_banking') {
+                const mobileMethod = $('#mobile_banking_method_select').val();
+                const mobileNumber = $('#mobile_number').val().trim();
+                const transactionId = $('#mobile_transaction_id').val().trim();
+
+                if (!mobileMethod) {
+                    $('#mobile_banking_method_select').addClass('is-invalid');
+                    $('#mobile_banking_method_error').show();
+                    isValid = false;
+                }
+
+                if (!mobileNumber) {
+                    $('#mobile_number').addClass('is-invalid');
+                    $('#mobile_number_error').show();
+                    isValid = false;
+                } else if (!/^01[3-9]\d{8}$/.test(mobileNumber)) {
+                    $('#mobile_number').addClass('is-invalid');
+                    $('#mobile_number_error').text(
+                        'Please enter a valid Bangladeshi mobile number (e.g., 01712345678)').show();
+                    isValid = false;
+                }
+
+                if (!transactionId) {
+                    $('#mobile_transaction_id').addClass('is-invalid');
+                    $('#transaction_id_error').show();
+                    isValid = false;
+                }
+            }
+
+            // Client-side validation for bank transfer
+            if (paymentMethod === 'bank_transfer') {
+                const bankName = $('#bank_name').val();
+                const accountNumber = $('#account_number').val().trim();
+                const transactionId = $('#bank_transaction_id').val().trim();
+
+                if (!bankName) {
+                    $('#bank_name').addClass('is-invalid');
+                    $('#bank_name_error').show();
+                    isValid = false;
+                }
+
+                if (!accountNumber) {
+                    $('#account_number').addClass('is-invalid');
+                    $('#account_number_error').show();
+                    isValid = false;
+                }
+
+                if (!transactionId) {
+                    $('#bank_transaction_id').addClass('is-invalid');
+                    $('#bank_transaction_id_error').show();
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                // Scroll to first error
+                $('.is-invalid').first().focus();
                 return;
             }
 
@@ -1106,10 +1233,50 @@
         }
         @endif
 
+        // Fill old input values if any
+        @if(old('mobile_banking_method'))
+        $('#mobile_banking_method_select').val("{{ old('mobile_banking_method') }}");
+        @endif
+
+        @if(old('mobile_number'))
+        $('#mobile_number').val("{{ old('mobile_number') }}");
+        @endif
+
+        @if(old('transaction_id'))
+        $('#mobile_transaction_id').val("{{ old('transaction_id') }}");
+        @endif
+
+        @if(old('bank_name'))
+        $('#bank_name').val("{{ old('bank_name') }}");
+        @endif
+
+        @if(old('account_number'))
+        $('#account_number').val("{{ old('account_number') }}");
+        @endif
+
+        @if(old('bank_transaction_id'))
+        $('#bank_transaction_id').val("{{ old('bank_transaction_id') }}");
+        @endif
+
         // Auto select first payment method
         $('.payment-method:first').click();
+
+        // If there are old inputs, select the appropriate payment method
+        @if(old('payment_method') == 'mobile_banking')
+        $('input[value="mobile_banking"]').closest('.payment-method').click();
+        @elseif(old('payment_method') == 'bank_transfer')
+        $('input[value="bank_transfer"]').closest('.payment-method').click();
+        @elseif(old('payment_method') == 'stripe')
+        $('input[value="stripe"]').closest('.payment-method').click();
+        @elseif(old('payment_method') == 'cod')
+        $('input[value="cod"]').closest('.payment-method').click();
+        @endif
+
+        // Initialize all payment details as hidden
+        $('.payment-details').hide();
     });
     </script>
+
 </body>
 
 </html>

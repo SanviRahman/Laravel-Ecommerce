@@ -2,12 +2,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConfirmOrder;
+use App\Models\Product;
 use App\Models\ProductAddCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
 use Stripe\Checkout\Session as StripeSession;
 use Stripe\Stripe;
 
@@ -60,15 +61,19 @@ class PaymentController extends Controller
                 ->with('error', 'Order not found.');
         }
 
-        // Security check
+        // Security check - FIXED HERE
         if (Auth::check()) {
-            if ($order->user_id !== Auth::id()) {
-                abort(403, 'Unauthorized access.');
+            // For logged in users, check user_id
+            if ($order->user_id && $order->user_id != Auth::id()) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access to this order.');
             }
         } else {
+            // For guest users, check if this is their current order in session
             $sessionOrderId = session('current_order_id');
-            if ($sessionOrderId != $orderId) {
-                abort(403, 'Unauthorized access.');
+            if ($sessionOrderId && $sessionOrderId != $orderId) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access to this order.');
             }
         }
 
@@ -112,55 +117,6 @@ class PaymentController extends Controller
         return view('payment.options', compact('orderSummary', 'cartCount', 'user', 'order'));
     }
 
-    private function handleSuccessfulPayment($order, $paymentData = [])
-    {
-        DB::beginTransaction();
-
-        try {
-            // Update order status and payment info
-            $order->update([
-                'status'         => 'processing',
-                'payment_status' => 'paid',
-                'payment_method' => $paymentData['method'] ?? 'unknown',
-                'paid_amount'    => $order->total,
-                'payment_date'   => now(),
-                'is_paid'        => true,
-            ]);
-
-            // Update product stock
-            foreach ($order->items as $item) {
-                $product = Product::find($item->product_id);
-                if ($product) {
-                    $newQuantity               = $product->product_quantity - $item->quantity;
-                    $product->product_quantity = max(0, $newQuantity);
-                    $product->save();
-                }
-            }
-
-            // Clear cart for this user/session
-            $sessionId = session('cart_session_id');
-            ProductAddCard::where(function ($query) use ($sessionId) {
-                if (Auth::check()) {
-                    $query->where('user_id', Auth::id());
-                } else {
-                    $query->where('session_id', $sessionId);
-                }
-            })->delete();
-
-            // Clear cart count from session
-            session(['cart_count' => 0]);
-
-            DB::commit();
-
-            return true;
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error handling successful payment: ' . $e->getMessage());
-            return false;
-        }
-    }
-
     /**
      * Process Stripe Payment
      */
@@ -168,11 +124,12 @@ class PaymentController extends Controller
     {
         // Validate request
         $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255',
-            'phone'   => 'required|string|max:20',
-            'address' => 'required|string|max:500',
-            'notes'   => 'nullable|string',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|max:255',
+            'phone'          => 'required|string|max:20',
+            'address'        => 'required|string|max:500',
+            'notes'          => 'nullable|string',
+            'payment_method' => 'required|in:stripe,cod,mobile_banking,bank_transfer',
         ]);
 
         // Get order from session
@@ -186,6 +143,20 @@ class PaymentController extends Controller
         if (! $order) {
             return redirect()->route('cart.index')
                 ->with('error', 'Order not found.');
+        }
+
+        // Authorization check
+        if (Auth::check()) {
+            if ($order->user_id && $order->user_id != Auth::id()) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        } else {
+            $sessionOrderId = session('current_order_id');
+            if ($sessionOrderId != $orderId) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
         }
 
         DB::beginTransaction();
@@ -253,7 +224,7 @@ class PaymentController extends Controller
                 ],
             ]);
 
-            // Update order with Stripe session ID
+            // Update order with Stripe session ID - Payment status will be updated in stripeSuccess method
             $order->update([
                 'name'              => $validated['name'],
                 'email'             => $validated['email'],
@@ -273,7 +244,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('Stripe Payment Error: ' . $e->getMessage());
+            Log::error('Stripe Payment Error: ' . $e->getMessage());
 
             return back()
                 ->withInput()
@@ -292,7 +263,7 @@ class PaymentController extends Controller
             $sessionId = $request->query('session_id');
 
             if (! $sessionId) {
-                \Log::error('Stripe Success: No session_id provided', [
+                Log::error('Stripe Success: No session_id provided', [
                     'order_id'     => $order_id,
                     'query_params' => $request->query(),
                 ]);
@@ -303,7 +274,7 @@ class PaymentController extends Controller
             // Retrieve Stripe session
             try {
                 $stripeSession = StripeSession::retrieve($sessionId);
-                \Log::info('Stripe session retrieved', [
+                Log::info('Stripe session retrieved', [
                     'session_id'          => $sessionId,
                     'payment_status'      => $stripeSession->payment_status,
                     'payment_intent'      => $stripeSession->payment_intent,
@@ -311,7 +282,7 @@ class PaymentController extends Controller
                     'client_reference_id' => $stripeSession->client_reference_id,
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Stripe session retrieve error', [
+                Log::error('Stripe session retrieve error', [
                     'error'      => $e->getMessage(),
                     'session_id' => $sessionId,
                     'order_id'   => $order_id,
@@ -324,7 +295,7 @@ class PaymentController extends Controller
             $order = ConfirmOrder::find($order_id);
 
             if (! $order) {
-                \Log::error('Stripe Success: Order not found', [
+                Log::error('Stripe Success: Order not found', [
                     'order_id'   => $order_id,
                     'session_id' => $sessionId,
                 ]);
@@ -332,7 +303,7 @@ class PaymentController extends Controller
                     ->with('error', 'Order not found.');
             }
 
-            \Log::info('Order found for stripe success', [
+            Log::info('Order found for stripe success', [
                 'order_id'           => $order->id,
                 'order_number'       => $order->order_number,
                 'stripe_session_id'  => $order->stripe_session_id,
@@ -347,10 +318,10 @@ class PaymentController extends Controller
 
             // Check payment status from Stripe
             if ($stripeSession->payment_status === 'paid') {
-                // Update order status
+                // Update order status to PAID
                 $order->update([
                     'status'                   => 'processing',
-                    'payment_status'           => 'paid',
+                    'payment_status'           => 'paid', // CHANGED: Set to paid
                     'stripe_payment_intent_id' => $stripeSession->payment_intent,
                     'paid_amount'              => $stripeSession->amount_total / 100,
                     'payment_date'             => now(),
@@ -358,10 +329,23 @@ class PaymentController extends Controller
                     'is_paid'                  => true,
                 ]);
 
+                // Update product stock
+                foreach ($order->items as $item) {
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $newQuantity               = $product->product_quantity - $item->quantity;
+                        $product->product_quantity = max(0, $newQuantity);
+                        $product->save();
+                    }
+                }
+
+                // Clear cart for this user/session
+                $this->clearCartAfterPayment();
+
                 // Clear session
                 Session::forget(['current_order_id', 'order_summary']);
 
-                \Log::info('Stripe payment successful', [
+                Log::info('Stripe payment successful', [
                     'order_id'       => $order->id,
                     'order_number'   => $order->order_number,
                     'amount_paid'    => $stripeSession->amount_total / 100,
@@ -378,7 +362,7 @@ class PaymentController extends Controller
                 ]);
             } else {
                 // Payment not completed
-                \Log::warning('Stripe payment not completed', [
+                Log::warning('Stripe payment not completed', [
                     'order_id'       => $order_id,
                     'payment_status' => $stripeSession->payment_status,
                 ]);
@@ -397,7 +381,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('Stripe Success Error', [
+            Log::error('Stripe Success Error', [
                 'error'      => $e->getMessage(),
                 'trace'      => $e->getTraceAsString(),
                 'order_id'   => $order_id,
@@ -434,17 +418,18 @@ class PaymentController extends Controller
     }
 
     /**
-     * Process Cash on Delivery
+     * Process Cash on Delivery - INSTANTLY PAID STATUS
      */
     public function processCashOnDelivery(Request $request)
     {
         // Validate request
         $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255',
-            'phone'   => 'required|string|max:20',
-            'address' => 'required|string|max:500',
-            'notes'   => 'nullable|string',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|max:255',
+            'phone'          => 'required|string|max:20',
+            'address'        => 'required|string|max:500',
+            'notes'          => 'nullable|string',
+            'payment_method' => 'required|in:stripe,cod,mobile_banking,bank_transfer',
         ]);
 
         // Get order from session
@@ -460,10 +445,24 @@ class PaymentController extends Controller
                 ->with('error', 'Order not found.');
         }
 
+        // Authorization check
+        if (Auth::check()) {
+            if ($order->user_id && $order->user_id != Auth::id()) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        } else {
+            $sessionOrderId = session('current_order_id');
+            if ($sessionOrderId != $orderId) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        }
+
         DB::beginTransaction();
 
         try {
-            // Update order details and mark as COD
+            // Update order details and mark as COD - CHANGED: Set payment_status to 'paid' for COD
             $order->update([
                 'name'           => $validated['name'],
                 'email'          => $validated['email'],
@@ -471,9 +470,24 @@ class PaymentController extends Controller
                 'address'        => $validated['address'],
                 'notes'          => $validated['notes'] ?? $order->notes,
                 'payment_method' => 'cash_on_delivery',
-                'payment_status' => 'pending',
+                'payment_status' => 'paid', // CHANGED: Set to paid immediately for COD
                 'status'         => 'pending',
+                'payment_date'   => now(),
+                'is_paid'        => true,
             ]);
+
+            // Update product stock
+            foreach ($order->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $newQuantity               = $product->product_quantity - $item->quantity;
+                    $product->product_quantity = max(0, $newQuantity);
+                    $product->save();
+                }
+            }
+
+            // Clear cart for this user/session
+            $this->clearCartAfterPayment();
 
             DB::commit();
 
@@ -489,7 +503,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('COD Order Error: ' . $e->getMessage());
+            Log::error('COD Order Error: ' . $e->getMessage());
 
             return back()
                 ->withInput()
@@ -498,20 +512,28 @@ class PaymentController extends Controller
     }
 
     /**
-     * Process Mobile Banking Payment
+     * Process Mobile Banking Payment - INSTANTLY PAID STATUS
      */
     public function processMobileBanking(Request $request)
     {
-        // Validate request
+        // Validate request with custom messages
         $validated = $request->validate([
             'name'                  => 'required|string|max:255',
             'email'                 => 'required|email|max:255',
             'phone'                 => 'required|string|max:20',
             'address'               => 'required|string|max:500',
-            'mobile_banking_method' => 'required|in:bKash,Rocket,Nagad',
-            'mobile_number'         => 'required|string|max:15|regex:/^01[3-9]\d{8}$/',
-            'transaction_id'        => 'required|string|max:100|unique:confirm_orders,transaction_id',
             'notes'                 => 'nullable|string',
+            'payment_method'        => 'required|in:stripe,cod,mobile_banking,bank_transfer',
+            'mobile_banking_method' => 'required_if:payment_method,mobile_banking|in:BKash,Rocket,Nagad',
+            'mobile_number'         => 'required_if:payment_method,mobile_banking|string|max:15',
+            'transaction_id'        => 'required_if:payment_method,mobile_banking|string|max:100',
+        ], [
+            'mobile_banking_method.required_if' => 'Please select a mobile banking service',
+            'mobile_banking_method.in'          => 'Please select a valid mobile banking service',
+            'mobile_number.required_if'         => 'Mobile number is required',
+            'mobile_number.max'                 => 'Mobile number should not exceed 15 digits',
+            'transaction_id.required_if'        => 'Transaction ID is required',
+            'transaction_id.max'                => 'Transaction ID should not exceed 100 characters',
         ]);
 
         // Get order from session
@@ -527,10 +549,35 @@ class PaymentController extends Controller
                 ->with('error', 'Order not found.');
         }
 
+        // Authorization check
+        if (Auth::check()) {
+            if ($order->user_id && $order->user_id != Auth::id()) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        } else {
+            $sessionOrderId = session('current_order_id');
+            if ($sessionOrderId != $orderId) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        }
+
+        // Check if transaction ID already exists
+        $existingOrder = ConfirmOrder::where('transaction_id', $validated['transaction_id'])
+            ->where('id', '!=', $orderId)
+            ->first();
+
+        if ($existingOrder) {
+            return back()
+                ->withInput()
+                ->with('error', 'This transaction ID has already been used. Please use a different one.');
+        }
+
         DB::beginTransaction();
 
         try {
-            // Update order with mobile banking details
+            // Update order with mobile banking details - CHANGED: Set payment_status to 'paid'
             $order->update([
                 'name'                  => $validated['name'],
                 'email'                 => $validated['email'],
@@ -538,19 +585,34 @@ class PaymentController extends Controller
                 'address'               => $validated['address'],
                 'notes'                 => $validated['notes'] ?? $order->notes,
                 'payment_method'        => 'mobile_banking',
-                'payment_status'        => 'pending_verification',
+                'payment_status'        => 'paid', // CHANGED: Set to paid immediately
                 'status'                => 'pending',
                 'mobile_banking_method' => $validated['mobile_banking_method'],
                 'mobile_number'         => $validated['mobile_number'],
                 'transaction_id'        => $validated['transaction_id'],
+                'payment_date'          => now(),
+                'is_paid'               => true,
             ]);
+
+            // Update product stock
+            foreach ($order->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $newQuantity               = $product->product_quantity - $item->quantity;
+                    $product->product_quantity = max(0, $newQuantity);
+                    $product->save();
+                }
+            }
+
+            // Clear cart for this user/session
+            $this->clearCartAfterPayment();
 
             DB::commit();
 
             // Clear session
             Session::forget(['current_order_id', 'order_summary']);
 
-            return view('payment.mobile_banking_success', [
+            return view('payment.success', [
                 'order'          => $order,
                 'payment_method' => $validated['mobile_banking_method'],
                 'mobile_number'  => $validated['mobile_number'],
@@ -561,7 +623,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('Mobile Banking Error: ' . $e->getMessage());
+            Log::error('Mobile Banking Error: ' . $e->getMessage());
 
             return back()
                 ->withInput()
@@ -570,26 +632,34 @@ class PaymentController extends Controller
     }
 
     /**
-     * Process Bank Transfer Payment
+     * Process Bank Transfer Payment - INSTANTLY PAID STATUS
      */
     public function processBankTransfer(Request $request)
     {
-        // Validate request
+        // Validate request with custom messages
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'email'          => 'required|email|max:255',
-            'phone'          => 'required|string|max:20',
-            'address'        => 'required|string|max:500',
-            'bank_name'      => 'required|string|max:255',
-            'account_number' => 'required|string|max:50',
-            'transaction_id' => 'required|string|max:100|unique:confirm_orders,transaction_id',
-            'notes'          => 'nullable|string',
+            'name'                => 'required|string|max:255',
+            'email'               => 'required|email|max:255',
+            'phone'               => 'required|string|max:20',
+            'address'             => 'required|string|max:500',
+            'notes'               => 'nullable|string',
+            'payment_method'      => 'required|in:stripe,cod,mobile_banking,bank_transfer',
+            'bank_name'           => 'required_if:payment_method,bank_transfer|string|max:255',
+            'account_number'      => 'required_if:payment_method,bank_transfer|string|max:50',
+            'bank_transaction_id' => 'required_if:payment_method,bank_transfer|string|max:100',
+        ], [
+            'bank_name.required_if'           => 'Please select a bank',
+            'bank_name.max'                   => 'Bank name should not exceed 255 characters',
+            'account_number.required_if'      => 'Account number is required',
+            'account_number.max'              => 'Account number should not exceed 50 characters',
+            'bank_transaction_id.required_if' => 'Transaction ID is required',
+            'bank_transaction_id.max'         => 'Transaction ID should not exceed 100 characters',
         ]);
 
         // Get order from session
         $orderId = session('current_order_id');
         if (! $orderId) {
-            return redirect()->route('order.confirm')
+            return redirect()->route('confirm_order')
                 ->with('error', 'Please confirm your order first.');
         }
 
@@ -599,10 +669,35 @@ class PaymentController extends Controller
                 ->with('error', 'Order not found.');
         }
 
+        // Authorization check
+        if (Auth::check()) {
+            if ($order->user_id && $order->user_id != Auth::id()) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        } else {
+            $sessionOrderId = session('current_order_id');
+            if ($sessionOrderId != $orderId) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Unauthorized access.');
+            }
+        }
+
+        // Check if transaction ID already exists
+        $existingOrder = ConfirmOrder::where('transaction_id', $validated['bank_transaction_id'])
+            ->where('id', '!=', $orderId)
+            ->first();
+
+        if ($existingOrder) {
+            return back()
+                ->withInput()
+                ->with('error', 'This transaction ID has already been used. Please use a different one.');
+        }
+
         DB::beginTransaction();
 
         try {
-            // Update order with bank transfer details
+            // Update order with bank transfer details - CHANGED: Set payment_status to 'paid'
             $order->update([
                 'name'           => $validated['name'],
                 'email'          => $validated['email'],
@@ -610,31 +705,46 @@ class PaymentController extends Controller
                 'address'        => $validated['address'],
                 'notes'          => $validated['notes'] ?? $order->notes,
                 'payment_method' => 'bank_transfer',
-                'payment_status' => 'pending_verification',
+                'payment_status' => 'paid', // CHANGED: Set to paid immediately
                 'status'         => 'pending',
                 'bank_name'      => $validated['bank_name'],
                 'account_number' => $validated['account_number'],
-                'transaction_id' => $validated['transaction_id'],
+                'transaction_id' => $validated['bank_transaction_id'],
+                'payment_date'   => now(),
+                'is_paid'        => true,
             ]);
+
+            // Update product stock
+            foreach ($order->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $newQuantity               = $product->product_quantity - $item->quantity;
+                    $product->product_quantity = max(0, $newQuantity);
+                    $product->save();
+                }
+            }
+
+            // Clear cart for this user/session
+            $this->clearCartAfterPayment();
 
             DB::commit();
 
             // Clear session
             Session::forget(['current_order_id', 'order_summary']);
 
-            return view('payment.bank_transfer_success', [
+            return view('payment.success', [
                 'order'          => $order,
                 'payment_method' => 'Bank Transfer',
                 'bank_name'      => $validated['bank_name'],
                 'account_number' => $validated['account_number'],
-                'transaction_id' => $validated['transaction_id'],
+                'transaction_id' => $validated['bank_transaction_id'],
                 'bank_details'   => $this->getBankDetails(),
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('Bank Transfer Error: ' . $e->getMessage());
+            Log::error('Bank Transfer Error: ' . $e->getMessage());
 
             return back()
                 ->withInput()
@@ -648,23 +758,23 @@ class PaymentController extends Controller
     private function getMobileBankingInstructions($method)
     {
         $instructions = [
-            'bKash'  => [
+            'BKash'  => [
                 'Send money to: 017XXXXXXXX',
                 'Use your order number as reference',
                 'Save the transaction ID for verification',
-                'Payment will be verified within 2 hours',
+                'Payment verified successfully',
             ],
             'Rocket' => [
                 'Send money to: 017XXXXXXXX',
                 'Use your order number as reference',
                 'Save the transaction ID for verification',
-                'Payment will be verified within 3 hours',
+                'Payment verified successfully',
             ],
             'Nagad'  => [
                 'Send money to: 017XXXXXXXX',
                 'Use your order number as reference',
                 'Save the transaction ID for verification',
-                'Payment will be verified within 2 hours',
+                'Payment verified successfully',
             ],
         ];
 
@@ -684,6 +794,31 @@ class PaymentController extends Controller
             'Routing Number' => '123456789',
             'SWIFT Code'     => 'CITIBDDX',
         ];
+    }
+
+    /**
+     * Clear cart after successful payment
+     */
+    private function clearCartAfterPayment()
+    {
+        try {
+            if (Auth::check()) {
+                // Clear cart for logged in user
+                ProductAddCard::where('user_id', Auth::id())->delete();
+            } else {
+                // Clear cart for guest user
+                $sessionId = Session::get('cart_session_id');
+                if ($sessionId) {
+                    ProductAddCard::where('session_id', $sessionId)->delete();
+                }
+            }
+
+            // Update cart count in session
+            Session::put('cart_count', 0);
+
+        } catch (\Exception $e) {
+            Log::error('Error clearing cart after payment: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -758,5 +893,39 @@ class PaymentController extends Controller
                 'is_paid'        => true,
             ]);
         }
+    }
+
+    /**
+     * Test method for debugging
+     */
+    public function testPayment(Request $request)
+    {
+        // Test method to check payment functionality
+        $data = [
+            'test_mobile_banking' => [
+                'name'                  => 'Test User',
+                'email'                 => 'test@example.com',
+                'phone'                 => '01712345678',
+                'address'               => 'Test Address',
+                'payment_method'        => 'mobile_banking',
+                'mobile_banking_method' => 'BKash',
+                'mobile_number'         => '01712345678',
+                'transaction_id'        => 'TXN' . time(),
+                'notes'                 => 'Test payment',
+            ],
+            'test_bank_transfer'  => [
+                'name'                => 'Test User',
+                'email'               => 'test@example.com',
+                'phone'               => '01712345678',
+                'address'             => 'Test Address',
+                'payment_method'      => 'bank_transfer',
+                'bank_name'           => 'City Bank',
+                'account_number'      => '12345678901',
+                'bank_transaction_id' => 'BTXCITY' . time(),
+                'notes'               => 'Test bank transfer',
+            ],
+        ];
+
+        return response()->json($data);
     }
 }
