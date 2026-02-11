@@ -1116,7 +1116,7 @@
             }
         });
 
-        // Form submission
+        // Form submission - FIXED: Proper POST method handling
         $('#submitPayment').click(function(e) {
             e.preventDefault();
 
@@ -1203,7 +1203,7 @@
                 return;
             }
 
-            // Set form action based on payment method
+            // Set form action and method based on payment method - FIXED HERE
             const form = $('#paymentForm');
 
             if (paymentMethod === 'stripe') {
@@ -1216,7 +1216,15 @@
                 form.attr('action', '{{ route("payment.bank.transfer") }}');
             }
 
-            // Submit form
+            // Make sure method is POST - IMPORTANT FIX
+            form.attr('method', 'POST');
+
+            // Debug: Check form attributes (remove in production)
+            console.log('Form action:', form.attr('action'));
+            console.log('Form method:', form.attr('method'));
+            console.log('Payment method:', paymentMethod);
+
+            // Submit the form
             form.submit();
         });
 
@@ -1274,6 +1282,29 @@
 
         // Initialize all payment details as hidden
         $('.payment-details').hide();
+
+        // Real-time form validation
+        $('input, select').on('blur', function() {
+            const paymentMethod = $('input[name="payment_method_radio"]:checked').val();
+            const fieldName = $(this).attr('name');
+
+            if (paymentMethod === 'mobile_banking') {
+                if (fieldName === 'mobile_number') {
+                    const value = $(this).val().trim();
+                    if (value && !/^01[3-9]\d{8}$/.test(value)) {
+                        $(this).addClass('is-invalid');
+                        $('#mobile_number_error').text('Please enter a valid Bangladeshi mobile number')
+                            .show();
+                    } else {
+                        $(this).removeClass('is-invalid');
+                        $('#mobile_number_error').hide();
+                    }
+                }
+            }
+        });
+
+        // Also make sure the form itself has proper method attribute
+        $('#paymentForm').attr('method', 'POST');
     });
     </script>
 

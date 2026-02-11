@@ -279,8 +279,8 @@
                         </div>
                         
                         <div class="action-buttons">
-                            <a href="{{ route('dashboard') }}" class="btn btn-primary mr-3">
-                                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                            <a href="{{ url('/') }}" class="btn btn-primary mr-3">
+                                <i class="fas fa-tachometer-alt"></i> Go to Home
                             </a>
                             <a href="{{ route('guest.track.order') }}" class="btn btn-outline-primary">
                                 <i class="fas fa-search"></i> Track Order

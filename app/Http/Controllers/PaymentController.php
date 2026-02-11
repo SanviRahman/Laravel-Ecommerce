@@ -539,7 +539,7 @@ class PaymentController extends Controller
         // Get order from session
         $orderId = session('current_order_id');
         if (! $orderId) {
-            return redirect()->route('order.confirm')
+            return redirect()->route('confirm_order')
                 ->with('error', 'Please confirm your order first.');
         }
 
@@ -612,7 +612,7 @@ class PaymentController extends Controller
             // Clear session
             Session::forget(['current_order_id', 'order_summary']);
 
-            return view('payment.success', [
+            return view('payment.mobile_banking_success', [
                 'order'          => $order,
                 'payment_method' => $validated['mobile_banking_method'],
                 'mobile_number'  => $validated['mobile_number'],
@@ -732,7 +732,7 @@ class PaymentController extends Controller
             // Clear session
             Session::forget(['current_order_id', 'order_summary']);
 
-            return view('payment.success', [
+            return view('payment.bank_transfer_success', [
                 'order'          => $order,
                 'payment_method' => 'Bank Transfer',
                 'bank_name'      => $validated['bank_name'],
@@ -821,41 +821,6 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Stripe Webhook Handler (Optional but recommended)
-     */
-    public function handleStripeWebhook(Request $request)
-    {
-        // This is for handling Stripe webhooks in production
-        $payload         = $request->getContent();
-        $sig_header      = $request->header('Stripe-Signature');
-        $endpoint_secret = config('services.stripe.webhook.secret');
-
-        try {
-            $event = \Stripe\Webhook::constructEvent(
-                $payload, $sig_header, $endpoint_secret
-            );
-        } catch (\UnexpectedValueException $e) {
-            return response()->json(['error' => 'Invalid payload'], 400);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            return response()->json(['error' => 'Invalid signature'], 400);
-        }
-
-        // Handle the event
-        switch ($event->type) {
-            case 'checkout.session.completed':
-                $session = $event->data->object;
-                $this->handleCheckoutSessionCompleted($session);
-                break;
-
-            case 'payment_intent.succeeded':
-                $paymentIntent = $event->data->object;
-                $this->handlePaymentIntentSucceeded($paymentIntent);
-                break;
-        }
-
-        return response()->json(['status' => 'success']);
-    }
 
     /**
      * Handle checkout session completed
@@ -895,37 +860,4 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Test method for debugging
-     */
-    public function testPayment(Request $request)
-    {
-        // Test method to check payment functionality
-        $data = [
-            'test_mobile_banking' => [
-                'name'                  => 'Test User',
-                'email'                 => 'test@example.com',
-                'phone'                 => '01712345678',
-                'address'               => 'Test Address',
-                'payment_method'        => 'mobile_banking',
-                'mobile_banking_method' => 'BKash',
-                'mobile_number'         => '01712345678',
-                'transaction_id'        => 'TXN' . time(),
-                'notes'                 => 'Test payment',
-            ],
-            'test_bank_transfer'  => [
-                'name'                => 'Test User',
-                'email'               => 'test@example.com',
-                'phone'               => '01712345678',
-                'address'             => 'Test Address',
-                'payment_method'      => 'bank_transfer',
-                'bank_name'           => 'City Bank',
-                'account_number'      => '12345678901',
-                'bank_transaction_id' => 'BTXCITY' . time(),
-                'notes'               => 'Test bank transfer',
-            ],
-        ];
-
-        return response()->json($data);
-    }
 }

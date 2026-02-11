@@ -6,6 +6,101 @@
     <title>Bank Transfer Payment Successful</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <!-- Basic -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Mobile Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Site Metas -->
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+
+    <title>
+        E-Commerce
+    </title>
+
+    <!-- slider stylesheet -->
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+
+    <!-- bootstrap core css -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('front_end/css/bootstrap.css') }}" />
+
+    <!-- Custom styles for this template -->
+    <link href="{{ asset('front_end/css/style.css') }}" rel="stylesheet" />
+    <!-- responsive style -->
+    <link href="{{ asset('front_end/css/responsive.css') }}" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local Font Awesome -->
+    <link rel="stylesheet" href="{{ asset('front_end/css/fontawesome/css/all.min.css') }}">
+
+    <style>
+    .product-box {
+        transition: transform 0.3s ease;
+    }
+
+    .product-box:hover {
+        transform: translateY(-5px);
+    }
+
+    .img-box img {
+        width: 60%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 15px;
+    }
+
+    .box {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .box:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .detail-box {
+        padding: 15px;
+    }
+
+    .detail-box h6 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .detail-box span {
+        color: #f7444e;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .btn-box a {
+        background: #f7444e;
+        color: white;
+        padding: 10px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+        transition: background 0.3s;
+    }
+
+    .btn-box a:hover {
+        background: #d43c45;
+    }
+
+    .alert {
+        margin: 20px 0;
+    }
+    </style>
     <style>
         body {
             background-color: #f8f9fa;
