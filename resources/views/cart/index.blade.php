@@ -573,10 +573,7 @@
                             <span>Register</span>
                         </a>
                         @endif
-                        <a href="{{ route('cart.index') }}" class="cart-icon">
-                            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-                            <span class="cart-count">{{ $cartCount ?? 0 }}</span>
-                        </a>
+        
                     </div>
                 </div>
             </nav>

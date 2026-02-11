@@ -14,12 +14,14 @@ Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 
 Route::get('products/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name('viewallproducts');
 
+
 // Order Routes
 // Guest Order Routes (No Auth Required)
 Route::post('/confirm-order', [CartController::class, 'confirmOrder'])->name('confirm_order');
 Route::get('/order-success/{id}', [CartController::class, 'orderSuccess'])->name('order.success');
 Route::get('/order/confirm', [CartController::class, 'showOrderConfirmForm'])->name('cart.confirm');
 Route::post('/order/confirm', [CartController::class, 'processOrderConfirmation'])->name('cart.confirm.process');
+Route::post('/buy-now/{product}', [CartController::class, 'buyNow'])->name('buy.now');
 
 // Contact Routes (Public)
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');

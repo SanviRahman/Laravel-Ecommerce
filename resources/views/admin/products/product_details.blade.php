@@ -532,10 +532,6 @@
                             <span>Register</span>
                         </a>
                         @endif
-                        <a href="{{ route('cart.index') }}" class="cart-icon">
-                            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-                            <span class="cart-count">{{ $cartCount ?? 0 }}</span>
-                        </a>
                     </div>
                 </div>
             </nav>
@@ -690,7 +686,8 @@
                                     <div class="quantity-label">Quantity:</div>
                                     <div class="quantity-wrapper">
                                         <button class="quantity-btn" id="decrease-qty">-</button>
-                                        <input type="number" class="quantity-input" id="quantity" value="1" min="1">
+                                        <input type="number" class="quantity-input" id="quantity" value="1" min="1"
+                                            max="{{ $product->product_quantity }}">
                                         <button class="quantity-btn" id="increase-qty">+</button>
                                     </div>
                                 </div>
@@ -699,6 +696,19 @@
                                     <i class="fas fa-shopping-cart"></i>
                                     <span id="add-to-cart-text">Add to Cart</span>
                                 </button>
+
+                                <pre></pre>
+
+                                <!-- Replace Buy Now button with a form -->
+                                <form action="{{ route('buy.now', $product->id) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    <input type="hidden" name="quantity" id="buy-now-quantity" value="1">
+                                    <button type="submit" class="btn-buy-now">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>Buy Now</span>
+                                    </button>
+                                </form>
                             </div>
 
                             <!-- Share Section -->
@@ -893,6 +903,50 @@
     </section>
     <style>
     /* Common Styles for Both Sections */
+    /* Buy Now Button Styles */
+
+    /* Add to Cart and Buy Now Container */
+    .product-actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    /* Your existing Add to Cart button styles (for consistency) */
+    .btn-add-cart {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: linear-gradient(45deg, #007bff, #00c6ff);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-add-cart:hover {
+        background: linear-gradient(45deg, #0056b3, #0099cc);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+
+    .btn-add-cart i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-add-cart:hover i {
+        transform: scale(1.1);
+    }
+
     .contact_section,
     .info_section {
         width: 96%;
@@ -1077,6 +1131,151 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+    // Update quantity in the buy now form when quantity changes
+    $('#quantity').on('change input', function() {
+        $('#buy-now-quantity').val($(this).val());
+    });
+
+    $('#increase-qty').on('click', function() {
+        setTimeout(function() {
+            $('#buy-now-quantity').val($('#quantity').val());
+        }, 10);
+    });
+
+    $('#decrease-qty').on('click', function() {
+        setTimeout(function() {
+            $('#buy-now-quantity').val($('#quantity').val());
+        }, 10);
+    });
+    </script>
+    <style>
+    /* Add to Cart Button - Blue */
+    .btn-add-cart {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #2f3ad1, #4a5de0);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(47, 58, 209, 0.3);
+        letter-spacing: 0.5px;
+    }
+
+    .btn-add-cart:hover {
+        background: linear-gradient(135deg, #1a248c, #2f3ad1);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(47, 58, 209, 0.4);
+    }
+
+    .btn-add-cart:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-add-cart:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Buy Now Button - Green */
+    .btn-buy-now {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+
+    .btn-buy-now:hover {
+        background: linear-gradient(135deg, #218838, #1ba87e);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-buy-now:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-buy-now:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-buy-now i,
+    .btn-add-cart i {
+        font-size: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-buy-now:hover i,
+    .btn-add-cart:hover i {
+        transform: scale(1.1);
+    }
+
+    /* Button Container for side by side layout */
+    .button-container {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .button-container .btn-add-cart,
+    .button-container .btn-buy-now {
+        flex: 1;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+
+        .btn-add-cart,
+        .btn-buy-now {
+            padding: 14px 30px;
+            font-size: 16px;
+            gap: 10px;
+        }
+
+        .btn-add-cart i,
+        .btn-buy-now i {
+            font-size: 18px;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .btn-add-cart,
+        .btn-buy-now {
+            padding: 12px 20px;
+            font-size: 15px;
+        }
+
+        .button-container {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+    </style>
     <!-- Custom JavaScript -->
     <script>
     $(document).ready(function() {

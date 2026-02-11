@@ -997,4 +997,110 @@ class CartController extends Controller
                 ->with('error', 'Failed to confirm order. Please try again.');
         }
     }
+
+    /**
+     * Buy Now - Add product to cart and redirect to checkout
+     */
+    public function buyNow(Request $request, $product_id)
+    {
+        try {
+            $product = Product::findOrFail($product_id);
+
+            // Validate quantity
+            $quantity = $request->quantity ? intval($request->quantity) : 1;
+
+            if ($quantity < 1) {
+                $quantity = 1;
+            }
+
+            // Check stock availability
+            if ($product->product_quantity < $quantity) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Only ' . $product->product_quantity . ' items available in stock.',
+                    ], 400);
+                }
+                return redirect()->back()->with('error', 'Only ' . $product->product_quantity . ' items available in stock.');
+            }
+
+            // Get session ID
+            $sessionId = $this->getSessionId();
+
+            // Check if product is already in cart
+            $existingCartItem = ProductAddCard::where('product_id', $product_id)
+                ->where(function ($query) use ($sessionId) {
+                    if (Auth::check()) {
+                        $query->where('user_id', Auth::id());
+                    } else {
+                        $query->where('session_id', $sessionId);
+                    }
+                })
+                ->first();
+
+            if ($existingCartItem) {
+                // Check if adding more exceeds stock
+                $newQuantity = $existingCartItem->quantity + $quantity;
+                if ($product->product_quantity < $newQuantity) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Cannot add more. Only ' . $product->product_quantity . ' items available in stock.',
+                        ], 400);
+                    }
+                    return redirect()->back()->with('error', 'Cannot add more. Only ' . $product->product_quantity . ' items available in stock.');
+                }
+
+                // Update quantity
+                $existingCartItem->quantity = $newQuantity;
+                $existingCartItem->save();
+            } else {
+                // Add new item to cart
+                ProductAddCard::create([
+                    'session_id'    => $sessionId,
+                    'user_id'       => Auth::id(),
+                    'product_id'    => $product->id,
+                    'product_title' => $product->product_title,
+                    'price'         => $product->product_price,
+                    'quantity'      => $quantity,
+                ]);
+            }
+
+            // Update cart count in session
+            $cartCount = ProductAddCard::where(function ($query) use ($sessionId) {
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                } else {
+                    $query->where('session_id', $sessionId);
+                }
+            })->sum('quantity');
+
+            session(['cart_count' => $cartCount]);
+
+            // For AJAX requests (from product details page)
+            if ($request->ajax()) {
+                return response()->json([
+                    'success'    => true,
+                    'message'    => 'Product added to cart. Redirecting to checkout...',
+                    'cart_count' => $cartCount,
+                    'redirect'   => route('cart.confirm'),
+                ]);
+            }
+
+            // For non-AJAX requests
+            return redirect()->route('cart.confirm')->with('success', 'Product added to cart. Please complete your order.');
+
+        } catch (\Exception $e) {
+            Log::error('Error in buy now: ' . $e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to process buy now request. Please try again.',
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to process buy now request. Please try again.');
+        }
+    }
 }
