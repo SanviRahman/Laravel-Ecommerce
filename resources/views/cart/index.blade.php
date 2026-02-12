@@ -553,7 +553,7 @@
                         </li>
                         <li>
                             <a href="{{ route('guest.track.order') }}" class="nav-link">
-                                My Order
+                                Track Order
                             </a>
                         </li>
                     </ul>

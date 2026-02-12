@@ -318,13 +318,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('guest.track.order') }}">
-                                My Order
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('payment.options') }}">
-                                <i class="fas fa-credit-card mr-1"></i>
-                                <span>Payment</span>
+                                Track Order
                             </a>
                         </li>
                     </ul>
