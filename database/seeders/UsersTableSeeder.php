@@ -39,13 +39,6 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ],
-            [
-                'name' => 'Jane Smith',
-                'email' => 'moderator@example.com',
-                'user_type' => 'moderator',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ],
         ];
 
         foreach ($testUsers as $user) {

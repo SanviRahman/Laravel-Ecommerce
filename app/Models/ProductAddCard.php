@@ -5,6 +5,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductAddCard extends Model
 {
+
+    protected $table = 'product_add_cards';
+
     protected $fillable = [
         'session_id',
         'user_id',
@@ -12,6 +15,7 @@ class ProductAddCard extends Model
         'quantity',
         'price',
         'product_title',
+        'size',
     ];
 
     public function product()
@@ -34,6 +38,11 @@ class ProductAddCard extends Model
     public function scopeForUser($query, $userId)
     {
         return $query->where('user_id', $userId);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id');
     }
 
     // Merge guest cart with user cart on login

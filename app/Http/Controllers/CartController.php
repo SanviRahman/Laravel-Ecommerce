@@ -35,6 +35,14 @@ class CartController extends Controller
      * Get cart items for the current session/user
      * This method handles both Auth and Guest users
      */
+    /**
+     * Get cart items for the current session/user
+     * This method handles both Auth and Guest users
+     */
+    /**
+     * Get cart items for the current session/user
+     * This method handles both Auth and Guest users
+     */
     private function getCartItems()
     {
         $sessionId = $this->getSessionId();
@@ -57,6 +65,7 @@ class CartController extends Controller
                     'product_title' => $cartItem->product_title ?: $cartItem->product->product_title,
                     'price'         => $cartItem->price ?: $cartItem->product->product_price,
                     'quantity'      => $cartItem->quantity,
+                    'size'          => $cartItem->size, // Include size
                     'total'         => ($cartItem->price ?: $cartItem->product->product_price) * $cartItem->quantity,
                     'image'         => $cartItem->product->product_image,
                     'product'       => $cartItem->product,
@@ -73,10 +82,9 @@ class CartController extends Controller
     public function addToCart(Request $request, $product_id)
     {
         try {
-            $product = Product::findOrFail($product_id);
-
-            // Validate quantity
+            $product  = Product::findOrFail($product_id);
             $quantity = $request->quantity ? intval($request->quantity) : 1;
+            $size     = $request->size; // New field
 
             if ($quantity < 1) {
                 $quantity = 1;
@@ -90,17 +98,17 @@ class CartController extends Controller
                 ], 400);
             }
 
-            // Get session ID
+            // For clothes category, size is required
+            if ($product->isClothesCategory() && empty($size)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please select a size.',
+                ], 400);
+            }
+
             $sessionId = $this->getSessionId();
 
-            Log::info('Adding to cart', [
-                'product_id'      => $product_id,
-                'quantity'        => $quantity,
-                'cart_session_id' => $sessionId,
-                'user_id'         => Auth::id(),
-            ]);
-
-            // Check if product is already in cart
+            // Check if product with same size is already in cart
             $existingCartItem = ProductAddCard::where('product_id', $product_id)
                 ->where(function ($query) use ($sessionId) {
                     if (Auth::check()) {
@@ -109,10 +117,12 @@ class CartController extends Controller
                         $query->where('session_id', $sessionId);
                     }
                 })
+                ->when($size, function ($query, $size) {
+                    return $query->where('size', $size);
+                })
                 ->first();
 
             if ($existingCartItem) {
-                // Check if adding more exceeds stock
                 $newQuantity = $existingCartItem->quantity + $quantity;
                 if ($product->product_quantity < $newQuantity) {
                     return response()->json([
@@ -121,32 +131,20 @@ class CartController extends Controller
                     ], 400);
                 }
 
-                // Update quantity
                 $existingCartItem->quantity = $newQuantity;
                 $existingCartItem->save();
-
-                Log::info('Cart item updated', [
-                    'cart_item_id' => $existingCartItem->id,
-                    'new_quantity' => $newQuantity,
-                ]);
             } else {
-                // Add new item to cart
-                $cartItem = ProductAddCard::create([
+                ProductAddCard::create([
                     'session_id'    => $sessionId,
                     'user_id'       => Auth::id(),
                     'product_id'    => $product->id,
                     'product_title' => $product->product_title,
                     'price'         => $product->product_price,
                     'quantity'      => $quantity,
-                ]);
-
-                Log::info('New cart item created', [
-                    'cart_item_id' => $cartItem->id,
-                    'session_id'   => $sessionId,
+                    'size'          => $size, // Save size
                 ]);
             }
 
-            // Calculate cart count
             $cartCount = ProductAddCard::where(function ($query) use ($sessionId) {
                 if (Auth::check()) {
                     $query->where('user_id', Auth::id());
@@ -155,10 +153,7 @@ class CartController extends Controller
                 }
             })->sum('quantity');
 
-            // Store cart count in session for quick access
             session(['cart_count' => $cartCount]);
-
-            // Get cart items
             $cartItemsData = $this->getCartItems();
 
             return response()->json([
@@ -205,6 +200,7 @@ class CartController extends Controller
     }
 
     // This method is used internally to get cart items directly from the database for operations like update and remove
+    // This method is used internally to get cart items directly from the database for operations like update and remove
     private function getCartItemsFromDatabase()
     {
         $sessionId = $this->getSessionId();
@@ -233,6 +229,7 @@ class CartController extends Controller
                     'product_title' => $cartItem->product_title ?: $cartItem->product->product_title,
                     'price'         => $cartItem->price ?: $cartItem->product->product_price,
                     'quantity'      => $cartItem->quantity,
+                    'size'          => $cartItem->size, // Include size
                     'total'         => ($cartItem->price ?: $cartItem->product->product_price) * $cartItem->quantity,
                     'product'       => $cartItem->product, // Keep product object for image access
                 ];
@@ -362,7 +359,7 @@ class CartController extends Controller
     /**
      * Get cart count (No login required)
      */
-    public function getCartCount()
+    public function getCartCountApi()
     {
         $sessionId = $this->getSessionId();
 
@@ -374,7 +371,6 @@ class CartController extends Controller
             }
         })->sum('quantity');
 
-        // Store in session for consistency
         session(['cart_count' => $cartCount]);
 
         return response()->json([
@@ -420,6 +416,9 @@ class CartController extends Controller
         }
     }
 
+    /**
+     * Confirm Order - No Login Required (Guest User)
+     */
     /**
      * Confirm Order - No Login Required (Guest User)
      */
@@ -569,13 +568,14 @@ class CartController extends Controller
 
             // Create order items and update product stock
             foreach ($cartItemsData as $item) {
-                // Create order item
+                // Create order item with size
                 OrderItem::create([
                     'order_id'      => $order->id,
                     'product_id'    => $item['product_id'],
                     'product_title' => $item['product_title'],
                     'price'         => $item['price'],
                     'quantity'      => $item['quantity'],
+                    'size'          => $item['size'] ?? null, // Include size from cart
                     'total'         => $item['price'] * $item['quantity'],
                 ]);
 
@@ -592,6 +592,7 @@ class CartController extends Controller
                         'old_quantity' => $product->product_quantity + $item['quantity'],
                         'new_quantity' => $product->product_quantity,
                         'deducted'     => $item['quantity'],
+                        'size'         => $item['size'] ?? 'N/A',
                     ]);
                 }
             }
@@ -867,6 +868,9 @@ class CartController extends Controller
 /**
  * Process order confirmation and redirect to payment options
  */
+    /**
+     * Process order confirmation and redirect to payment options
+     */
     public function processOrderConfirmation(Request $request)
     {
         // Validate request
@@ -905,7 +909,7 @@ class CartController extends Controller
             // Get session ID
             $sessionId = $this->getSessionId();
 
-            // Get cart items
+            // Get cart items with size information
             $cartItemsData = $this->getCartItems();
 
             if (empty($cartItemsData)) {
@@ -961,7 +965,15 @@ class CartController extends Controller
 
             $order  = ConfirmOrder::create($orderData);
 
-            // Create order items but DON'T update product stock yet
+            Log::info('Order created for payment', [
+                'order_id'       => $order->id,
+                'order_number'   => $orderNumber,
+                'customer_email' => $request->email,
+                'total_amount'   => $total,
+            ]);
+
+            // Create order items with size information
+            // BUT DON'T update product stock yet - wait for payment success
             foreach ($cartItemsData as $item) {
                 OrderItem::create([
                     'order_id'      => $order->id,
@@ -969,65 +981,84 @@ class CartController extends Controller
                     'product_title' => $item['product_title'],
                     'price'         => $item['price'],
                     'quantity'      => $item['quantity'],
+                    'size'          => $item['size'] ?? null, // Include size from cart
                     'total'         => $item['price'] * $item['quantity'],
+                ]);
+
+                Log::info('Order item created', [
+                    'order_id'      => $order->id,
+                    'product_id'    => $item['product_id'],
+                    'product_title' => $item['product_title'],
+                    'quantity'      => $item['quantity'],
+                    'size'          => $item['size'] ?? 'N/A',
+                    'price'         => $item['price'],
                 ]);
 
                 // Note: Stock will be updated AFTER successful payment
             }
 
             // Store order ID in session for payment page
-            session(['current_order_id' => $order->id]);
+            session([
+                'current_order_id'      => $order->id,
+                'order_pending_payment' => true,
+            ]);
+
+            // Store cart items in session for recovery if payment fails
+            session(['pending_order_cart' => $cartItemsData]);
 
             // DO NOT clear cart yet - wait for payment success
             // DO NOT update product stock yet - wait for payment success
 
             DB::commit();
 
-            // Redirect to payment options
+            Log::info('Order pending payment', [
+                'order_id'               => $order->id,
+                'order_number'           => $orderNumber,
+                'redirecting_to_payment' => true,
+            ]);
+
+            // Redirect to payment options with order ID
             return redirect()->route('payment.options', ['order_id' => $order->id])
-                ->with('success', 'Order confirmed! Please complete payment.');
+                ->with('success', 'Order confirmed! Please complete your payment.');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             Log::error('Order confirmation error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Failed to confirm order. Please try again.');
+                ->with('error', 'Failed to confirm order. Please try again. Error: ' . $e->getMessage());
         }
     }
 
     /**
      * Buy Now - Add product to cart and redirect to checkout
      */
+    // In CartController.php - buyNow method
     public function buyNow(Request $request, $product_id)
     {
         try {
-            $product = Product::findOrFail($product_id);
-
-            // Validate quantity
+            $product  = Product::findOrFail($product_id);
             $quantity = $request->quantity ? intval($request->quantity) : 1;
+            $size     = $request->size; // New field
 
             if ($quantity < 1) {
                 $quantity = 1;
             }
 
-            // Check stock availability
             if ($product->product_quantity < $quantity) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Only ' . $product->product_quantity . ' items available in stock.',
-                    ], 400);
-                }
                 return redirect()->back()->with('error', 'Only ' . $product->product_quantity . ' items available in stock.');
             }
 
-            // Get session ID
+            // For clothes category, size is required
+            if ($product->isClothesCategory() && empty($size)) {
+                return redirect()->back()->with('error', 'Please select a size.');
+            }
+
             $sessionId = $this->getSessionId();
 
-            // Check if product is already in cart
             $existingCartItem = ProductAddCard::where('product_id', $product_id)
                 ->where(function ($query) use ($sessionId) {
                     if (Auth::check()) {
@@ -1036,26 +1067,19 @@ class CartController extends Controller
                         $query->where('session_id', $sessionId);
                     }
                 })
+                ->when($size, function ($query, $size) {
+                    return $query->where('size', $size);
+                })
                 ->first();
 
             if ($existingCartItem) {
-                // Check if adding more exceeds stock
                 $newQuantity = $existingCartItem->quantity + $quantity;
                 if ($product->product_quantity < $newQuantity) {
-                    if ($request->ajax()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Cannot add more. Only ' . $product->product_quantity . ' items available in stock.',
-                        ], 400);
-                    }
                     return redirect()->back()->with('error', 'Cannot add more. Only ' . $product->product_quantity . ' items available in stock.');
                 }
-
-                // Update quantity
                 $existingCartItem->quantity = $newQuantity;
                 $existingCartItem->save();
             } else {
-                // Add new item to cart
                 ProductAddCard::create([
                     'session_id'    => $sessionId,
                     'user_id'       => Auth::id(),
@@ -1063,10 +1087,10 @@ class CartController extends Controller
                     'product_title' => $product->product_title,
                     'price'         => $product->product_price,
                     'quantity'      => $quantity,
+                    'size'          => $size,
                 ]);
             }
 
-            // Update cart count in session
             $cartCount = ProductAddCard::where(function ($query) use ($sessionId) {
                 if (Auth::check()) {
                     $query->where('user_id', Auth::id());
@@ -1077,29 +1101,10 @@ class CartController extends Controller
 
             session(['cart_count' => $cartCount]);
 
-            // For AJAX requests (from product details page)
-            if ($request->ajax()) {
-                return response()->json([
-                    'success'    => true,
-                    'message'    => 'Product added to cart. Redirecting to checkout...',
-                    'cart_count' => $cartCount,
-                    'redirect'   => route('cart.confirm'),
-                ]);
-            }
-
-            // For non-AJAX requests
             return redirect()->route('cart.confirm')->with('success', 'Product added to cart. Please complete your order.');
 
         } catch (\Exception $e) {
             Log::error('Error in buy now: ' . $e->getMessage());
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to process buy now request. Please try again.',
-                ], 500);
-            }
-
             return redirect()->back()->with('error', 'Failed to process buy now request. Please try again.');
         }
     }

@@ -573,7 +573,6 @@
                             <span>Register</span>
                         </a>
                         @endif
-        
                     </div>
                 </div>
             </nav>
@@ -613,9 +612,7 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </div>
         </section>
@@ -628,9 +625,8 @@
             </div>
 
             @php
-            // Check if cart is empty using count() for arrays or isEmpty() for collections
-            $cartIsEmpty = (is_array($cartItems) && count($cartItems) === 0) ||
-            (is_object($cartItems) && method_exists($cartItems, 'isEmpty') && $cartItems->isEmpty());
+            // Check if cart is empty
+            $cartIsEmpty = empty($cartItems) || count($cartItems) === 0;
             @endphp
 
             @if($cartIsEmpty)
@@ -650,8 +646,8 @@
             $itemCount = 0;
             foreach($cartItems as $item) {
             // Handle both array and object access
-            $price = is_array($item) ? $item['price'] : $item->price;
-            $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
+            $price = is_array($item) ? ($item['price'] ?? 0) : ($item->price ?? 0);
+            $quantity = is_array($item) ? ($item['quantity'] ?? 0) : ($item->quantity ?? 0);
             $subtotal += $price * $quantity;
             $itemCount += $quantity;
             }
@@ -678,18 +674,22 @@
                                 @foreach($cartItems as $item)
                                 @php
                                 // Handle both array and object access
-                                $itemId = is_array($item) ? $item['id'] : $item->id;
-                                $productId = is_array($item) ? $item['product_id'] : $item->product_id;
-                                $productTitle = is_array($item) ? $item['product_title'] : $item->product_title;
-                                $price = is_array($item) ? $item['price'] : $item->price;
-                                $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
+                                $itemId = is_array($item) ? ($item['id'] ?? 0) : ($item->id ?? 0);
+                                $productId = is_array($item) ? ($item['product_id'] ?? 0) : ($item->product_id ?? 0);
+                                $productTitle = is_array($item) ? ($item['product_title'] ?? '') : ($item->product_title
+                                ?? '');
+                                $price = is_array($item) ? ($item['price'] ?? 0) : ($item->price ?? 0);
+                                $quantity = is_array($item) ? ($item['quantity'] ?? 0) : ($item->quantity ?? 0);
                                 $itemTotal = $price * $quantity;
 
+                                // Get product size if exists
+                                $size = is_array($item) ? ($item['size'] ?? null) : ($item->size ?? null);
+
                                 // Handle product object
-                                $product = is_array($item) ? $item['product'] : $item->product;
+                                $product = is_array($item) ? ($item['product'] ?? null) : ($item->product ?? null);
                                 $imagePath = $product ? ($product->product_image ?? 'images/default-product.jpg') :
                                 'images/default-product.jpg';
-                                $imageExists = $product ? file_exists(public_path($imagePath)) : false;
+                                $imageExists = $product && file_exists(public_path($imagePath));
                                 @endphp
 
                                 <tr class="cart-item" id="cart-item-{{ $itemId }}">
@@ -699,8 +699,22 @@
                                                 alt="{{ $productTitle }}" class="product-image">
                                             <div class="product-details">
                                                 <h4>{{ $productTitle }}</h4>
+
+                                                <!-- SIZE DISPLAY -->
+                                                @if(!empty($size))
+                                                <p class="text-muted mb-1">
+                                                    <strong><i class="fas fa-ruler"></i> Size:</strong>
+                                                    <span class="badge badge-info"
+                                                        style="background-color: #17a2b8; color: white; padding: 3px 8px; border-radius: 4px;">
+                                                        {{ $size }}
+                                                    </span>
+                                                </p>
+                                                @endif
+
                                                 @if($product)
-                                                <p>SKU: {{ $product->product_sku ?? 'N/A' }}</p>
+                                                <p class="text-muted mb-0">
+                                                    <small>SKU: {{ $product->product_sku ?? 'N/A' }}</small>
+                                                </p>
                                                 @endif
                                             </div>
                                         </div>
@@ -726,16 +740,10 @@
                                 @endforeach
                             </tbody>
                         </table>
-
-                        <div class="mt-4">
-                            <a href="{{ url('/') }}" class="continue-btn">
-                                <i class="fas fa-arrow-left"></i> Continue Shopping
-                            </a>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Cart Summary with Customer Information -->
+                <!-- Cart Summary -->
                 <div class="col-lg-4">
                     <div class="cart-card cart-summary">
                         <h4 class="mb-4">Order Summary</h4>
@@ -849,9 +857,60 @@
             box-shadow: 0 5px 15px rgba(247, 68, 78, 0.3);
             background: #d43c45;
         }
+
+        /* Size Badge Styles */
+        .badge-info {
+            background-color: #17a2b8;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .product-details p {
+            margin-bottom: 5px;
+        }
+
+        .product-details .text-muted {
+            color: #6c757d !important;
+            font-size: 13px;
+        }
+
+        /* Size selector in product details page (if needed) */
+        .size-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .size-option {
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .size-option:hover,
+        .size-option.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        /* Responsive size badge */
+        @media (max-width: 768px) {
+            .badge-info {
+                padding: 3px 8px;
+                font-size: 11px;
+            }
+        }
         </style>
-
-
 
         <!-- contact section -->
         <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
@@ -1116,164 +1175,6 @@
         // Initial cart count load
         updateCartCount();
 
-        // Form validation and submission
-        $('form').on('submit', function(e) {
-            e.preventDefault();
-
-            // Basic validation
-            const name = $('#customer_name').val().trim();
-            const email = $('#customer_email').val().trim();
-            const phone = $('#customer_phone').val().trim();
-            const address = $('#customer_address').val().trim();
-            const terms = $('#customer_terms').is(':checked');
-
-            if (!name || !email || !phone || !address) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Missing Information',
-                    text: 'Please fill all required fields.',
-                    confirmButtonText: 'OK'
-                });
-                return false;
-            }
-
-            if (!terms) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Terms Not Accepted',
-                    text: 'You must agree to the Terms and Conditions.',
-                    confirmButtonText: 'OK'
-                });
-                return false;
-            }
-
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                $('#customer_email').focus();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Email',
-                    text: 'Please enter a valid email address.',
-                    confirmButtonText: 'OK'
-                });
-                return false;
-            }
-
-            // Phone validation
-            if (phone.length < 10) {
-                $('#customer_phone').focus();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Phone',
-                    text: 'Please enter a valid phone number (minimum 10 digits).',
-                    confirmButtonText: 'OK'
-                });
-                return false;
-            }
-
-            // Show loading
-            const $checkoutBtn = $('#checkout-btn');
-            $checkoutBtn.prop('disabled', true)
-                .html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-
-            // Collect form data using FormData
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('email', email);
-            formData.append('phone', phone);
-            formData.append('address', address);
-            formData.append('notes', $('#customer_notes').val().trim());
-            formData.append('terms', 'on');
-
-            // Submit form via AJAX
-            $.ajax({
-                url: '{{ route("confirm_order") }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success && response.redirect) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: '🎉 Order Confirmed!',
-                            html: `
-                            <div style="text-align: center;">
-                                <p>${response.message}</p>
-                                <p><strong>Thank you for your order!</strong></p>
-                                <p>You will be redirected to order details page in a few seconds...</p>
-                            </div>
-                        `,
-                            showConfirmButton: true,
-                            confirmButtonText: 'View Order Details',
-                            showCancelButton: true,
-                            cancelButtonText: 'Stay Here',
-                            timer: 5000,
-                            timerProgressBar: true,
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            allowEnterKey: false,
-                            willClose: () => {
-                                window.location.href = response.redirect;
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = response.redirect;
-                            } else if (result.dismiss === Swal.DismissReason
-                                .cancel) {
-                                $checkoutBtn.prop('disabled', false)
-                                    .html(
-                                        '<i class="fas fa-lock"></i> Confirm & Place Order'
-                                    );
-                            } else {
-                                window.location.href = response.redirect;
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message ||
-                                'Unexpected response from server.'
-                        });
-                        $checkoutBtn.prop('disabled', false)
-                            .html('<i class="fas fa-lock"></i> Confirm & Place Order');
-                    }
-                },
-                error: function(xhr) {
-                    if (xhr.status === 422) {
-                        const errors = xhr.responseJSON.errors;
-                        let errorMessage = '';
-                        for (const field in errors) {
-                            errorMessage += `${errors[field][0]}\n`;
-                        }
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Validation Error',
-                            text: errorMessage
-                        });
-                    } else if (xhr.status === 400 || xhr.status === 500) {
-                        const response = xhr.responseJSON;
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message ||
-                                'Failed to place order. Please try again.'
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An unexpected error occurred. Please try again.'
-                        });
-                    }
-                    $checkoutBtn.prop('disabled', false)
-                        .html('<i class="fas fa-lock"></i> Confirm & Place Order');
-                }
-            });
-        });
-
         // Handle quantity updates
         $(document).on('click', '.increase-btn', function() {
             const itemId = $(this).data('id');
@@ -1332,6 +1233,24 @@
                 }
             });
         });
+    });
+    </script>
+    <script>
+    // Mobile view: Add size to data-label
+    $(document).ready(function() {
+        // Add size information to mobile view
+        if ($(window).width() <= 768) {
+            $('.cart-item').each(function() {
+                const $this = $(this);
+                const $productCell = $this.find('td[data-label="Product"]');
+                const sizeText = $this.find('.badge-info').text();
+
+                if (sizeText) {
+                    $productCell.append('<small class="d-block text-muted mt-1">Size: ' + sizeText +
+                        '</small>');
+                }
+            });
+        }
     });
     </script>
 </body>

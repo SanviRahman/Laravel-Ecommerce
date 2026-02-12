@@ -251,6 +251,63 @@ class PaymentController extends Controller
                 ->with('error', 'Payment processing failed: ' . $e->getMessage());
         }
     }
+    public function paymentSuccess($order_id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $order = ConfirmOrder::findOrFail($order_id);
+
+            // Update order status
+            $order->update([
+                'payment_status' => 'paid',
+                'status'         => 'processing',
+            ]);
+
+            // Get cart items from session if needed
+            $cartItems = session('pending_order_cart', []);
+
+            // Update product stock
+            foreach ($order->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $product->product_quantity -= $item->quantity;
+                    $product->save();
+
+                    Log::info('Stock updated after payment', [
+                        'product_id' => $product->id,
+                        'deducted'   => $item->quantity,
+                        'size'       => $item->size,
+                    ]);
+                }
+            }
+
+            // Clear the cart
+            $sessionId  = $this->getSessionId();
+            ProductAddCard::where(function ($query) use ($sessionId) {
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                } else {
+                    $query->where('session_id', $sessionId);
+                }
+            })->delete();
+
+            // Clear payment session data
+            session()->forget(['current_order_id', 'order_pending_payment', 'pending_order_cart']);
+            session(['cart_count' => 0]);
+
+            DB::commit();
+
+            return redirect()->route('order.success', ['id' => $order->id])
+                ->with('success', 'Payment successful! Your order has been placed.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment success error: ' . $e->getMessage());
+            return redirect()->route('cart.index')
+                ->with('error', 'Payment successful but order processing failed. Please contact support.');
+        }
+    }
 
     /**
      * Stripe Payment Success
@@ -820,7 +877,6 @@ class PaymentController extends Controller
             Log::error('Error clearing cart after payment: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Handle checkout session completed

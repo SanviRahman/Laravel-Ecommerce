@@ -14,6 +14,7 @@ class OrderItem extends Model
         'product_title',
         'price',
         'quantity',
+        'size',
         'total',
     ];
 

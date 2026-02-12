@@ -116,6 +116,7 @@ class AdminController extends Controller
     }
 
     // Product Store
+    // In AdminController.php - productStore method
     public function productStore(Request $request)
     {
         $request->validate([
@@ -125,11 +126,14 @@ class AdminController extends Controller
             'product_price'       => 'required|numeric|min:0',
             'product_category'    => 'required|exists:categories,id',
             'product_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            // New validations for clothes category
+            'available_sizes'     => 'nullable|array',
+            'available_sizes.*'   => 'in:S,M,L,XL,XXL',
+            'measurement_details' => 'nullable|string|max:1000',
         ]);
 
         $imagePath = null;
         if ($request->hasFile('product_image')) {
-            // Public folder e upload
             $imageName = time() . '_' . $request->file('product_image')->getClientOriginalName();
             $request->file('product_image')->move(public_path('uploads/products'), $imageName);
             $imagePath = 'uploads/products/' . $imageName;
@@ -142,6 +146,9 @@ class AdminController extends Controller
             'product_price'       => $request->product_price,
             'product_category'    => $request->product_category,
             'product_image'       => $imagePath,
+            // New fields
+            'available_sizes'     => $request->available_sizes,
+            'measurement_details' => $request->measurement_details,
         ]);
 
         return redirect()->route('products.index')
@@ -157,6 +164,7 @@ class AdminController extends Controller
     }
 
     // Product Update
+    // In AdminController.php - productUpdate method
     public function productUpdate(Request $request, $id)
     {
         $product = Product::findOrFail($id);
@@ -168,26 +176,23 @@ class AdminController extends Controller
             'product_price'       => 'required|numeric|min:0',
             'product_category'    => 'required|exists:categories,id',
             'product_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            // New validations for clothes category
+            'available_sizes'     => 'nullable|array',
+            'available_sizes.*'   => 'in:S,M,L,XL,XXL',
+            'measurement_details' => 'nullable|string|max:1000',
         ]);
 
         $imagePath = $product->product_image;
         if ($request->hasFile('product_image')) {
-            // Create directory if not exists
             $directory = public_path('uploads/products');
             if (! file_exists($directory)) {
                 mkdir($directory, 0777, true);
             }
 
-            // Generate unique filename
             $filename = time() . '_' . uniqid() . '.' . $request->file('product_image')->getClientOriginalExtension();
-
-            // Move file to public directory
             $request->file('product_image')->move($directory, $filename);
-
-            // Store path in database
             $imagePath = 'uploads/products/' . $filename;
 
-            // Delete old image if exists (optional)
             if ($product->product_image && file_exists(public_path($product->product_image))) {
                 unlink(public_path($product->product_image));
             }
@@ -200,6 +205,9 @@ class AdminController extends Controller
             'product_price'       => $request->product_price,
             'product_category'    => $request->product_category,
             'product_image'       => $imagePath,
+            // New fields
+            'available_sizes'     => $request->available_sizes,
+            'measurement_details' => $request->measurement_details,
         ]);
 
         return redirect()->route('products.index')
@@ -312,6 +320,9 @@ class AdminController extends Controller
     /**
      * Update order status (POST request)
      */
+    /**
+     * Update order status (POST request)
+     */
     public function updateOrderStatus(Request $request, $id)
     {
         $order = ConfirmOrder::findOrFail($id);
@@ -328,16 +339,31 @@ class AdminController extends Controller
                 ->withInput();
         }
 
+        // Prepare notes
+        $notes = $order->notes;
+        if ($request->admin_notes) {
+            $timestamp = now()->format('d M Y h:i A');
+            $adminNote = "\n[Admin - {$timestamp}]: {$request->admin_notes}";
+            $notes     = $order->notes ? $order->notes . $adminNote : $adminNote;
+        }
+
         $order->update([
             'status'         => $request->status,
             'payment_status' => $request->payment_status,
-            'notes'          => $request->admin_notes ? ($order->notes . "\n[Admin: " . $request->admin_notes . "]") : $order->notes,
+            'notes'          => $notes,
+        ]);
+
+        Log::info('Order status updated by admin', [
+            'order_id'           => $order->id,
+            'order_number'       => $order->order_number,
+            'admin_id'           => Auth::id(),
+            'new_status'         => $request->status,
+            'new_payment_status' => $request->payment_status,
         ]);
 
         return redirect()->route('orders.view')
-            ->with('success', 'Order status updated successfully!');
+            ->with('success', "Order #{$order->order_number} status updated successfully!");
     }
-
     /**
      * Edit order view
      */

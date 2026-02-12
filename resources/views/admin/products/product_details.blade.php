@@ -4,13 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <!-- Site Metas -->
-    <meta name="keywords" content="" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}" type="image/x-icon">
 
     <!-- Bootstrap 4 CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
@@ -20,9 +18,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
     <!-- slider stylesheet -->
     <link rel="stylesheet" type="text/css"
@@ -36,7 +31,8 @@
     <!-- responsive style -->
     <link href="{{ asset('front_end/css/responsive.css') }}" rel="stylesheet" />
 
-    <!-- Custom CSS -->
+    <title>Giftos</title>
+
     <style>
     body {
         background-color: #f8f9fa;
@@ -311,7 +307,12 @@
         color: #333;
     }
 
+    /* Button Styles */
     .btn-add-cart {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
         background: linear-gradient(135deg, #2f3ad1, #4a5de0);
         color: white;
         border: none;
@@ -320,18 +321,19 @@
         font-weight: 600;
         border-radius: 10px;
         cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
+        transition: all 0.3s ease;
         width: 100%;
-        box-shadow: 0 5px 15px rgba(255, 51, 104, 0.3);
+        box-shadow: 0 5px 15px rgba(47, 58, 209, 0.3);
+        letter-spacing: 0.5px;
+        margin-bottom: 15px;
     }
 
     .btn-add-cart:hover {
+        background: linear-gradient(135deg, #1a248c, #2f3ad1);
         transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(255, 51, 104, 0.4);
+        box-shadow: 0 8px 20px rgba(47, 58, 209, 0.4);
+        color: white;
+        text-decoration: none;
     }
 
     .btn-add-cart:active {
@@ -343,55 +345,167 @@
         cursor: not-allowed;
     }
 
-    .share-section {
-        margin-top: 30px;
-        text-align: center;
+    .btn-buy-now {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        letter-spacing: 0.5px;
+        text-decoration: none;
+        border: none;
     }
 
-    .share-title {
+    .btn-buy-now:hover {
+        background: linear-gradient(135deg, #218838, #1ba87e);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-buy-now:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-buy-now:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-buy-now i,
+    .btn-add-cart i {
+        font-size: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-buy-now:hover i,
+    .btn-add-cart:hover i {
+        transform: scale(1.1);
+    }
+
+    /* Size Selection Styles */
+    .size-selection-section {
+        margin-bottom: 25px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+    }
+
+    .size-label {
         font-size: 16px;
-        color: #666;
+        font-weight: 700;
+        color: #333;
         margin-bottom: 15px;
     }
 
-    .share-buttons {
+    .size-options {
         display: flex;
-        justify-content: center;
-        gap: 10px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
-    .share-btn {
-        width: 40px;
-        height: 40px;
+    .size-option {
+        margin-right: 0;
+    }
+
+    .size-option .size-label-btn {
+        background: white;
+        border: 2px solid #dee2e6;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #495057;
+        transition: all 0.3s;
+        min-width: 70px;
+        text-align: center;
+        cursor: pointer;
+        display: inline-block;
+        margin: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .size-option .size-label-btn:hover {
+        border-color: #2f3ad1;
+        background: #f0f2ff;
+        color: #2f3ad1;
+        transform: translateY(-2px);
+    }
+
+    .size-option input[type="radio"]:checked + .size-label-btn {
+        background: #2f3ad1;
+        color: white;
+        border-color: #2f3ad1;
+        box-shadow: 0 4px 10px rgba(47, 58, 209, 0.2);
+    }
+
+    .measurement-details {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 8px;
+        border-left: 4px solid #2f3ad1;
+    }
+
+    /* Cart count badge */
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff3368;
+        color: white;
         border-radius: 50%;
-        background: #f0f0f0;
-        color: #666;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        text-decoration: none;
-        transition: all 0.3s;
     }
 
-    .share-btn:hover {
-        transform: translateY(-3px);
-        color: white;
+    .cart-icon {
+        position: relative;
     }
 
-    .share-btn.facebook:hover {
-        background: #3b5998;
+    /* Spinner animation */
+    .spinner {
+        animation: spin 1s linear infinite;
     }
 
-    .share-btn.twitter:hover {
-        background: #1da1f2;
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
-    .share-btn.pinterest:hover {
-        background: #bd081c;
+    /* SweetAlert positioning */
+    .swal2-container.swal2-top-end {
+        padding-top: 60px !important;
     }
 
-    .share-btn.whatsapp:hover {
-        background: #25d366;
+    .swal2-popup.swal2-toast {
+        margin-top: 60px !important;
+        z-index: 99999 !important;
+    }
+
+    .swal2-container {
+        z-index: 99999 !important;
     }
 
     @media (max-width: 991px) {
@@ -441,44 +555,20 @@
             gap: 10px;
         }
 
-        .btn-add-cart {
+        .btn-add-cart,
+        .btn-buy-now {
             padding: 14px 20px;
             font-size: 16px;
         }
-    }
 
-    /* Cart count badge */
-    .cart-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #ff3368;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .cart-icon {
-        position: relative;
-    }
-
-    /* Spinner animation */
-    .spinner {
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
+        .size-options {
+            gap: 8px;
         }
 
-        100% {
-            transform: rotate(360deg);
+        .size-option .size-label-btn {
+            padding: 10px 18px !important;
+            min-width: 50px;
+            font-size: 14px;
         }
     }
     </style>
@@ -500,21 +590,22 @@
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('/') }}">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
+                            <a class="nav-link cart-icon" href="{{ route('cart.index') }}">
+                                Cart Details
+                            </a>
                         </li>
                         <li>
                             <a href="{{ route('guest.track.order') }}" class="nav-link">
                                 My Order
                             </a>
                         </li>
-
                     </ul>
                     <div class="user_option">
                         @if(Auth::check())
@@ -562,9 +653,9 @@
                                             </a>
                                         </div>
                                     </div>
-                                    <div class="col-md-5 ">
+                                    <div class="col-md-5">
                                         <div class="img-box">
-                                            <img style="width:600px;border-radius: 10px;"
+                                            <img style="width:600px; border-radius: 10px;"
                                                 src="https://cdn.pixabay.com/photo/2021/11/22/20/20/online-6817350_1280.jpg"
                                                 alt="" />
                                         </div>
@@ -572,9 +663,7 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </div>
         </section>
@@ -594,9 +683,10 @@
                     <div class="col-lg-6">
                         <div class="product-image-container">
                             @php
-                            $imageExists = $product->product_image && file_exists(public_path($product->product_image));
+                            $imagePath = $product->product_image;
+                            $imageExists = $imagePath && file_exists(public_path($imagePath));
                             @endphp
-                            <img src="{{ $imageExists ? asset($product->product_image) : asset('images/default-product.jpg') }}"
+                            <img src="{{ $imageExists ? asset($imagePath) : asset('images/default-product.jpg') }}"
                                 class="product-image" alt="{{ $product->product_title }}">
                         </div>
                     </div>
@@ -610,32 +700,40 @@
                             <!-- Product Price -->
                             <div class="product-price-section">
                                 <span class="product-price">${{ number_format($product->product_price, 2) }}</span>
-                                @if($product->product_discount_price && $product->product_discount_price >
-                                $product->product_price)
-                                <span
-                                    class="product-old-price">${{ number_format($product->product_discount_price, 2) }}</span>
+                                @if(!empty($product->product_discount_price) && $product->product_discount_price > $product->product_price)
+                                <span class="product-old-price">${{ number_format($product->product_discount_price, 2) }}</span>
                                 <span class="product-discount">
-                                    Save
-                                    {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
+                                    Save {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
                                 </span>
                                 @endif
                             </div>
 
                             <!-- Product Meta Information -->
                             <div class="product-meta">
-                                @if($product->product_category)
+                                @if(!empty($product->product_category))
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fas fa-tags"></i>
                                     </div>
                                     <div class="meta-text">
                                         <strong>Category:</strong>
-                                        <span>{{ $product->product_category }}</span>
+                                        <span>
+                                            @php
+                                                // Try to get category name from relationship
+                                                if ($product->category) {
+                                                    echo $product->category->name;
+                                                } else {
+                                                    // Try to find category by ID
+                                                    $category = \App\Models\Category::find($product->product_category);
+                                                    echo $category ? $category->name : 'Uncategorized';
+                                                }
+                                            @endphp
+                                        </span>
                                     </div>
                                 </div>
                                 @endif
 
-                                @if($product->product_brand)
+                                @if(!empty($product->product_brand))
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fas fa-copyright"></i>
@@ -647,7 +745,7 @@
                                 </div>
                                 @endif
 
-                                @if($product->product_sku)
+                                @if(!empty($product->product_sku))
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fas fa-barcode"></i>
@@ -665,13 +763,17 @@
                                     </div>
                                     <div class="meta-text">
                                         <strong>Availability:</strong>
-                                        <span class="text-success">In Stock</span>
+                                        @if($product->product_quantity > 0)
+                                        <span class="text-success">In Stock ({{ $product->product_quantity }} available)</span>
+                                        @else
+                                        <span class="text-danger">Out of Stock</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Product Description -->
-                            @if($product->product_description)
+                            @if(!empty($product->product_description))
                             <div class="description-section">
                                 <h3 class="section-title">Product Description</h3>
                                 <div class="product-description">
@@ -680,54 +782,128 @@
                             </div>
                             @endif
 
+                            <!-- SIZE SELECTION - FIXED AND SIMPLIFIED -->
+                            @php
+                                // SIMPLIFIED CLOTHING CATEGORY DETECTION
+                                $isClothingProduct = false;
+                                $categoryName = '';
+                                
+                                // Get category name
+                                if ($product->category) {
+                                    $categoryName = $product->category->name;
+                                } else {
+                                    $category = \App\Models\Category::find($product->product_category);
+                                    $categoryName = $category ? $category->name : '';
+                                }
+                                
+                                // Define clothing keywords
+                                $clothingKeywords = ['cloth', 'clothing', 'fashion', 'men', 'women', 'kids', 'apparel', 't-shirt', 'shirt', 'pant', 'dress', 'jacket', 'hoodie', 'sweater'];
+                                
+                                // Check if category name contains clothing keywords
+                                foreach ($clothingKeywords as $keyword) {
+                                    if (stripos($categoryName, $keyword) !== false) {
+                                        $isClothingProduct = true;
+                                        break;
+                                    }
+                                }
+                                
+                                // Also check product_category field directly
+                                if (!$isClothingProduct) {
+                                    $categoryValue = is_numeric($product->product_category) ? '' : $product->product_category;
+                                    foreach ($clothingKeywords as $keyword) {
+                                        if (stripos($categoryValue, $keyword) !== false) {
+                                            $isClothingProduct = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                // Check via method if exists
+                                if (!$isClothingProduct && method_exists($product, 'isClothesCategory')) {
+                                    $isClothingProduct = $product->isClothesCategory();
+                                }
+                                
+                                // FORCE TEST - REMOVE THIS AFTER TESTING
+                                // Uncomment the line below to force size display for testing
+                                // $isClothingProduct = true;
+                                
+                                // Get available sizes
+                                $productSizes = [];
+                                if ($isClothingProduct) {
+                                    if (!empty($product->available_sizes)) {
+                                        if (is_array($product->available_sizes)) {
+                                            $productSizes = $product->available_sizes;
+                                        } elseif (is_string($product->available_sizes)) {
+                                            $decoded = json_decode($product->available_sizes, true);
+                                            $productSizes = is_array($decoded) ? $decoded : ['S', 'M', 'L', 'XL', 'XXL'];
+                                        }
+                                    } else {
+                                        // Default sizes
+                                        $productSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+                                    }
+                                }
+                            @endphp
+
+                            <!-- DISPLAY SIZE SECTION IF CLOTHING PRODUCT -->
+                            @if($isClothingProduct && !empty($productSizes))
+                            <div class="size-selection-section">
+                                <div class="size-label">
+                                    <i class="fas fa-ruler-combined mr-2"></i> Select Size:
+                                </div>
+                                <div class="size-options">
+                                    @foreach($productSizes as $index => $size)
+                                    <div class="size-option">
+                                        <input type="radio" class="size-radio d-none" name="size" id="size_{{ $size }}"
+                                            value="{{ $size }}" {{ $index == 0 ? 'checked' : '' }}>
+                                        <label for="size_{{ $size }}" class="size-label-btn">
+                                            {{ $size }}
+                                        </label>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                @if(!empty($product->measurement_details))
+                                <div class="measurement-details">
+                                    <div class="font-weight-bold mb-2">
+                                        <i class="fas fa-tape mr-2"></i> Measurement Guide:
+                                    </div>
+                                    <div class="text-muted">{{ $product->measurement_details }}</div>
+                                </div>
+                                @endif
+                            </div>
+                            @endif
+
                             <!-- Add to Cart Section -->
                             <div class="add-to-cart-section">
                                 <div class="quantity-control">
                                     <div class="quantity-label">Quantity:</div>
                                     <div class="quantity-wrapper">
-                                        <button class="quantity-btn" id="decrease-qty">-</button>
+                                        <button type="button" class="quantity-btn" id="decrease-qty">-</button>
                                         <input type="number" class="quantity-input" id="quantity" value="1" min="1"
                                             max="{{ $product->product_quantity }}">
-                                        <button class="quantity-btn" id="increase-qty">+</button>
+                                        <button type="button" class="quantity-btn" id="increase-qty">+</button>
                                     </div>
                                 </div>
 
-                                <button class="btn-add-cart" id="add-to-cart-btn" data-product-id="{{ $product->id }}">
+                                <button type="button" class="btn-add-cart" id="add-to-cart-btn"
+                                    data-product-id="{{ $product->id }}"
+                                    {{ $product->product_quantity < 1 ? 'disabled' : '' }}>
                                     <i class="fas fa-shopping-cart"></i>
                                     <span id="add-to-cart-text">Add to Cart</span>
                                 </button>
 
-                                <pre></pre>
-
-                                <!-- Replace Buy Now button with a form -->
-                                <form action="{{ route('buy.now', $product->id) }}" method="POST"
-                                    style="display: inline;">
+                                <form action="{{ route('buy.now', $product->id) }}" method="POST" id="buy-now-form">
                                     @csrf
                                     <input type="hidden" name="quantity" id="buy-now-quantity" value="1">
-                                    <button type="submit" class="btn-buy-now">
+                                    @if($isClothingProduct && !empty($productSizes))
+                                    <input type="hidden" name="size" id="buy-now-size" value="{{ $productSizes[0] ?? 'S' }}">
+                                    @endif
+                                    <button type="submit" class="btn-buy-now"
+                                        {{ $product->product_quantity < 1 ? 'disabled' : '' }}>
                                         <i class="fas fa-bolt"></i>
                                         <span>Buy Now</span>
                                     </button>
                                 </form>
-                            </div>
-
-                            <!-- Share Section -->
-                            <div class="share-section">
-                                <div class="share-title">Share this product:</div>
-                                <div class="share-buttons">
-                                    <a href="#" class="share-btn facebook">
-                                        <i class="fab fa-facebook-f"></i>
-                                    </a>
-                                    <a href="#" class="share-btn twitter">
-                                        <i class="fab fa-twitter"></i>
-                                    </a>
-                                    <a href="#" class="share-btn pinterest">
-                                        <i class="fab fa-pinterest-p"></i>
-                                    </a>
-                                    <a href="#" class="share-btn whatsapp">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </a>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -736,50 +912,43 @@
         </div>
     </div>
 
-
-
     <!-- Success/Error Messages -->
     @if(session('success'))
-    <div class="row mb-4">
-        <div class="col-lg-8 offset-lg-2">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fa fa-check-circle"></i> {{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+    <div class="container mt-4">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     </div>
     @endif
 
     @if($errors->any())
-    <div class="row mb-4">
-        <div class="col-lg-8 offset-lg-2">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+    <div class="container mt-4">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     </div>
     @endif
-    <!-- contact section -->
-    <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0; height: auto;">
+
+    <!-- Contact Section -->
+    <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0;">
         <div class="container">
             <div class="heading_container text-center mb-5">
                 <h2 style="color: #333; font-size: 36px; font-weight: 700;">
                     Contact Us
                 </h2>
-                <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
-                    possible.</p>
+                <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
             </div>
-
 
             <div class="container-bg"
                 style="background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(63, 60, 60, 0.1); padding: 40px;">
@@ -823,7 +992,6 @@
                         <div class="contact_form" style="padding: 20px;">
                             <form action="{{ route('contact.store') }}" method="POST">
                                 @csrf
-
                                 <div class="form-group mb-3">
                                     <label for="name" class="form-label">Your Name *</label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror"
@@ -901,141 +1069,10 @@
             </div>
         </div>
     </section>
-    <style>
-    /* Common Styles for Both Sections */
-    /* Buy Now Button Styles */
 
-    /* Add to Cart and Buy Now Container */
-    .product-actions {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-top: 20px;
-    }
-
-    /* Your existing Add to Cart button styles (for consistency) */
-    .btn-add-cart {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        background: linear-gradient(45deg, #007bff, #00c6ff);
-        color: white;
-        padding: 12px 25px;
-        border-radius: 50px;
-        font-size: 16px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-    }
-
-    .btn-add-cart:hover {
-        background: linear-gradient(45deg, #0056b3, #0099cc);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
-    }
-
-    .btn-add-cart i {
-        transition: transform 0.3s ease;
-    }
-
-    .btn-add-cart:hover i {
-        transform: scale(1.1);
-    }
-
-    .contact_section,
-    .info_section {
-        width: 96%;
-        border-radius: 10px;
-        margin: 0 auto 40px;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 15px;
-    }
-
-    /* Form Controls */
-    .form-control:focus {
-        outline: none;
-        border-color: #f7444e;
-        box-shadow: 0 0 0 2px rgba(247, 68, 78, 0.2);
-    }
-
-    /* Button Hover Effects */
-    button:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-        transition: all 0.3s ease;
-    }
-
-    /* Social Icons Hover */
-    .social_box a:hover {
-        color: #f7444e !important;
-        transform: scale(1.1);
-        transition: all 0.3s ease;
-    }
-
-    /* Links Hover */
-    .info_link-box a:hover {
-        color: #f7444e !important;
-        transition: color 0.3s ease;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 991px) {
-
-        .contact_section,
-        .info_section {
-            padding: 40px 0 !important;
-        }
-
-        .container-bg {
-            padding: 30px !important;
-        }
-
-        .col-md-6,
-        .col-lg-3 {
-            margin-bottom: 30px;
-        }
-    }
-
-    @media (max-width: 767px) {
-
-        .contact_section,
-        .info_section {
-            padding: 30px 0 !important;
-        }
-
-        .container-bg {
-            padding: 20px !important;
-        }
-
-        .heading_container h2 {
-            font-size: 28px !important;
-        }
-
-        .social_box a {
-            margin: 0 10px !important;
-            font-size: 20px !important;
-        }
-    }
-
-    /* Font Awesome Fix */
-    .fab,
-    .fa {
-        font-family: 'Font Awesome 6 Brands', 'Font Awesome 6 Free' !important;
-    }
-    </style>
     <!-- Footer -->
-    <br><br>
     <section class="info_section layout_padding2-top"
-        style="background-color: #2c2c2c; color: white; padding: 60px 0 20px; border-radius: 10px;">
+        style="background-color: #2c2c2c; color: white; padding: 60px 0 20px; border-radius: 10px; margin: 0 2% 40px;">
         <div class="container">
             <div class="social_container text-center mb-4">
                 <div class="social_box d-flex justify-content-center">
@@ -1062,7 +1099,7 @@
                         </h6>
                         <p style="color: #aaa; line-height: 1.6;">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
-                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet.
                         </p>
                     </div>
                     <div class="col-md-6 col-lg-3 mb-4">
@@ -1088,7 +1125,7 @@
                         </h6>
                         <p style="color: #aaa; line-height: 1.6;">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
-                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet,
+                            consectetur adipiscing elit, sed doLorem ipsum dolor sit amet.
                         </p>
                     </div>
                     <div class="col-md-6 col-lg-3 mb-4">
@@ -1125,158 +1162,11 @@
                 </p>
             </div>
         </footer>
-        <!-- footer section -->
     </section>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-    // Update quantity in the buy now form when quantity changes
-    $('#quantity').on('change input', function() {
-        $('#buy-now-quantity').val($(this).val());
-    });
-
-    $('#increase-qty').on('click', function() {
-        setTimeout(function() {
-            $('#buy-now-quantity').val($('#quantity').val());
-        }, 10);
-    });
-
-    $('#decrease-qty').on('click', function() {
-        setTimeout(function() {
-            $('#buy-now-quantity').val($('#quantity').val());
-        }, 10);
-    });
-    </script>
-    <style>
-    /* Add to Cart Button - Blue */
-    .btn-add-cart {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        background: linear-gradient(135deg, #2f3ad1, #4a5de0);
-        color: white;
-        border: none;
-        padding: 16px 40px;
-        font-size: 18px;
-        font-weight: 600;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 100%;
-        box-shadow: 0 5px 15px rgba(47, 58, 209, 0.3);
-        letter-spacing: 0.5px;
-    }
-
-    .btn-add-cart:hover {
-        background: linear-gradient(135deg, #1a248c, #2f3ad1);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(47, 58, 209, 0.4);
-    }
-
-    .btn-add-cart:active {
-        transform: translateY(-1px);
-    }
-
-    .btn-add-cart:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    /* Buy Now Button - Green */
-    .btn-buy-now {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        border: none;
-        padding: 16px 40px;
-        font-size: 18px;
-        font-weight: 600;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 100%;
-        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        letter-spacing: 0.5px;
-        text-decoration: none;
-    }
-
-    .btn-buy-now:hover {
-        background: linear-gradient(135deg, #218838, #1ba87e);
-        color: white;
-        text-decoration: none;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
-    }
-
-    .btn-buy-now:active {
-        transform: translateY(-1px);
-    }
-
-    .btn-buy-now:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    .btn-buy-now i,
-    .btn-add-cart i {
-        font-size: 20px;
-        transition: transform 0.3s ease;
-    }
-
-    .btn-buy-now:hover i,
-    .btn-add-cart:hover i {
-        transform: scale(1.1);
-    }
-
-    /* Button Container for side by side layout */
-    .button-container {
-        display: flex;
-        gap: 15px;
-        margin-top: 20px;
-    }
-
-    .button-container .btn-add-cart,
-    .button-container .btn-buy-now {
-        flex: 1;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-
-        .btn-add-cart,
-        .btn-buy-now {
-            padding: 14px 30px;
-            font-size: 16px;
-            gap: 10px;
-        }
-
-        .btn-add-cart i,
-        .btn-buy-now i {
-            font-size: 18px;
-        }
-    }
-
-    @media (max-width: 480px) {
-
-        .btn-add-cart,
-        .btn-buy-now {
-            padding: 12px 20px;
-            font-size: 15px;
-        }
-
-        .button-container {
-            flex-direction: column;
-            gap: 10px;
-        }
-    }
-    </style>
-    <!-- Custom JavaScript -->
     <script>
     $(document).ready(function() {
         // CSRF token setup
@@ -1286,182 +1176,202 @@
             }
         });
 
-        // Quantity control
+        // ============== QUANTITY CONTROL ==============
+        const quantityInput = $('#quantity');
         const decreaseBtn = $('#decrease-qty');
         const increaseBtn = $('#increase-qty');
-        const quantityInput = $('#quantity');
-        const addToCartBtn = $('#add-to-cart-btn');
-        const addToCartText = $('#add-to-cart-text');
+        const maxStock = {{ $product->product_quantity ?? 0 }};
+        const productId = {{ $product->id ?? 0 }};
 
         // Decrease quantity
-        if (decreaseBtn.length) {
-            decreaseBtn.on('click', function() {
-                let currentValue = parseInt(quantityInput.val());
-                if (currentValue > 1) {
-                    quantityInput.val(currentValue - 1);
-                }
-            });
-        }
+        decreaseBtn.on('click', function() {
+            let currentValue = parseInt(quantityInput.val()) || 1;
+            if (currentValue > 1) {
+                quantityInput.val(currentValue - 1);
+                $('#buy-now-quantity').val(currentValue - 1);
+            }
+        });
 
         // Increase quantity
-        if (increaseBtn.length) {
-            increaseBtn.on('click', function() {
-                let currentValue = parseInt(quantityInput.val());
+        increaseBtn.on('click', function() {
+            let currentValue = parseInt(quantityInput.val()) || 1;
+            if (currentValue < maxStock) {
                 quantityInput.val(currentValue + 1);
-            });
+                $('#buy-now-quantity').val(currentValue + 1);
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Maximum Quantity',
+                    text: 'Only ' + maxStock + ' items available in stock.',
+                    position: 'top-end',
+                    toast: true,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+        });
+
+        // Validate manual quantity input
+        quantityInput.on('change input', function() {
+            let val = parseInt($(this).val()) || 1;
+            if (val < 1) val = 1;
+            if (val > maxStock) val = maxStock;
+            $(this).val(val);
+            $('#buy-now-quantity').val(val);
+        });
+
+        // ============== SIZE SELECTION - FIXED ==============
+        @php
+            // Use the SAME variable as in HTML section
+            $showSizeSection = isset($isClothingProduct) ? $isClothingProduct : false;
+        @endphp
+        
+        @if($showSizeSection)
+        // Update buy now size when size changes
+        $('input[name="size"]').on('change', function() {
+            const selectedSize = $(this).val();
+            $('#buy-now-size').val(selectedSize);
+        });
+
+        // Initialize size
+        const initialSize = $('input[name="size"]:checked').val();
+        if (initialSize) {
+            $('#buy-now-size').val(initialSize);
         }
+        @endif
 
-        // Add to cart function
-        if (addToCartBtn.length) {
-            addToCartBtn.on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+        // ============== ADD TO CART ==============
+        $('#add-to-cart-btn').on('click', function(e) {
+            e.preventDefault();
 
-                const productId = $(this).data('product-id');
-                const quantity = parseInt(quantityInput.val()) || 1;
+            const btn = $(this);
+            const quantity = parseInt($('#quantity').val()) || 1;
 
-                // Disable button and show loading
-                addToCartBtn.prop('disabled', true);
-                const originalText = addToCartText.text();
-                addToCartText.html('<i class="fas fa-spinner fa-spin"></i> Adding...');
+            // Get selected size for clothes category
+            let size = null;
+            @if($showSizeSection)
+            size = $('input[name="size"]:checked').val();
+            if (!size) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Size Required',
+                    text: 'Please select a size for this product.',
+                    position: 'top-end',
+                    toast: true,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            @endif
 
-                // Send AJAX request
-                $.ajax({
-                    url: '/cart/add/' + productId,
-                    type: 'POST',
-                    data: {
-                        quantity: quantity
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Success message - FIXED POSITION
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: response.message,
-                                timer: 2000,
-                                showConfirmButton: false,
-                                toast: true,
-                                position: 'top-end',
-                                timerProgressBar: true,
-                                showClass: {
-                                    popup: 'animate__animated animate__fadeInDown'
-                                },
-                                hideClass: {
-                                    popup: 'animate__animated animate__fadeOutUp'
-                                },
-                                customClass: {
-                                    container: 'swal-container-fixed'
-                                }
-                            });
+            // Disable button and show loading
+            const originalText = $('#add-to-cart-text').text();
+            btn.prop('disabled', true);
+            $('#add-to-cart-text').html('<i class="fas fa-spinner fa-spin"></i> Adding...');
 
-                            // Update cart count in navbar
-                            updateCartCount();
+            // Send AJAX request
+            $.ajax({
+                url: '{{ route("cart.add", $product->id) }}',
+                type: 'POST',
+                data: {
+                    quantity: quantity,
+                    size: size,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Product added to cart successfully!',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            timerProgressBar: true
+                        });
+
+                        // Update cart count
+                        if (response.cart_count !== undefined) {
+                            $('.cart-count').text(response.cart_count);
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: response.message || 'Something went wrong!',
-                                position: 'top-end',
-                                toast: true,
-                                timer: 3000
-                            });
+                            updateCartCount();
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
+                    } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Failed to add product to cart. Please try again.',
+                            text: response.message || 'Something went wrong!',
                             position: 'top-end',
                             toast: true,
-                            timer: 3000
+                            timer: 3000,
+                            showConfirmButton: false
                         });
-                    },
-                    complete: function() {
-                        // Re-enable button
-                        addToCartBtn.prop('disabled', false);
-                        addToCartText.text(originalText);
                     }
-                });
+                },
+                error: function(xhr) {
+                    console.error('AJAX Error:', xhr);
+                    let message = 'Failed to add product to cart. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        position: 'top-end',
+                        toast: true,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                    $('#add-to-cart-text').text(originalText);
+                }
             });
-        }
+        });
 
-        // Function to update cart count in navbar
+        // ============== BUY NOW ==============
+        $('#buy-now-form').on('submit', function(e) {
+            @if($showSizeSection)
+            const selectedSize = $('input[name="size"]:checked').val();
+            if (!selectedSize) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Size Required',
+                    text: 'Please select a size for this product.',
+                    position: 'top-end',
+                    toast: true,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                return false;
+            }
+            @endif
+            return true;
+        });
+
+        // ============== UPDATE CART COUNT ==============
         function updateCartCount() {
             $.ajax({
-                url: '/cart/count',
+                url: '{{ route("cart.count") }}',
                 type: 'GET',
                 success: function(data) {
                     $('.cart-count').text(data.count || 0);
+                },
+                error: function(xhr) {
+                    console.error('Error updating cart count:', xhr);
                 }
             });
         }
 
-        // Initial cart count load
+        // Initialize cart count on page load
         updateCartCount();
-
-        // Also update when page loads
-        $(window).on('load', function() {
-            updateCartCount();
-        });
     });
     </script>
-
-    <!-- SweetAlert Custom CSS for fixed positioning -->
-    <style>
-    .swal2-container.swal2-top-end {
-        padding-top: 60px !important;
-        /* Adjust based on your navbar height */
-    }
-
-    .swal2-popup.swal2-toast {
-        margin-top: 60px !important;
-        z-index: 99999 !important;
-    }
-
-    /* Ensure popup stays on top of navbar */
-    .swal2-container {
-        z-index: 99999 !important;
-    }
-
-    /* Optional: Add animation for better UX */
-    .animate__animated {
-        animation-duration: 0.5s;
-    }
-
-    .animate__fadeInDown {
-        animation-name: fadeInDown;
-    }
-
-    .animate__fadeOutUp {
-        animation-name: fadeOutUp;
-    }
-
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translate3d(0, -100%, 0);
-        }
-
-        to {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-        }
-    }
-
-    @keyframes fadeOutUp {
-        from {
-            opacity: 1;
-        }
-
-        to {
-            opacity: 0;
-            transform: translate3d(0, -100%, 0);
-        }
-    }
-    </style>
 </body>
 
 </html>

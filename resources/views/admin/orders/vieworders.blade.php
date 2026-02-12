@@ -63,14 +63,14 @@
                                     <tr>
                                         <th>Order #</th>
                                         <th>Customer</th>
-                                        <th>Products</th>
+                                        <th>Products & Sizes</th>
                                         <th>Contact</th>
                                         <th>Address</th>
                                         <th>Total</th>
                                         <th>Status</th>
                                         <th>Date</th>
                                         <th>Actions</th>
-                                        <th>Download Invoice</th>
+                                        <th>Invoice</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -93,24 +93,41 @@
                                         </td>
                                         <td>
                                             @if($order->items->count() > 0)
-                                            <div class="d-flex flex-wrap">
+                                            <div style="max-width: 250px;">
                                                 @foreach($order->items as $item)
-                                                <div class="mr-2 mb-2">
+                                                <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
                                                     @php
                                                     $product = App\Models\Product::find($item->product_id);
                                                     @endphp
-                                                    @if($product && $product->product_image)
-                                                    <img src="{{ asset($product->product_image) }}"
-                                                        alt="{{ $item->product_title }}"
-                                                        style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"
-                                                        title="{{ $item->product_title }} (Qty: {{ $item->quantity }})">
-                                                    @else
-                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 4px;
-                                                                  display: flex; align-items: center; justify-content: center;"
-                                                        title="{{ $item->product_title }} (Qty: {{ $item->quantity }})">
-                                                        <i class="fa fa-box text-muted"></i>
+                                                    <div class="mr-2">
+                                                        @if($product && $product->product_image)
+                                                        <img src="{{ asset($product->product_image) }}"
+                                                            alt="{{ $item->product_title }}"
+                                                            style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">
+                                                        @else
+                                                        <div
+                                                            style="width: 45px; height: 45px; background: #f8f9fa; border-radius: 4px;
+                                                                      display: flex; align-items: center; justify-content: center;">
+                                                            <i class="fa fa-box text-muted"></i>
+                                                        </div>
+                                                        @endif
                                                     </div>
-                                                    @endif
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 12px; font-weight: 600;">
+                                                            {{ Str::limit($item->product_title, 30) }}</div>
+                                                        <div class="d-flex justify-content-between">
+                                                            <span style="font-size: 11px;">Qty:
+                                                                {{ $item->quantity }}</span>
+                                                            @if($item->size)
+                                                            <span class="badge badge-info" style="font-size: 11px;">
+                                                                <i class="fa fa-ruler"></i> {{ $item->size }}
+                                                            </span>
+                                                            @else
+                                                            <span class="badge badge-secondary"
+                                                                style="font-size: 11px;">No Size</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 @endforeach
                                             </div>
@@ -175,9 +192,9 @@
                                             <small class="text-muted">{{ $order->created_at->format('h:i A') }}</small>
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
+                                            <div class="btn-group-vertical" role="group">
                                                 <a href="{{ route('orders.edit', $order->id) }}"
-                                                    class="btn btn-sm btn-warning" title="Edit Order">
+                                                    class="btn btn-sm btn-warning mb-1" title="Edit Order">
                                                     <i class="fa fa-edit"></i> Edit
                                                 </a>
                                                 <a href="{{ route('orders.update-status.form', $order->id) }}"
@@ -287,6 +304,10 @@
     background-color: #dc3545;
 }
 
+.badge-secondary {
+    background-color: #6c757d;
+}
+
 .card {
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -302,7 +323,7 @@
     font-weight: bold;
 }
 
-.btn-group .btn {
+.btn-group-vertical .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
 }
@@ -310,6 +331,14 @@
 .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
+}
+
+.border-bottom {
+    border-bottom: 1px dashed #dee2e6;
+}
+
+.badge i {
+    margin-right: 3px;
 }
 </style>
 @endpush

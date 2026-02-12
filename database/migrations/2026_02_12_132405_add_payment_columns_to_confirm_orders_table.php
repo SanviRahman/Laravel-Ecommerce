@@ -6,42 +6,47 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('confirm_orders', function (Blueprint $table) {
-            // Stripe related columns
-            $table->string('stripe_session_id')->nullable()->after('payment_method');
-            $table->string('stripe_payment_intent_id')->nullable()->after('stripe_session_id');
-            
-            // Mobile banking and bank transfer columns
-            $table->string('mobile_banking_method')->nullable()->after('stripe_payment_intent_id');
+            // Mobile Banking Columns
+            $table->string('mobile_banking_method')->nullable()->after('payment_status');
             $table->string('mobile_number')->nullable()->after('mobile_banking_method');
+            
+            // Bank Transfer Columns
             $table->string('bank_name')->nullable()->after('mobile_number');
             $table->string('account_number')->nullable()->after('bank_name');
+            
+            // Common Transaction ID for both mobile banking and bank transfer
             $table->string('transaction_id')->nullable()->after('account_number');
             
-            // Additional payment info
-            $table->decimal('paid_amount', 10, 2)->nullable()->after('total');
-            $table->timestamp('payment_date')->nullable()->after('paid_amount');
+            // Stripe payment intent ID fix
+            $table->string('stripe_payment_intent_id')->nullable()->after('stripe_payment_intent');
             
-            // Indexes for faster queries
-            $table->index(['stripe_session_id', 'transaction_id']);
+            // Payment amount and date
+            $table->decimal('paid_amount', 10, 2)->nullable()->after('transaction_id');
+            $table->timestamp('payment_date')->nullable()->after('paid_at');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('confirm_orders', function (Blueprint $table) {
             $table->dropColumn([
-                'stripe_session_id',
-                'stripe_payment_intent_id',
                 'mobile_banking_method',
                 'mobile_number',
                 'bank_name',
                 'account_number',
                 'transaction_id',
+                'stripe_payment_intent_id',
                 'paid_amount',
-                'payment_date'
+                'payment_date',
             ]);
         });
     }

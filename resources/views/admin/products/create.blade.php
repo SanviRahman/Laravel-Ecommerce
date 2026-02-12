@@ -96,6 +96,82 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- After product_quantity field or before product_image -->
+                                <div class="form-group">
+                                    <label for="product_category">Category</label>
+                                    <select class="form-control @error('product_category') is-invalid @enderror"
+                                        id="product_category" name="product_category" required
+                                        onchange="toggleSizeFields(this)">
+                                        <option value="">Select Category</option>
+                                        @foreach($categories as $category)
+                                        <option value="{{ $category->id }}"
+                                            {{ old('product_category') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    @error('product_category')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <!-- Clothes Size Selection (Hidden by default) -->
+                                <div id="clothes-size-section" style="display: none;">
+                                    <div class="form-group">
+                                        <label>Available Sizes</label>
+                                        <div class="row">
+                                            @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
+                                            <div class="col-md-2 col-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="available_sizes[]" value="{{ $size }}"
+                                                        id="size_{{ $size }}"
+                                                        {{ is_array(old('available_sizes')) && in_array($size, old('available_sizes')) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="size_{{ $size }}">
+                                                        {{ $size }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                        @error('available_sizes')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="measurement_details">Measurement Details</label>
+                                        <textarea
+                                            class="form-control @error('measurement_details') is-invalid @enderror"
+                                            id="measurement_details" name="measurement_details" rows="3"
+                                            placeholder="Enter size measurements (e.g., S: Chest 36-38, Length 28)">{{ old('measurement_details') }}</textarea>
+                                        @error('measurement_details')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <script>
+                                function toggleSizeFields(select) {
+                                    const clothesSection = document.getElementById('clothes-size-section');
+                                    const selectedOption = select.options[select.selectedIndex];
+                                    const categoryName = selectedOption.text.toLowerCase().trim();
+
+                                    if (categoryName === 'clothes') {
+                                        clothesSection.style.display = 'block';
+                                    } else {
+                                        clothesSection.style.display = 'none';
+                                    }
+                                }
+
+                                // Run on page load
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const categorySelect = document.getElementById('product_category');
+                                    if (categorySelect) {
+                                        toggleSizeFields(categorySelect);
+                                    }
+                                });
+                                </script>
 
                                 <div class="col-md-4">
                                     <!-- Product Image -->
@@ -270,4 +346,3 @@ document.getElementById('product_image').addEventListener('change', function(e) 
 });
 </script>
 @endpush
-
