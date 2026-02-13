@@ -634,7 +634,7 @@
                 </div>
             </nav>
         </header>
-
+        <!-- End Header section -->
         <!-- slider section -->
         <section class="slider_section">
             <div class="slider_container">
