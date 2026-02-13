@@ -774,11 +774,13 @@
             <!-- footer section -->
             <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
                 <div class="container text-center">
-                    <p style="color: #aaa; margin: 0;">
+                    <p style="color: #aaa; width: fit-content; margin: 0 auto; text-align: center;">
                         &copy; <span id="displayYear"></span> All Rights Reserved By
-                        <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">Web Tech
-                            Knowledge</a>
+                        <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">
+                            Web Tech Knowledge
+                        </a>
                     </p>
+
                 </div>
             </footer>
             <!-- footer section -->

@@ -326,6 +326,7 @@
         box-shadow: 0 5px 15px rgba(47, 58, 209, 0.3);
         letter-spacing: 0.5px;
         margin-bottom: 15px;
+        text-decoration: none;
     }
 
     .btn-add-cart:hover {
@@ -434,7 +435,7 @@
         cursor: pointer;
         display: inline-block;
         margin: 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     .size-option .size-label-btn:hover {
@@ -444,7 +445,7 @@
         transform: translateY(-2px);
     }
 
-    .size-option input[type="radio"]:checked + .size-label-btn {
+    .size-option input[type="radio"]:checked+.size-label-btn {
         background: #2f3ad1;
         color: white;
         border-color: #2f3ad1;
@@ -479,33 +480,36 @@
         position: relative;
     }
 
-    /* Spinner animation */
-    .spinner {
-        animation: spin 1s linear infinite;
+    /* Alert Messages */
+    .alert {
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
     }
 
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
+    .alert-success {
+        background-color: #d4edda;
+        border-left-color: #28a745;
+        color: #155724;
     }
 
-    /* SweetAlert positioning */
-    .swal2-container.swal2-top-end {
-        padding-top: 60px !important;
+    .alert-danger {
+        background-color: #f8d7da;
+        border-left-color: #dc3545;
+        color: #721c24;
     }
 
-    .swal2-popup.swal2-toast {
-        margin-top: 60px !important;
-        z-index: 99999 !important;
+    .alert-warning {
+        background-color: #fff3cd;
+        border-left-color: #ffc107;
+        color: #856404;
     }
 
-    .swal2-container {
-        z-index: 99999 !important;
+    .alert-info {
+        background-color: #d1ecf1;
+        border-left-color: #17a2b8;
+        color: #0c5460;
     }
 
     @media (max-width: 991px) {
@@ -596,9 +600,12 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a class="nav-link cart-icon" href="{{ route('cart.index') }}">
                                 Cart Details
+                                @php
+                                $cartCount = session('cart_count', 0);
+                                @endphp
                             </a>
                         </li>
                         <li>
@@ -668,6 +675,56 @@
             </div>
         </section>
 
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+        <div class="container mt-4">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa fa-check-circle"></i> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="container mt-4">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        @endif
+
+        @if(session('warning'))
+        <div class="container mt-4">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-triangle"></i> {{ session('warning') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="container mt-4">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
+                <ul class="mb-0 mt-2">
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        @endif
+
         <!-- Product Detail Section -->
         <div class="product-detail-container">
             <!-- Back Button -->
@@ -700,10 +757,13 @@
                             <!-- Product Price -->
                             <div class="product-price-section">
                                 <span class="product-price">${{ number_format($product->product_price, 2) }}</span>
-                                @if(!empty($product->product_discount_price) && $product->product_discount_price > $product->product_price)
-                                <span class="product-old-price">${{ number_format($product->product_discount_price, 2) }}</span>
+                                @if(!empty($product->product_discount_price) && $product->product_discount_price >
+                                $product->product_price)
+                                <span
+                                    class="product-old-price">${{ number_format($product->product_discount_price, 2) }}</span>
                                 <span class="product-discount">
-                                    Save {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
+                                    Save
+                                    {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
                                 </span>
                                 @endif
                             </div>
@@ -719,14 +779,14 @@
                                         <strong>Category:</strong>
                                         <span>
                                             @php
-                                                // Try to get category name from relationship
-                                                if ($product->category) {
-                                                    echo $product->category->name;
-                                                } else {
-                                                    // Try to find category by ID
-                                                    $category = \App\Models\Category::find($product->product_category);
-                                                    echo $category ? $category->name : 'Uncategorized';
-                                                }
+                                            // Try to get category name from relationship
+                                            if ($product->category) {
+                                            echo $product->category->name;
+                                            } else {
+                                            // Try to find category by ID
+                                            $category = \App\Models\Category::find($product->product_category);
+                                            echo $category ? $category->name : 'Uncategorized';
+                                            }
                                             @endphp
                                         </span>
                                     </div>
@@ -764,7 +824,8 @@
                                     <div class="meta-text">
                                         <strong>Availability:</strong>
                                         @if($product->product_quantity > 0)
-                                        <span class="text-success">In Stock ({{ $product->product_quantity }} available)</span>
+                                        <span class="text-success">In Stock ({{ $product->product_quantity }}
+                                            available)</span>
                                         @else
                                         <span class="text-danger">Out of Stock</span>
                                         @endif
@@ -784,161 +845,133 @@
 
                             <!-- SIZE SELECTION - FIXED AND SIMPLIFIED -->
                             @php
-                                // SIMPLIFIED CLOTHING CATEGORY DETECTION
-                                $isClothingProduct = false;
-                                $categoryName = '';
-                                
-                                // Get category name
-                                if ($product->category) {
-                                    $categoryName = $product->category->name;
-                                } else {
-                                    $category = \App\Models\Category::find($product->product_category);
-                                    $categoryName = $category ? $category->name : '';
-                                }
-                                
-                                // Define clothing keywords
-                                $clothingKeywords = ['cloth', 'clothing', 'fashion', 'men', 'women', 'kids', 'apparel', 't-shirt', 'shirt', 'pant', 'dress', 'jacket', 'hoodie', 'sweater'];
-                                
-                                // Check if category name contains clothing keywords
-                                foreach ($clothingKeywords as $keyword) {
-                                    if (stripos($categoryName, $keyword) !== false) {
-                                        $isClothingProduct = true;
-                                        break;
-                                    }
-                                }
-                                
-                                // Also check product_category field directly
-                                if (!$isClothingProduct) {
-                                    $categoryValue = is_numeric($product->product_category) ? '' : $product->product_category;
-                                    foreach ($clothingKeywords as $keyword) {
-                                        if (stripos($categoryValue, $keyword) !== false) {
-                                            $isClothingProduct = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                
-                                // Check via method if exists
-                                if (!$isClothingProduct && method_exists($product, 'isClothesCategory')) {
-                                    $isClothingProduct = $product->isClothesCategory();
-                                }
-                                
-                                // FORCE TEST - REMOVE THIS AFTER TESTING
-                                // Uncomment the line below to force size display for testing
-                                // $isClothingProduct = true;
-                                
-                                // Get available sizes
-                                $productSizes = [];
-                                if ($isClothingProduct) {
-                                    if (!empty($product->available_sizes)) {
-                                        if (is_array($product->available_sizes)) {
-                                            $productSizes = $product->available_sizes;
-                                        } elseif (is_string($product->available_sizes)) {
-                                            $decoded = json_decode($product->available_sizes, true);
-                                            $productSizes = is_array($decoded) ? $decoded : ['S', 'M', 'L', 'XL', 'XXL'];
-                                        }
-                                    } else {
-                                        // Default sizes
-                                        $productSizes = ['S', 'M', 'L', 'XL', 'XXL'];
-                                    }
-                                }
+                            // SIMPLIFIED CLOTHING CATEGORY DETECTION
+                            $isClothingProduct = false;
+                            $categoryName = '';
+
+                            // Get category name
+                            if ($product->category) {
+                            $categoryName = $product->category->name;
+                            } else {
+                            $category = \App\Models\Category::find($product->product_category);
+                            $categoryName = $category ? $category->name : '';
+                            }
+
+                            // Define clothing keywords
+                            $clothingKeywords = ['cloth', 'clothing', 'fashion', 'men', 'women', 'kids', 'apparel',
+                            't-shirt', 'shirt', 'pant', 'dress', 'jacket', 'hoodie', 'sweater'];
+
+                            // Check if category name contains clothing keywords
+                            foreach ($clothingKeywords as $keyword) {
+                            if (stripos($categoryName, $keyword) !== false) {
+                            $isClothingProduct = true;
+                            break;
+                            }
+                            }
+
+                            // Also check product_category field directly
+                            if (!$isClothingProduct) {
+                            $categoryValue = is_numeric($product->product_category) ? '' : $product->product_category;
+                            foreach ($clothingKeywords as $keyword) {
+                            if (stripos($categoryValue, $keyword) !== false) {
+                            $isClothingProduct = true;
+                            break;
+                            }
+                            }
+                            }
+
+                            // Get available sizes
+                            $productSizes = [];
+                            if ($isClothingProduct) {
+                            if (!empty($product->available_sizes)) {
+                            if (is_array($product->available_sizes)) {
+                            $productSizes = $product->available_sizes;
+                            } elseif (is_string($product->available_sizes)) {
+                            $decoded = json_decode($product->available_sizes, true);
+                            $productSizes = is_array($decoded) ? $decoded : ['S', 'M', 'L', 'XL', 'XXL'];
+                            }
+                            } else {
+                            // Default sizes
+                            $productSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+                            }
+                            }
                             @endphp
 
-                            <!-- DISPLAY SIZE SECTION IF CLOTHING PRODUCT -->
-                            @if($isClothingProduct && !empty($productSizes))
-                            <div class="size-selection-section">
-                                <div class="size-label">
-                                    <i class="fas fa-ruler-combined mr-2"></i> Select Size:
-                                </div>
-                                <div class="size-options">
-                                    @foreach($productSizes as $index => $size)
-                                    <div class="size-option">
-                                        <input type="radio" class="size-radio d-none" name="size" id="size_{{ $size }}"
-                                            value="{{ $size }}" {{ $index == 0 ? 'checked' : '' }}>
-                                        <label for="size_{{ $size }}" class="size-label-btn">
-                                            {{ $size }}
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                </div>
+                            <!-- ADD TO CART FORM - LARAVEL BASED (NO JAVASCRIPT) -->
+                            <form action="{{ route('cart.add', $product->id) }}" method="POST" id="add-to-cart-form">
+                                @csrf
+                                <input type="hidden" name="quantity" id="form-quantity" value="1">
 
-                                @if(!empty($product->measurement_details))
-                                <div class="measurement-details">
-                                    <div class="font-weight-bold mb-2">
-                                        <i class="fas fa-tape mr-2"></i> Measurement Guide:
+                                <!-- DISPLAY SIZE SECTION IF CLOTHING PRODUCT -->
+                                @if($isClothingProduct && !empty($productSizes))
+                                <div class="size-selection-section">
+                                    <div class="size-label">
+                                        <i class="fas fa-ruler-combined mr-2"></i> Select Size:
                                     </div>
-                                    <div class="text-muted">{{ $product->measurement_details }}</div>
+                                    <div class="size-options">
+                                        @foreach($productSizes as $index => $size)
+                                        <div class="size-option">
+                                            <input type="radio" class="size-radio d-none" name="size"
+                                                id="size_{{ $size }}" value="{{ $size }}"
+                                                {{ $index == 0 ? 'checked' : '' }} required>
+                                            <label for="size_{{ $size }}" class="size-label-btn">
+                                                {{ $size }}
+                                            </label>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    @if(!empty($product->measurement_details))
+                                    <div class="measurement-details">
+                                        <div class="font-weight-bold mb-2">
+                                            <i class="fas fa-tape mr-2"></i> Measurement Guide:
+                                        </div>
+                                        <div class="text-muted">{{ $product->measurement_details }}</div>
+                                    </div>
+                                    @endif
                                 </div>
                                 @endif
-                            </div>
-                            @endif
 
-                            <!-- Add to Cart Section -->
-                            <div class="add-to-cart-section">
-                                <div class="quantity-control">
-                                    <div class="quantity-label">Quantity:</div>
-                                    <div class="quantity-wrapper">
-                                        <button type="button" class="quantity-btn" id="decrease-qty">-</button>
-                                        <input type="number" class="quantity-input" id="quantity" value="1" min="1"
-                                            max="{{ $product->product_quantity }}">
-                                        <button type="button" class="quantity-btn" id="increase-qty">+</button>
+                                <!-- Add to Cart Section -->
+                                <div class="add-to-cart-section">
+                                    <div class="quantity-control">
+                                        <div class="quantity-label">Quantity:</div>
+                                        <div class="quantity-wrapper">
+                                            <button type="button" class="quantity-btn" id="decrease-qty">-</button>
+                                            <input type="number" class="quantity-input" id="quantity" name="quantity"
+                                                value="1" min="1" max="{{ $product->product_quantity }}">
+                                            <button type="button" class="quantity-btn" id="increase-qty">+</button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <button type="button" class="btn-add-cart" id="add-to-cart-btn"
-                                    data-product-id="{{ $product->id }}"
-                                    {{ $product->product_quantity < 1 ? 'disabled' : '' }}>
-                                    <i class="fas fa-shopping-cart"></i>
-                                    <span id="add-to-cart-text">Add to Cart</span>
-                                </button>
-
-                                <form action="{{ route('buy.now', $product->id) }}" method="POST" id="buy-now-form">
-                                    @csrf
-                                    <input type="hidden" name="quantity" id="buy-now-quantity" value="1">
-                                    @if($isClothingProduct && !empty($productSizes))
-                                    <input type="hidden" name="size" id="buy-now-size" value="{{ $productSizes[0] ?? 'S' }}">
-                                    @endif
-                                    <button type="submit" class="btn-buy-now"
+                                    <button type="submit" class="btn-add-cart" id="add-to-cart-btn"
                                         {{ $product->product_quantity < 1 ? 'disabled' : '' }}>
-                                        <i class="fas fa-bolt"></i>
-                                        <span>Buy Now</span>
+                                        <i class="fas fa-shopping-cart"></i>
+                                        <span>Add to Cart</span>
                                     </button>
-                                </form>
-                            </div>
+                                </div>
+                            </form>
+
+                            <!-- Buy Now Form -->
+                            <form action="{{ route('buy.now', $product->id) }}" method="POST" id="buy-now-form">
+                                @csrf
+                                <input type="hidden" name="quantity" id="buy-now-quantity" value="1">
+                                @if($isClothingProduct && !empty($productSizes))
+                                <input type="hidden" name="size" id="buy-now-size"
+                                    value="{{ $productSizes[0] ?? 'S' }}">
+                                @endif
+                                <button type="submit" style="padding: 20px 20px;" class="btn-buy-now"
+                                    {{ $product->product_quantity < 1 ? 'disabled' : '' }}>
+                                    <i class="fas fa-bolt"></i>
+                                    <span>Buy Now</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Success/Error Messages -->
-    @if(session('success'))
-    <div class="container mt-4">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fa fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    </div>
-    @endif
-
-    @if($errors->any())
-    <div class="container mt-4">
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fa fa-exclamation-circle"></i> Please fix the following errors:
-            <ul class="mb-0 mt-2">
-                @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    </div>
-    @endif
 
     <!-- Contact Section -->
     <section class="contact_section" style="background-color: #f8f9fa; padding: 60px 0;">
@@ -947,7 +980,8 @@
                 <h2 style="color: #333; font-size: 36px; font-weight: 700;">
                     Contact Us
                 </h2>
-                <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+                <p class="text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as
+                    possible.</p>
             </div>
 
             <div class="container-bg"
@@ -1156,38 +1190,40 @@
         <!-- footer section -->
         <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
             <div class="container text-center">
-                <p style="color: #aaa; margin: 0;">
+                <p style="color: #aaa; width: fit-content; margin: 0 auto; text-align: center;">
                     &copy; <span id="displayYear"></span> All Rights Reserved By
-                    <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">Web Tech Knowledge</a>
+                    <a href="https://html.design/" style="color: #f7444e; text-decoration: none;">
+                        Web Tech Knowledge
+                    </a>
                 </p>
             </div>
         </footer>
+        <!-- footer section -->
     </section>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Simple JavaScript for Quantity Control Only (No AJAX) -->
     <script>
     $(document).ready(function() {
-        // CSRF token setup
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        // ============== QUANTITY CONTROL ==============
+        // ============== QUANTITY CONTROL ONLY ==============
         const quantityInput = $('#quantity');
         const decreaseBtn = $('#decrease-qty');
         const increaseBtn = $('#increase-qty');
-        const maxStock = {{ $product->product_quantity ?? 0 }};
-        const productId = {{ $product->id ?? 0 }};
+        const maxStock = {
+            {
+                $product - > product_quantity ?? 0
+            }
+        };
 
         // Decrease quantity
         decreaseBtn.on('click', function() {
             let currentValue = parseInt(quantityInput.val()) || 1;
             if (currentValue > 1) {
                 quantityInput.val(currentValue - 1);
+                // Update both form fields
+                $('#form-quantity').val(currentValue - 1);
                 $('#buy-now-quantity').val(currentValue - 1);
             }
         });
@@ -1197,17 +1233,12 @@
             let currentValue = parseInt(quantityInput.val()) || 1;
             if (currentValue < maxStock) {
                 quantityInput.val(currentValue + 1);
+                // Update both form fields
+                $('#form-quantity').val(currentValue + 1);
                 $('#buy-now-quantity').val(currentValue + 1);
             } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Maximum Quantity',
-                    text: 'Only ' + maxStock + ' items available in stock.',
-                    position: 'top-end',
-                    toast: true,
-                    timer: 3000,
-                    showConfirmButton: false
-                });
+                // Simple alert (no SweetAlert)
+                alert('Only ' + maxStock + ' items available in stock.');
             }
         });
 
@@ -1217,159 +1248,18 @@
             if (val < 1) val = 1;
             if (val > maxStock) val = maxStock;
             $(this).val(val);
+            $('#form-quantity').val(val);
             $('#buy-now-quantity').val(val);
         });
 
-        // ============== SIZE SELECTION - FIXED ==============
-        @php
-            // Use the SAME variable as in HTML section
-            $showSizeSection = isset($isClothingProduct) ? $isClothingProduct : false;
-        @endphp
-        
-        @if($showSizeSection)
+        // ============== SIZE SELECTION FOR BUY NOW ==============
+        @if($isClothingProduct && !empty($productSizes))
         // Update buy now size when size changes
         $('input[name="size"]').on('change', function() {
             const selectedSize = $(this).val();
             $('#buy-now-size').val(selectedSize);
         });
-
-        // Initialize size
-        const initialSize = $('input[name="size"]:checked').val();
-        if (initialSize) {
-            $('#buy-now-size').val(initialSize);
-        }
         @endif
-
-        // ============== ADD TO CART ==============
-        $('#add-to-cart-btn').on('click', function(e) {
-            e.preventDefault();
-
-            const btn = $(this);
-            const quantity = parseInt($('#quantity').val()) || 1;
-
-            // Get selected size for clothes category
-            let size = null;
-            @if($showSizeSection)
-            size = $('input[name="size"]:checked').val();
-            if (!size) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Size Required',
-                    text: 'Please select a size for this product.',
-                    position: 'top-end',
-                    toast: true,
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                return;
-            }
-            @endif
-
-            // Disable button and show loading
-            const originalText = $('#add-to-cart-text').text();
-            btn.prop('disabled', true);
-            $('#add-to-cart-text').html('<i class="fas fa-spinner fa-spin"></i> Adding...');
-
-            // Send AJAX request
-            $.ajax({
-                url: '{{ route("cart.add", $product->id) }}',
-                type: 'POST',
-                data: {
-                    quantity: quantity,
-                    size: size,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: response.message || 'Product added to cart successfully!',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            toast: true,
-                            position: 'top-end',
-                            timerProgressBar: true
-                        });
-
-                        // Update cart count
-                        if (response.cart_count !== undefined) {
-                            $('.cart-count').text(response.cart_count);
-                        } else {
-                            updateCartCount();
-                        }
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message || 'Something went wrong!',
-                            position: 'top-end',
-                            toast: true,
-                            timer: 3000,
-                            showConfirmButton: false
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    console.error('AJAX Error:', xhr);
-                    let message = 'Failed to add product to cart. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: message,
-                        position: 'top-end',
-                        toast: true,
-                        timer: 3000,
-                        showConfirmButton: false
-                    });
-                },
-                complete: function() {
-                    btn.prop('disabled', false);
-                    $('#add-to-cart-text').text(originalText);
-                }
-            });
-        });
-
-        // ============== BUY NOW ==============
-        $('#buy-now-form').on('submit', function(e) {
-            @if($showSizeSection)
-            const selectedSize = $('input[name="size"]:checked').val();
-            if (!selectedSize) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Size Required',
-                    text: 'Please select a size for this product.',
-                    position: 'top-end',
-                    toast: true,
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                return false;
-            }
-            @endif
-            return true;
-        });
-
-        // ============== UPDATE CART COUNT ==============
-        function updateCartCount() {
-            $.ajax({
-                url: '{{ route("cart.count") }}',
-                type: 'GET',
-                success: function(data) {
-                    $('.cart-count').text(data.count || 0);
-                },
-                error: function(xhr) {
-                    console.error('Error updating cart count:', xhr);
-                }
-            });
-        }
-
-        // Initialize cart count on page load
-        updateCartCount();
     });
     </script>
 </body>

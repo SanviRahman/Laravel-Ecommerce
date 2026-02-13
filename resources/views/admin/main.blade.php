@@ -69,9 +69,7 @@
                 </div>
                 <div class="right-menu list-inline no-margin-bottom">
                     <div class="list-inline-item">
-                        <a href="#" class="search-open nav-link">
-                            <i class="icon-magnifying-glass-browser"></i>
-                        </a>
+                        <a href="{{ route('index') }}" style="text-decoration: none;">Home Page</a>
                     </div>
 
                     <!-- Log out -->
