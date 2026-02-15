@@ -3,13 +3,12 @@ namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
     /**
-     * Show contact form
+     * Show contact form (Public)
      */
     public function index()
     {
@@ -17,7 +16,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Handle contact form submission
+     * Handle contact form submission (Public)
      */
     public function store(Request $request)
     {
@@ -27,22 +26,13 @@ class ContactController extends Controller
             'email'   => 'required|email|max:255',
             'phone'   => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:255',
-            'message' => 'required|string|min:10|max:2000',
+            'message' => 'required|string|min:10|max:5000',
         ], [
             'name.required'    => 'Please enter your name.',
-            'name.string'      => 'Name must be a valid text.',
-            'name.max'         => 'Name should not exceed 255 characters.',
             'email.required'   => 'Please enter your email address.',
             'email.email'      => 'Please enter a valid email address.',
-            'email.max'        => 'Email should not exceed 255 characters.',
-            'phone.string'     => 'Phone number must be valid.',
-            'phone.max'        => 'Phone number should not exceed 20 characters.',
-            'subject.string'   => 'Subject must be a valid text.',
-            'subject.max'      => 'Subject should not exceed 255 characters.',
             'message.required' => 'Please enter your message.',
-            'message.string'   => 'Message must be a valid text.',
             'message.min'      => 'Message must be at least 10 characters.',
-            'message.max'      => 'Message should not exceed 2000 characters.',
         ]);
 
         if ($validator->fails()) {
@@ -56,7 +46,7 @@ class ContactController extends Controller
         $userAgent = $request->header('User-Agent');
 
         // Create contact message
-        $contactMessage = ContactMessage::create([
+        ContactMessage::create([
             'name'       => $request->name,
             'email'      => $request->email,
             'phone'      => $request->phone,
@@ -67,41 +57,22 @@ class ContactController extends Controller
             'status'     => 'unread',
         ]);
 
-        // Send email notification to admin (optional)
-        // Uncomment if you want to send email
-        /*
-        try {
-            $adminEmail = config('mail.from.address', 'admin@example.com');
-            Mail::to($adminEmail)->send(new ContactFormSubmitted($contactMessage));
-        } catch (\Exception $e) {
-            \Log::error('Failed to send contact email: ' . $e->getMessage());
-        }
-        */
-
-        // Send confirmation email to user (optional)
-        /*
-        try {
-            Mail::to($request->email)->send(new ContactConfirmation($contactMessage));
-        } catch (\Exception $e) {
-            \Log::error('Failed to send confirmation email: ' . $e->getMessage());
-        }
-        */
-
         // Redirect with success message
         return redirect()->route('contact')
             ->with('success', 'Thank you for contacting us! We have received your message and will get back to you soon.');
     }
+
+    // ============= ADMIN METHODS =============
 
     /**
      * Admin: List all contact messages
      */
     public function adminIndex(Request $request)
     {
-
         $query = ContactMessage::latest();
 
         // Search functionality
-        if ($request->has('search') && $request->search) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -113,11 +84,11 @@ class ContactController extends Controller
         }
 
         // Filter by status
-        if ($request->has('status') && $request->status) {
+        if ($request->has('status') && ! empty($request->status)) {
             $query->where('status', $request->status);
         }
 
-        $messages = $query->paginate(20);
+        $messages = $query->paginate(20)->withQueryString();
 
         // Statistics
         $stats = [
@@ -125,29 +96,16 @@ class ContactController extends Controller
             'unread'  => ContactMessage::where('status', 'unread')->count(),
             'read'    => ContactMessage::where('status', 'read')->count(),
             'replied' => ContactMessage::where('status', 'replied')->count(),
+            'spam'    => ContactMessage::where('status', 'spam')->count(),
             'today'   => ContactMessage::whereDate('created_at', today())->count(),
         ];
 
-        return view('admin.contacts.index', compact('messages', 'stats'));
+        return view('admin.contact.index', compact('messages', 'stats'));
     }
 
-    /**
-     * Admin: View single message
-     */
-    public function adminShow($id)
-    {
-        $message = ContactMessage::findOrFail($id);
-
-        // Mark as read when viewed
-        if ($message->status == 'unread') {
-            $message->markAsRead();
-        }
-
-        return view('admin.contacts.show', compact('message'));
-    }
 
     /**
-     * Admin: Update message status
+     * Admin: Update message status and notes
      */
     public function adminUpdate(Request $request, $id)
     {
@@ -155,7 +113,7 @@ class ContactController extends Controller
 
         $request->validate([
             'status'      => 'required|in:unread,read,replied,spam',
-            'admin_notes' => 'nullable|string|max:1000',
+            'admin_notes' => 'nullable|string|max:2000',
         ]);
 
         $message->update([
@@ -163,7 +121,7 @@ class ContactController extends Controller
             'admin_notes' => $request->admin_notes,
         ]);
 
-        return redirect()->route('admin.contacts.show', $id)
+        return redirect()->route('contacts.index', $id)
             ->with('success', 'Message updated successfully.');
     }
 
@@ -172,21 +130,24 @@ class ContactController extends Controller
      */
     public function adminDestroy($id)
     {
-        $message = ContactMessage::findOrFail($id);
-        $message->delete();
+        try {
+            $message = ContactMessage::findOrFail($id);
+            $message->delete();
 
-        return redirect()->route('admin.contacts.index')
-            ->with('success', 'Message deleted successfully.');
+            return redirect()->route('contacts.index')
+                ->with('success', 'Message deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete message. Please try again.');
+        }
     }
-
+  
     /**
-     * Admin: Mark all as read
+     * Admin: Edit message form
      */
-    public function adminMarkAllRead()
+    public function adminEdit($id)
     {
-        ContactMessage::where('status', 'unread')->update(['status' => 'read']);
-
-        return redirect()->route('admin.contacts.index')
-            ->with('success', 'All messages marked as read.');
+        $message = ContactMessage::findOrFail($id);
+        return view('admin.contact.edit', compact('message'));
     }
 }

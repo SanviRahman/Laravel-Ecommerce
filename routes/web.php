@@ -1,19 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\GuestOrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\GuestOrderController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [UserController::class, 'home'])->name('index');
 Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('products/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/viewallproducts', [UserController::class, 'viewAllProducts'])->name('viewallproducts');
-
 
 // Order Routes
 // Guest Order Routes (No Auth Required)
@@ -23,19 +22,9 @@ Route::get('/order/confirm', [CartController::class, 'showOrderConfirmForm'])->n
 Route::post('/order/confirm', [CartController::class, 'processOrderConfirmation'])->name('cart.confirm.process');
 Route::post('/buy-now/{product}', [CartController::class, 'buyNow'])->name('buy.now');
 
-// Contact Routes (Public)
+// Public Contact Routes
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
-
-// Admin Contact Management
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/contacts', [ContactController::class, 'adminIndex'])->name('contacts.index');
-    Route::get('/contacts/{id}', [ContactController::class, 'adminShow'])->name('contacts.show');
-    Route::put('/contacts/{id}', [ContactController::class, 'adminUpdate'])->name('contacts.update');
-    Route::delete('/contacts/{id}', [ContactController::class, 'adminDestroy'])->name('contacts.destroy');
-    Route::post('/contacts/mark-all-read', [ContactController::class, 'adminMarkAllRead'])->name('contacts.mark-all-read');
-});
-
 
 // Cart Routes
 Route::prefix('cart')->group(function () {
@@ -47,14 +36,12 @@ Route::prefix('cart')->group(function () {
     Route::get('/data', [CartController::class, 'getCartData'])->name('cart.data');
 });
 
-
 // User Profile Routes (Auth Required)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 
 //Guest user order tracking routes (No Auth Required)
 Route::prefix('track-order')->name('guest.')->group(function () {
@@ -63,7 +50,6 @@ Route::prefix('track-order')->name('guest.')->group(function () {
     Route::get('/{order_number}', [GuestOrderController::class, 'showOrderDetails'])->name('order.details');
     Route::post('/{order_number}/send-details', [GuestOrderController::class, 'sendOrderDetails'])->name('order.send.details');
 });
-
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -96,8 +82,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     //Download Invoice Route
     Route::get('/{order_number}/invoice', [AdminController::class, 'downloadInvoice'])->name('order.invoice');
-});
 
+    // Contact Messages Routes
+    Route::get('/contacts', [ContactController::class, 'adminIndex'])->name('contacts.index');
+    // Route::get('/contacts/{id}', [ContactController::class, 'adminShow'])->name('contacts.show');
+    Route::get('/contacts/{id}/edit', [ContactController::class, 'adminEdit'])->name('contacts.edit');
+    Route::put('/contacts/{id}', [ContactController::class, 'adminUpdate'])->name('contacts.update');
+    Route::delete('/contacts/{id}', [ContactController::class, 'adminDestroy'])->name('contacts.destroy');
+});
 
 // Payment Routes
 Route::get('/payment/options', [PaymentController::class, 'showPaymentOptions'])->name('payment.options');
@@ -115,10 +107,5 @@ Route::post('/payment/mobile-banking', [PaymentController::class, 'processMobile
 
 // Bank Transfer
 Route::post('/payment/bank-transfer', [PaymentController::class, 'processBankTransfer'])->name('payment.bank.transfer');
-
-
-
-
-
 
 require __DIR__ . '/auth.php';

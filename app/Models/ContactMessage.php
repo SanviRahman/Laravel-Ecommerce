@@ -20,6 +20,53 @@ class ContactMessage extends Model
         'admin_notes',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Get status badge class
+     */
+    public function getStatusBadgeAttribute()
+    {
+        return match ($this->status) {
+            'unread'  => 'badge badge-warning',
+            'read'    => 'badge badge-info',
+            'replied' => 'badge badge-success',
+            'spam'    => 'badge badge-danger',
+            default   => 'badge badge-secondary',
+        };
+    }
+
+    /**
+     * Get formatted created date
+     */
+    public function getFormattedDateAttribute()
+    {
+        return $this->created_at->format('M d, Y h:i A');
+    }
+
+    /**
+     * Get short message preview
+     */
+    public function getMessagePreviewAttribute($length = 100)
+    {
+        return strlen($this->message) > $length
+            ? substr($this->message, 0, $length) . '...'
+            : $this->message;
+    }
+
+    /**
+     * Mark as read
+     */
+    public function markAsRead()
+    {
+        if ($this->status == 'unread') {
+            $this->update(['status' => 'read']);
+        }
+    }
+
     /**
      * Scope for unread messages
      */
@@ -29,51 +76,10 @@ class ContactMessage extends Model
     }
 
     /**
-     * Scope for read messages
+     * Scope for today's messages
      */
-    public function scopeRead($query)
+    public function scopeToday($query)
     {
-        return $query->where('status', 'read');
-    }
-
-    /**
-     * Get status badge class
-     */
-    public function getStatusBadgeAttribute()
-    {
-        $badges = [
-            'unread'  => 'badge badge-warning',
-            'read'    => 'badge badge-info',
-            'replied' => 'badge badge-success',
-            'spam'    => 'badge badge-danger',
-        ];
-
-        return $badges[$this->status] ?? 'badge badge-secondary';
-    }
-
-    /**
-     * Get formatted created date
-     */
-    public function getFormattedDateAttribute()
-    {
-        return $this->created_at->format('d M, Y h:i A');
-    }
-
-    /**
-     * Mark as read
-     */
-    public function markAsRead()
-    {
-        $this->update(['status' => 'read']);
-        return $this;
-    }
-
-    /**
-     * Mark as replied
-     */
-    public function markAsReplied()
-    {
-        $this->update(['status' => 'replied']);
-        return $this;
+        return $query->whereDate('created_at', today());
     }
 }

@@ -33,6 +33,51 @@
         <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
         <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+    <style>
+    /* Footer Styles - সরাসরি লেআউটে যোগ করা */
+    .footer {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%) !important;
+        color: #fff !important;
+        padding: 20px 0 !important;
+        margin-top: 40px !important;
+        border-top: 1px solid #333 !important;
+    }
+
+    .footer .footer__block {
+        background: transparent !important;
+    }
+
+    .footer p {
+        color: #fff !important;
+        margin: 0 !important;
+        font-size: 14px !important;
+    }
+
+    .footer a {
+        color: #4e73df !important;
+        text-decoration: none !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .footer a:hover {
+        color: #667eea !important;
+        text-decoration: underline !important;
+    }
+
+    /* নিশ্চিত করার জন্য আরও কিছু স্টাইল */
+    .footer, 
+    .footer *,
+    .footer__block,
+    .footer .container-fluid,
+    .footer .text-center {
+        background: transparent !important;
+    }
+    
+    .footer__block.block.no-margin-bottom {
+        background: transparent !important;
+    }
+    </style>
 </head>
 
 <body>
@@ -111,22 +156,20 @@
                 </li>
 
                 <!-- Category Menu -->
-                <li class="{{ 
-    str_contains($currentRoute, 'categories') || 
-    str_contains($currentRoute, 'category') ? 'active' : '' 
-}}">
-                    <a href="#categoryDropdown" aria-expanded="{{ 
-        str_contains($currentRoute, 'categories') || 
-        str_contains($currentRoute, 'category') ? 'true' : 'false' 
-    }}" data-toggle="collapse" class="{{ 
-        str_contains($currentRoute, 'categories') || 
-        str_contains($currentRoute, 'category') ? '' : 'collapsed' 
+                <li
+                    class="{{str_contains($currentRoute, 'categories') ||str_contains($currentRoute, 'category') ? 'active' : ''}}">
+                    <a href="#categoryDropdown" aria-expanded="{{
+        str_contains($currentRoute, 'categories') ||
+        str_contains($currentRoute, 'category') ? 'true' : 'false'
+    }}" data-toggle="collapse" class="{{
+        str_contains($currentRoute, 'categories') ||
+        str_contains($currentRoute, 'category') ? '' : 'collapsed'
     }}">
                         <i class="icon-windows"></i>Category
                     </a>
-                    <ul id="categoryDropdown" class="collapse list-unstyled {{ 
-        str_contains($currentRoute, 'categories') || 
-        str_contains($currentRoute, 'category') ? 'show' : '' 
+                    <ul id="categoryDropdown" class="collapse list-unstyled {{
+        str_contains($currentRoute, 'categories') ||
+        str_contains($currentRoute, 'category') ? 'show' : ''
     }}">
                         <li><a href="{{ route('categories.index') }}"
                                 class="{{ $currentRoute == 'categories.index' ? 'active' : '' }}">
@@ -151,13 +194,13 @@
                         <li><a href="{{ route('orders.view') }}">View All Orders</a></li>
                     </ul>
                 </li>
+                <!-- Contact Messages Menu (Separate from Category) -->
+                <li class="{{ request()->is('admin/contacts*') ? 'active' : '' }}">
+                    <a href="{{ route('contacts.index') }}">
+                        <i class="icon-email"></i>View All Messages
+                    </a>
+                </li>
             </ul>
-            <!-- Contact Messages Menu (Separate from Category) -->
-            <li class="{{ request()->is('admin/contacts*') ? 'active' : '' }}">
-                <a href="{{ url('/admin/contacts') }}">
-                    <i class="icon-email"></i>View All Messages
-                </a>
-            </li>
         </nav>
         <!-- Sidebar Navigation end-->
 

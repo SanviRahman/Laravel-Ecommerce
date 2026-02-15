@@ -916,7 +916,6 @@
             </div>
 
             <!-- footer section -->
-            <!-- footer section -->
             <footer class="footer_section" style="border-top: 1px solid #444; padding: 20px 0; margin-top: 40px;">
                 <div class="container text-center">
                     <p style="color: #aaa; width: fit-content; margin: 0 auto; text-align: center;">
