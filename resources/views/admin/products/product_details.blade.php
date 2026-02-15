@@ -919,6 +919,10 @@
                                             </label>
                                         </div>
                                         @endforeach
+                                        <div>
+                                            <img src="https://mediamodifier.com/blog/wp-content/uploads/2023/03/new-design0-5-2048x1463.jpeg"
+                                                alt="" height="300px" width="450px" style="border: 1px solid #ddd; border-radius: 8px; padding: 5px;">
+                                        </div>
                                     </div>
 
                                     @if(!empty($product->measurement_details))
@@ -931,6 +935,8 @@
                                     @endif
                                 </div>
                                 @endif
+
+
 
                                 <!-- Add to Cart Section -->
                                 <div class="add-to-cart-section">

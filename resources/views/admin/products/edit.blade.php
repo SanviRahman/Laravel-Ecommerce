@@ -99,24 +99,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Similar to create.blade.php but with old values from $product -->
-                                <div class="form-group">
-                                    <label for="product_category">Category</label>
-                                    <select class="form-control @error('product_category') is-invalid @enderror"
-                                        id="product_category" name="product_category" required
-                                        onchange="toggleSizeFields(this)">
-                                        <option value="">Select Category</option>
-                                        @foreach($categories as $category)
-                                        <option value="{{ $category->id }}"
-                                            {{ old('product_category', $product->product_category) == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                        @endforeach
-                                    </select>
-                                    @error('product_category')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
 
                                 <!-- Clothes Size Selection -->
                                 <div id="clothes-size-section"
