@@ -11,9 +11,9 @@
     <meta name="keywords" content="" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}" type="image/x-icon">
 
-    <title>Track Your Order - {{ config('app.name') }}</title>
+    <title>Giftos - Track Order</title>
 
     <!-- slider stylesheet -->
     <link rel="stylesheet" type="text/css"

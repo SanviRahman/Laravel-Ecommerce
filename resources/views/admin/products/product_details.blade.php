@@ -31,7 +31,7 @@
     <!-- responsive style -->
     <link href="{{ asset('front_end/css/responsive.css') }}" rel="stylesheet" />
 
-    <title>Giftos</title>
+    <title>Giftos - Product Details</title>
 
     <style>
     body {
@@ -756,7 +756,7 @@
 
                             <!-- Product Price -->
                             <div class="product-price-section">
-                                <span class="product-price">${{ number_format($product->product_price, 2) }}</span>
+                                <span class="product-price">Price:${{ number_format($product->product_price, 2) }}</span>
                                 @if(!empty($product->product_discount_price) && $product->product_discount_price >
                                 $product->product_price)
                                 <span
