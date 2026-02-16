@@ -455,6 +455,7 @@ class CartController extends Controller
             'address.min'      => 'Address must be at least 10 characters.',
         ]);
 
+        // Check terms agreement
         if (! $request->has('terms') || $request->terms !== 'on') {
             return redirect()->back()
                 ->withInput()
@@ -519,14 +520,14 @@ class CartController extends Controller
                 'tax'            => $tax,
                 'total'          => $total,
                 'status'         => 'pending',
-                'payment_method' => 'cash_on_delivery',
+                'payment_method' => 'pending', // Will be updated during payment
                 'payment_status' => 'pending',
                 'customer_type'  => Auth::check() ? 'registered' : 'guest',
             ];
 
             $order  = ConfirmOrder::create($orderData);
 
-            // Create order items and update product stock
+            // Create order items
             foreach ($cartItemsData as $item) {
                 OrderItem::create([
                     'order_id'      => $order->id,
@@ -537,15 +538,24 @@ class CartController extends Controller
                     'size'          => $item['size'] ?? null,
                     'total'         => $item['price'] * $item['quantity'],
                 ]);
-
-                // Update product stock
-                $product = Product::find($item['product_id']);
-                if ($product) {
-                    $newQuantity               = $product->product_quantity - $item['quantity'];
-                    $product->product_quantity = max(0, $newQuantity);
-                    $product->save();
-                }
             }
+
+            // STOCK UPDATE REMOVED FROM HERE - Will be done after payment confirmation
+            // We don't reduce stock until payment is confirmed
+
+            DB::commit();
+
+            // Store order ID in session for payment
+            session([
+                'current_order_id' => $order->id,
+                'order_summary'    => [
+                    'subtotal'     => $subtotal,
+                    'shipping'     => $shipping,
+                    'tax'          => $tax,
+                    'total'        => $total,
+                    'order_number' => $orderNumber,
+                ],
+            ]);
 
             // Clear the cart after successful order
             ProductAddCard::where(function ($query) use ($sessionId) {
@@ -564,14 +574,12 @@ class CartController extends Controller
                     'guest_order_id'     => $order->id,
                     'guest_order_number' => $order->order_number,
                     'guest_order_email'  => $request->email,
-                    'order_placed'       => true,
                 ]);
             }
 
-            DB::commit();
-
-            return redirect()->route('order.success', ['id' => $order->id])
-                ->with('success', 'Order placed successfully! Your order number is: ' . $order->order_number);
+            // Redirect to payment options
+            return redirect()->route('payment.options', ['order_id' => $order->id])
+                ->with('success', 'Order confirmed! Please select your payment method.');
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -278,14 +278,23 @@
                             We've sent a confirmation email to <strong>{{ $order->email }}</strong> with your order details.
                         </div>
                         
-                        <div class="action-buttons">
-                            <a href="{{ url('/') }}" class="btn btn-primary mr-3">
-                                <i class="fas fa-tachometer-alt"></i> Go to Home
-                            </a>
-                            <a href="{{ route('guest.track.order') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-search"></i> Track Order
-                            </a>
-                        </div>
+                         <!-- Action Buttons -->
+            <div class="text-center mt-5">
+                <a href="{{ url('/') }}" class="btn-home">
+                    <i class="fas fa-home me-2"></i> Back to Home
+                </a>
+                <a href="{{ route('guest.track.order') }}" class="btn-home ms-3" style="background: #6c757d;">
+                    <i class="fas fa-truck me-2"></i> Track Order
+                </a>
+                <!-- Invoice Download Button - NEW -->
+                <a href="{{ route('invoice.download', $order->order_number) }}" class="btn-home ms-3"
+                    style="background: #28a745;" target="_blank">
+                    <i class="fas fa-download me-2"></i> Download Invoice
+                </a>
+                <a href="javascript:window.print()" class="btn-home ms-3" style="background: #17a2b8;">
+                    <i class="fas fa-print me-2"></i> Print Receipt
+                </a>
+            </div>
                     </div>
                 </div>
             </div>

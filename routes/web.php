@@ -7,6 +7,7 @@ use App\Http\Controllers\GuestOrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [UserController::class, 'home'])->name('index');
@@ -106,5 +107,7 @@ Route::post('/payment/mobile-banking', [PaymentController::class, 'processMobile
 
 // Bank Transfer
 Route::post('/payment/bank-transfer', [PaymentController::class, 'processBankTransfer'])->name('payment.bank.transfer');
+// Payment Invoice Download
+Route::get('/invoice/download/{order_number}', [InvoiceController::class, 'download'])->name('invoice.download');
 
 require __DIR__ . '/auth.php';

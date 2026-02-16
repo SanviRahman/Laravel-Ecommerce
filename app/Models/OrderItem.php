@@ -25,12 +25,13 @@ class OrderItem extends Model
         'quantity' => 'integer',
     ];
 
-    // FIX: Specify the foreign key column
+    // Relationship with ConfirmOrder
     public function order()
     {
         return $this->belongsTo(ConfirmOrder::class, 'order_id');
     }
 
+    // Relationship with Product
     public function product()
     {
         return $this->belongsTo(Product::class);
@@ -49,4 +50,6 @@ class OrderItem extends Model
             }
         });
     }
+    
+    // REMOVED: public function orderItems() - এই মেথডটি সরিয়ে ফেলুন কারণ এটি কনফিউশন তৈরি করছে
 }

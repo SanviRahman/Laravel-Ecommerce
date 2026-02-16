@@ -61,7 +61,7 @@ class PaymentController extends Controller
                 ->with('error', 'Order not found.');
         }
 
-        // Security check - FIXED HERE
+        // Security check
         if (Auth::check()) {
             // For logged in users, check user_id
             if ($order->user_id && $order->user_id != Auth::id()) {
@@ -71,7 +71,9 @@ class PaymentController extends Controller
         } else {
             // For guest users, check if this is their current order in session
             $sessionOrderId = session('current_order_id');
-            if ($sessionOrderId && $sessionOrderId != $orderId) {
+            $guestOrderId   = session('guest_order_id');
+
+            if ($sessionOrderId != $orderId && $guestOrderId != $orderId) {
                 return redirect()->route('cart.index')
                     ->with('error', 'Unauthorized access to this order.');
             }
@@ -298,6 +300,8 @@ class PaymentController extends Controller
 
             DB::commit();
 
+            Session::put('guest_order_number', $order->order_number);
+            Session::put('guest_email', $order->email);
             return redirect()->route('order.success', ['id' => $order->id])
                 ->with('success', 'Payment successful! Your order has been placed.');
 
@@ -411,6 +415,7 @@ class PaymentController extends Controller
 
                 DB::commit();
 
+                // Stripe success method এ
                 return view('payment.success', [
                     'order'          => $order,
                     'payment_method' => 'Stripe/Card',
@@ -431,6 +436,8 @@ class PaymentController extends Controller
 
                 DB::commit();
 
+                Session::put('guest_order_number', $order->order_number);
+                Session::put('guest_email', $order->email);
                 return redirect()->route('payment.options')
                     ->with('error', 'Payment was not completed. Status: ' . $stripeSession->payment_status);
             }

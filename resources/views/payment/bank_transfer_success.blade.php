@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bank Transfer Payment Successful</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-     <!-- Basic -->
+    <!-- Basic -->
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!-- Mobile Metas -->
@@ -102,91 +103,103 @@
     }
     </style>
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .success-container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 40px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .success-icon {
-            width: 100px;
-            height: 100px;
-            background: #28a745;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-        }
-        .success-icon i {
-            font-size: 50px;
-            color: white;
-        }
-        .order-details {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 30px;
-        }
-        .info-card {
-            background: #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .bank-icon {
-            font-size: 30px;
-            color: #28a745;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        .btn-home {
-            background: #007bff;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-            transition: all 0.3s;
-        }
-        .btn-home:hover {
-            background: #0056b3;
-            color: white;
-            text-decoration: none;
-            transform: translateY(-2px);
-        }
-        .verification-note {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
-        .bank-details-card {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 10px;
-            padding: 20px;
-        }
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .success-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: #28a745;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+    }
+
+    .success-icon i {
+        font-size: 50px;
+        color: white;
+    }
+
+    .order-details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin-top: 30px;
+    }
+
+    .info-card {
+        background: #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .bank-icon {
+        font-size: 30px;
+        color: #28a745;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+
+    .btn-home {
+        background: #007bff;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+        transition: all 0.3s;
+    }
+
+    .btn-home:hover {
+        background: #0056b3;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .verification-note {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+    }
+
+    .bank-details-card {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 10px;
+        padding: 20px;
+    }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="success-container">
             <div class="success-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
-            
+
             <h1 class="text-center mb-3" style="color: #28a745;">Bank Transfer Submitted Successfully!</h1>
             <p class="text-center text-muted mb-4">
-                Your bank transfer payment details have been submitted. Please keep your transaction ID for verification.
+                Your bank transfer payment details have been submitted. Please keep your transaction ID for
+                verification.
             </p>
 
             <!-- Bank Icon -->
@@ -198,7 +211,7 @@
             <!-- Order Details -->
             <div class="order-details">
                 <h4 class="mb-4"><i class="fas fa-receipt"></i> Order & Payment Details</h4>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <div class="info-card">
@@ -282,8 +295,10 @@
             <div class="verification-note mt-4">
                 <h5><i class="fas fa-info-circle"></i> Important Note</h5>
                 <p class="mb-2">Your payment is currently <strong>pending verification</strong>.</p>
-                <p class="mb-2">Please complete the bank transfer within <strong>24 hours</strong> using the above company bank details.</p>
-                <p class="mb-0">Our accounts team will verify your payment within <strong>1-2 business days</strong>. You will receive a confirmation email once verified.</p>
+                <p class="mb-2">Please complete the bank transfer within <strong>24 hours</strong> using the above
+                    company bank details.</p>
+                <p class="mb-0">Our accounts team will verify your payment within <strong>1-2 business days</strong>.
+                    You will receive a confirmation email once verified.</p>
             </div>
 
             <!-- Next Steps -->
@@ -329,9 +344,14 @@
                 <a href="{{ route('guest.track.order') }}" class="btn-home ms-3" style="background: #6c757d;">
                     <i class="fas fa-truck me-2"></i> Track Order
                 </a>
-                <button onclick="window.print()" class="btn-home ms-3" style="background: #17a2b8;">
+                <!-- Invoice Download Button - NEW -->
+                <a href="{{ route('invoice.download', $order->order_number) }}" class="btn-home ms-3"
+                    style="background: #28a745;" target="_blank">
+                    <i class="fas fa-download me-2"></i> Download Invoice
+                </a>
+                <a href="javascript:window.print()" class="btn-home ms-3" style="background: #17a2b8;">
                     <i class="fas fa-print me-2"></i> Print Receipt
-                </button>
+                </a>
             </div>
 
             <!-- Contact Information -->
@@ -339,7 +359,7 @@
                 <p class="text-muted small">
                     Need help with bank transfer? Contact our accounts team:
                     <br>
-                    <i class="fas fa-phone"></i> +880 1234 567891 (Accounts) | 
+                    <i class="fas fa-phone"></i> +880 1234 567891 (Accounts) |
                     <i class="fas fa-envelope"></i> accounts@giftos.com
                 </p>
             </div>
@@ -348,37 +368,38 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Print receipt function
-        function printReceipt() {
-            window.print();
-        }
+    // Print receipt function
+    function printReceipt() {
+        window.print();
+    }
 
-        // Copy transaction ID
-        function copyTransactionId() {
-            const text = "{{ $transaction_id }}";
-            navigator.clipboard.writeText(text).then(function() {
-                alert('Transaction ID copied to clipboard!');
-            });
-        }
+    // Copy transaction ID
+    function copyTransactionId() {
+        const text = "{{ $transaction_id }}";
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Transaction ID copied to clipboard!');
+        });
+    }
 
-        // Copy bank details
-        function copyBankDetails() {
-            let details = '';
-            @if(isset($bank_details))
-                @foreach($bank_details as $key => $value)
-                    details += "{{ $key }}: {{ $value }}\n";
-                @endforeach
-            @endif
-            
-            navigator.clipboard.writeText(details).then(function() {
-                alert('Bank details copied to clipboard!');
-            });
-        }
+    // Copy bank details
+    function copyBankDetails() {
+        let details = '';
+        @if(isset($bank_details))
+        @foreach($bank_details as $key => $value)
+        details += "{{ $key }}: {{ $value }}\n";
+        @endforeach
+        @endif
 
-        // Auto redirect after 30 seconds (optional)
-        setTimeout(function() {
-            // window.location.href = "{{ url('/') }}";
-        }, 30000);
+        navigator.clipboard.writeText(details).then(function() {
+            alert('Bank details copied to clipboard!');
+        });
+    }
+
+    // Auto redirect after 30 seconds (optional)
+    setTimeout(function() {
+        // window.location.href = "{{ url('/') }}";
+    }, 30000);
     </script>
 </body>
+
 </html>
