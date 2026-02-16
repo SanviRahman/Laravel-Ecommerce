@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <!-- Same header as options.blade.php -->
-     <!-- Basic -->
+    <!-- Basic -->
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!-- Mobile Metas -->
@@ -13,9 +14,7 @@
     <meta name="author" content="" />
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
-    <title>
-        Payment Options - E-Commerce
-    </title>
+    <title>Giftos - Payment Success</title>
 
     <!-- bootstrap core css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('front_end/css/bootstrap.css') }}" />
@@ -177,12 +176,68 @@
     .alert {
         border-radius: 5px;
     }
+
+    /* Action Buttons */
+    .action-buttons {
+        margin-top: 40px;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 25px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin: 8px;
+        min-width: 180px;
+        color: #fff;
+    }
+
+    /* Different Button Colors */
+    .btn-home {
+        background: #007bff;
+    }
+
+    .btn-track {
+        background: #6c757d;
+    }
+
+    .btn-invoice {
+        background: #28a745;
+    }
+
+    .btn-print {
+        background: #17a2b8;
+    }
+
+    /* Hover Effect */
+    .btn-action:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
+        color: #fff;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 576px) {
+        .btn-action {
+            width: 100%;
+            margin: 6px 0;
+        }
+    }
     </style>
-    <title>Payment Success - E-Commerce</title>
+
     <!-- Include same CSS files -->
 </head>
+
 <body>
-     <!-- header section -->
+    <!-- header section -->
     <header class="header_section">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
             <a class="navbar-brand" href="{{ url('/') }}">
@@ -243,19 +298,20 @@
         </nav>
     </header>
     <!-- end header section -->
-    
+
     <!-- Success Section -->
     <section class="success-section" style="padding: 100px 0; background: #f8f9fa; min-height: 70vh;">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <div class="success-box text-center" style="background: white; padding: 50px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <div class="success-box text-center"
+                        style="background: white; padding: 50px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                         <div class="success-icon mb-4">
                             <i class="fas fa-check-circle" style="font-size: 80px; color: #28a745;"></i>
                         </div>
                         <h2 class="mb-3">Payment Successful!</h2>
                         <p class="text-muted mb-4">Thank you for your order. We've received your payment.</p>
-                        
+
                         <div class="order-details mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
                             <h5 class="mb-3">Order Details</h5>
                             <div class="row text-left">
@@ -268,40 +324,41 @@
                                 </div>
                                 <div class="col-md-6">
                                     <p><strong>Total Amount:</strong> ${{ number_format($order->total, 2) }}</p>
-                                    <p><strong>Status:</strong> <span class="badge badge-success">Payment Successful</span></p>
+                                    <p><strong>Status:</strong> <span class="badge badge-success">Payment
+                                            Successful</span></p>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="alert alert-info mb-4">
-                            <i class="fas fa-info-circle"></i> 
-                            We've sent a confirmation email to <strong>{{ $order->email }}</strong> with your order details.
+                            <i class="fas fa-info-circle"></i>
+                            We've sent a confirmation email to <strong>{{ $order->email }}</strong> with your order
+                            details.
                         </div>
-                        
-                         <!-- Action Buttons -->
-            <div class="text-center mt-5">
-                <a href="{{ url('/') }}" class="btn-home">
-                    <i class="fas fa-home me-2"></i> Back to Home
-                </a>
-                <a href="{{ route('guest.track.order') }}" class="btn-home ms-3" style="background: #6c757d;">
-                    <i class="fas fa-truck me-2"></i> Track Order
-                </a>
-                <!-- Invoice Download Button - NEW -->
-                <a href="{{ route('invoice.download', $order->order_number) }}" class="btn-home ms-3"
-                    style="background: #28a745;" target="_blank">
-                    <i class="fas fa-download me-2"></i> Download Invoice
-                </a>
-                <a href="javascript:window.print()" class="btn-home ms-3" style="background: #17a2b8;">
-                    <i class="fas fa-print me-2"></i> Print Receipt
-                </a>
-            </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons text-center">
+                            <a href="{{ url('/') }}" class="btn-action btn-home">
+                                <i class="fas fa-home"></i> Back to Home
+                            </a>
+                            <a href="{{ route('guest.track.order') }}" class="btn-action btn-track">
+                                <i class="fas fa-truck"></i> Track Order
+                            </a>
+                            <a href="{{ route('invoice.download', $order->order_number) }}"
+                                class="btn-action btn-invoice" target="_blank">
+                                <i class="fas fa-download"></i> Download Invoice
+                            </a>
+                            <a href="javascript:window.print()" class="btn-action btn-print">
+                                <i class="fas fa-print"></i> Print Receipt
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
-    
+
+
     <!-- footer section -->
     <footer class="footer_section" style="background-color: #2c2c2c; color: white; padding: 20px 0;">
         <div class="container text-center">
@@ -316,4 +373,5 @@
     <script src="{{ asset('front_end/js/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('front_end/js/bootstrap.js') }}"></script>
 </body>
+
 </html>

@@ -13,9 +13,7 @@
     <meta name="author" content="" />
     <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
-    <title>
-        Payment Options - E-Commerce
-    </title>
+    <title>Giftos - Payment Options</title>
 
     <!-- bootstrap core css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('front_end/css/bootstrap.css') }}" />
