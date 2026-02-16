@@ -350,7 +350,7 @@
                                                 Welcome To Your <br>
                                                 Dashboard
                                             </h1>
-                                            <p>
+                                            <p style="text-align: justify;">
                                                 Manage your orders, track shipments, and update your profile information
                                                 from one place. Stay updated with your purchase history and order
                                                 status.

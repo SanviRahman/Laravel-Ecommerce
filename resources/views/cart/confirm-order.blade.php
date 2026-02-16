@@ -750,7 +750,7 @@
                                                 Welcome To Our <br>
                                                 Gift Shop
                                             </h1>
-                                            <p>
+                                            <p style="text-align: justify;">
                                                 Sequi perspiciatis nulla reiciendis, rem, tenetur impedit, eveniet non
                                                 necessitatibus error distinctio mollitia suscipit. Nostrum fugit
                                                 doloribus consequatur distinctio esse, possimus maiores aliquid repellat

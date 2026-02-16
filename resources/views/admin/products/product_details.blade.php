@@ -649,7 +649,7 @@
                                                 Welcome To Our <br>
                                                 Gift Shop
                                             </h1>
-                                            <p>
+                                            <p style="text-align: justify;">
                                                 Sequi perspiciatis nulla reiciendis, rem, tenetur impedit, eveniet non
                                                 necessitatibus error distinctio mollitia suscipit. Nostrum fugit
                                                 doloribus consequatur distinctio esse, possimus maiores aliquid repellat
@@ -756,7 +756,8 @@
 
                             <!-- Product Price -->
                             <div class="product-price-section">
-                                <span class="product-price">Price:${{ number_format($product->product_price, 2) }}</span>
+                                <span
+                                    class="product-price">Price:${{ number_format($product->product_price, 2) }}</span>
                                 @if(!empty($product->product_discount_price) && $product->product_discount_price >
                                 $product->product_price)
                                 <span
@@ -843,7 +844,7 @@
                             </div>
                             @endif
 
-                            <!-- SIZE SELECTION - FIXED AND SIMPLIFIED -->
+                            <!-- SIZE SELECTION SECTION - FIXED VERSION -->
                             @php
                             // SIMPLIFIED CLOTHING CATEGORY DETECTION
                             $isClothingProduct = false;
@@ -883,21 +884,24 @@
                             // Get available sizes
                             $productSizes = [];
                             if ($isClothingProduct) {
-                            if (!empty($product->available_sizes)) {
+                            // Check if product has available_sizes column/attribute
+                            if (isset($product->available_sizes) && !empty($product->available_sizes)) {
                             if (is_array($product->available_sizes)) {
                             $productSizes = $product->available_sizes;
                             } elseif (is_string($product->available_sizes)) {
                             $decoded = json_decode($product->available_sizes, true);
-                            $productSizes = is_array($decoded) ? $decoded : ['S', 'M', 'L', 'XL', 'XXL'];
+                            $productSizes = is_array($decoded) ? $decoded : explode(',', $product->available_sizes);
                             }
-                            } else {
-                            // Default sizes
+                            }
+
+                            // Default sizes if none found
+                            if (empty($productSizes)) {
                             $productSizes = ['S', 'M', 'L', 'XL', 'XXL'];
                             }
                             }
                             @endphp
 
-                            <!-- ADD TO CART FORM - LARAVEL BASED (NO JAVASCRIPT) -->
+                            <!-- ADD TO CART FORM -->
                             <form action="{{ route('cart.add', $product->id) }}" method="POST" id="add-to-cart-form">
                                 @csrf
                                 <input type="hidden" name="quantity" id="form-quantity" value="1">
@@ -907,22 +911,19 @@
                                 <div class="size-selection-section">
                                     <div class="size-label">
                                         <i class="fas fa-ruler-combined mr-2"></i> Select Size:
+                                        <span class="text-danger">*</span>
                                     </div>
                                     <div class="size-options">
                                         @foreach($productSizes as $index => $size)
                                         <div class="size-option">
-                                            <input type="radio" class="size-radio d-none" name="size"
-                                                id="size_{{ $size }}" value="{{ $size }}"
+                                            <input type="radio" class="size-radio" name="size"
+                                                id="size_{{ $size }}_{{ $index }}" value="{{ $size }}"
                                                 {{ $index == 0 ? 'checked' : '' }} required>
-                                            <label for="size_{{ $size }}" class="size-label-btn">
+                                            <label for="size_{{ $size }}_{{ $index }}" class="size-label-btn">
                                                 {{ $size }}
                                             </label>
                                         </div>
                                         @endforeach
-                                        <div>
-                                            <img src="https://mediamodifier.com/blog/wp-content/uploads/2023/03/new-design0-5-2048x1463.jpeg"
-                                                alt="" height="300px" width="450px" style="border: 1px solid #ddd; border-radius: 8px; padding: 5px;">
-                                        </div>
                                     </div>
 
                                     @if(!empty($product->measurement_details))
@@ -935,8 +936,6 @@
                                     @endif
                                 </div>
                                 @endif
-
-
 
                                 <!-- Add to Cart Section -->
                                 <div class="add-to-cart-section">
@@ -962,16 +961,20 @@
                             <form action="{{ route('buy.now', $product->id) }}" method="POST" id="buy-now-form">
                                 @csrf
                                 <input type="hidden" name="quantity" id="buy-now-quantity" value="1">
+
                                 @if($isClothingProduct && !empty($productSizes))
+                                <!-- Hidden field for buy now size - will be updated by JavaScript -->
                                 <input type="hidden" name="size" id="buy-now-size"
                                     value="{{ $productSizes[0] ?? 'S' }}">
                                 @endif
+
                                 <button type="submit" style="padding: 20px 20px;" class="btn-buy-now"
                                     {{ $product->product_quantity < 1 ? 'disabled' : '' }}>
                                     <i class="fas fa-bolt"></i>
                                     <span>Buy Now</span>
                                 </button>
                             </form>
+
                         </div>
                     </div>
                 </div>
@@ -1211,9 +1214,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Simple JavaScript for Quantity Control Only (No AJAX) -->
+    <!-- Simple JavaScript for Quantity Control and Size Selection -->
     <script>
     $(document).ready(function() {
-        // ============== QUANTITY CONTROL ONLY ==============
+        // ============== QUANTITY CONTROL ==============
         const quantityInput = $('#quantity');
         const decreaseBtn = $('#decrease-qty');
         const increaseBtn = $('#increase-qty');
@@ -1243,7 +1247,6 @@
                 $('#form-quantity').val(currentValue + 1);
                 $('#buy-now-quantity').val(currentValue + 1);
             } else {
-                // Simple alert (no SweetAlert)
                 alert('Only ' + maxStock + ' items available in stock.');
             }
         });
@@ -1258,16 +1261,136 @@
             $('#buy-now-quantity').val(val);
         });
 
-        // ============== SIZE SELECTION FOR BUY NOW ==============
+        // ============== SIZE SELECTION FIX ==============
         @if($isClothingProduct && !empty($productSizes))
-        // Update buy now size when size changes
-        $('input[name="size"]').on('change', function() {
+
+        // Debug: Check if radio buttons exist
+        console.log('Size radio buttons found:', $('input[name="size"]').length);
+
+        // When any size radio button is clicked
+        $('input[name="size"]').on('change click', function() {
             const selectedSize = $(this).val();
+            console.log('Size selected:', selectedSize);
+
+            // Update buy now hidden field
             $('#buy-now-size').val(selectedSize);
+
+            // Visual feedback - remove active class from all labels
+            $('.size-option .size-label-btn').removeClass('active-selected');
+
+            // Add active class to selected label
+            $(this).siblings('.size-label-btn').addClass('active-selected');
         });
+
+        // Trigger change event on page load to set initial value
+        setTimeout(function() {
+            $('input[name="size"]:checked').trigger('change');
+        }, 100);
+
+        // Make sure the form submits with the selected size
+        $('#add-to-cart-form').on('submit', function() {
+            const selectedSize = $('input[name="size"]:checked').val();
+            console.log('Submitting with size:', selectedSize);
+            return true;
+        });
+
         @endif
+
+        // ============== FORM SUBMISSION VALIDATION ==============
+        $('#add-to-cart-form').on('submit', function(e) {
+            @if($isClothingProduct && !empty($productSizes))
+            // Check if size is selected for clothing products
+            const selectedSize = $('input[name="size"]:checked').val();
+            if (!selectedSize) {
+                e.preventDefault();
+                alert('Please select a size before adding to cart.');
+                return false;
+            }
+            @endif
+
+            // Check quantity
+            const qty = parseInt($('#quantity').val());
+            if (qty < 1 || qty > maxStock) {
+                e.preventDefault();
+                alert('Please enter a valid quantity (1-' + maxStock + ').');
+                return false;
+            }
+
+            return true;
+        });
+
+        // Buy Now form validation
+        $('#buy-now-form').on('submit', function(e) {
+            @if($isClothingProduct && !empty($productSizes))
+            const selectedSize = $('#buy-now-size').val();
+            console.log('Buy Now with size:', selectedSize);
+
+            if (!selectedSize) {
+                e.preventDefault();
+                alert('Please select a size before buying.');
+                return false;
+            }
+            @endif
+
+            const qty = parseInt($('#quantity').val());
+            if (qty < 1 || qty > maxStock) {
+                e.preventDefault();
+                alert('Please enter a valid quantity (1-' + maxStock + ').');
+                return false;
+            }
+
+            return true;
+        });
     });
     </script>
+
+    <!-- Add CSS for selected state -->
+    <style>
+    .size-option .size-label-btn.active-selected {
+        background: #2f3ad1 !important;
+        color: white !important;
+        border-color: #2f3ad1 !important;
+        box-shadow: 0 4px 10px rgba(47, 58, 209, 0.2) !important;
+    }
+
+    /* Make sure radio is hidden but accessible */
+    .size-radio {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    /* Better visual feedback */
+    .size-option {
+        position: relative;
+        display: inline-block;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+
+    .size-label-btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #495057;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .size-label-btn:hover {
+        border-color: #2f3ad1;
+        background: #f0f2ff;
+        color: #2f3ad1;
+        transform: translateY(-2px);
+    }
+    </style>
 </body>
 
 </html>
