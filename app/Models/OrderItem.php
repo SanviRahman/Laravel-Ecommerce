@@ -51,5 +51,4 @@ class OrderItem extends Model
         });
     }
     
-    // REMOVED: public function orderItems() - এই মেথডটি সরিয়ে ফেলুন কারণ এটি কনফিউশন তৈরি করছে
 }
