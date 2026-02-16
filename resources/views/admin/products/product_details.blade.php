@@ -934,6 +934,10 @@
                                         <div class="text-muted">{{ $product->measurement_details }}</div>
                                     </div>
                                     @endif
+                                    <div >
+                                        <img src="https://cdn.shopify.com/s/files/1/0660/6123/8461/files/Black_and_White_Modern_Size_Chart_Instagram_Post_480x480.png?v=1732964208" alt="" height="320px" width="450px" style="border-radius: 10px;"
+>
+                                    </div>
                                 </div>
                                 @endif
 
