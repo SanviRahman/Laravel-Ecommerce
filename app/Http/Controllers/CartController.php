@@ -520,7 +520,7 @@ class CartController extends Controller
                 'tax'            => $tax,
                 'total'          => $total,
                 'status'         => 'pending',
-                'payment_method' => 'pending', // Will be updated during payment
+                'payment_method' => 'pending',
                 'payment_status' => 'pending',
                 'customer_type'  => Auth::check() ? 'registered' : 'guest',
             ];
@@ -540,12 +540,9 @@ class CartController extends Controller
                 ]);
             }
 
-            // STOCK UPDATE REMOVED FROM HERE - Will be done after payment confirmation
-            // We don't reduce stock until payment is confirmed
-
             DB::commit();
 
-            // Store order ID in session for payment
+            // Store ALL order data in session for payment page
             session([
                 'current_order_id' => $order->id,
                 'order_summary'    => [
@@ -554,6 +551,14 @@ class CartController extends Controller
                     'tax'          => $tax,
                     'total'        => $total,
                     'order_number' => $orderNumber,
+                ],
+                // Store customer information separately
+                'customer_info'    => [
+                    'name'    => $request->name,
+                    'email'   => $request->email,
+                    'phone'   => $request->phone,
+                    'address' => $request->address,
+                    'notes'   => $request->notes,
                 ],
             ]);
 

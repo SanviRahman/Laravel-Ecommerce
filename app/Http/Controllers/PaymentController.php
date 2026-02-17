@@ -63,13 +63,11 @@ class PaymentController extends Controller
 
         // Security check
         if (Auth::check()) {
-            // For logged in users, check user_id
             if ($order->user_id && $order->user_id != Auth::id()) {
                 return redirect()->route('cart.index')
                     ->with('error', 'Unauthorized access to this order.');
             }
         } else {
-            // For guest users, check if this is their current order in session
             $sessionOrderId = session('current_order_id');
             $guestOrderId   = session('guest_order_id');
 
@@ -84,6 +82,9 @@ class PaymentController extends Controller
             return redirect()->route('order.success', ['id' => $order->id])
                 ->with('info', 'This order is already paid.');
         }
+
+        // Get customer info from session (set in confirm order)
+        $customerInfo = session('customer_info', []);
 
         // Prepare order summary from order data
         $orderSummary = [
@@ -100,6 +101,7 @@ class PaymentController extends Controller
                     'price'         => $item->price,
                     'quantity'      => $item->quantity,
                     'total'         => $item->total,
+                    'size'          => $item->size,
                 ];
             })->toArray(),
         ];
@@ -116,7 +118,7 @@ class PaymentController extends Controller
         // Get user data if logged in
         $user = Auth::user();
 
-        return view('payment.options', compact('orderSummary', 'cartCount', 'user', 'order'));
+        return view('payment.options', compact('orderSummary', 'cartCount', 'user', 'order', 'customerInfo'));
     }
 
     /**
@@ -499,7 +501,7 @@ class PaymentController extends Controller
         // Get order from session
         $orderId = session('current_order_id');
         if (! $orderId) {
-            return redirect()->route('order.confirm')
+            return redirect()->route('confirm_order')
                 ->with('error', 'Please confirm your order first.');
         }
 
@@ -526,7 +528,7 @@ class PaymentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Update order details and mark as COD - CHANGED: Set payment_status to 'paid' for COD
+            // Update order details and mark as COD
             $order->update([
                 'name'           => $validated['name'],
                 'email'          => $validated['email'],
@@ -534,7 +536,7 @@ class PaymentController extends Controller
                 'address'        => $validated['address'],
                 'notes'          => $validated['notes'] ?? $order->notes,
                 'payment_method' => 'cash_on_delivery',
-                'payment_status' => 'paid', // CHANGED: Set to paid immediately for COD
+                'payment_status' => 'paid',
                 'status'         => 'pending',
                 'payment_date'   => now(),
                 'is_paid'        => true,
@@ -553,16 +555,19 @@ class PaymentController extends Controller
             // Clear cart for this user/session
             $this->clearCartAfterPayment();
 
+            // Store guest order info in session for tracking (if guest user)
+            if (! Auth::check()) {
+                Session::put('guest_order_number', $order->order_number);
+                Session::put('guest_email', $order->email);
+            }
+
             DB::commit();
 
-            // Clear session
-            Session::forget(['current_order_id', 'order_summary']);
+            // Clear session data
+            Session::forget(['current_order_id', 'order_summary', 'customer_info']);
 
-            return view('payment.success', [
-                'order'          => $order,
-                'payment_method' => 'Cash on Delivery',
-                'message'        => 'Your order has been placed successfully. Please have the exact amount ready for delivery.',
-            ]);
+            // Set success message and redirect to home page
+            return redirect()->route('index')->with('success', 'Your order has been placed successfully! Order #' . $order->order_number . ' will be delivered soon. Please have the exact amount ready for delivery.');
 
         } catch (\Exception $e) {
             DB::rollBack();

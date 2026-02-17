@@ -418,38 +418,54 @@
     }
 
     .size-option {
-        margin-right: 0;
+        position: relative;
+        display: inline-block;
+        margin-right: 10px;
+        margin-bottom: 10px;
     }
 
-    .size-option .size-label-btn {
+    .size-radio {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .size-label-btn {
+        display: inline-block;
+        padding: 12px 24px;
         background: white;
         border: 2px solid #dee2e6;
-        padding: 12px 24px;
         border-radius: 8px;
         font-size: 16px;
         font-weight: 600;
         color: #495057;
+        cursor: pointer;
         transition: all 0.3s;
         min-width: 70px;
         text-align: center;
-        cursor: pointer;
-        display: inline-block;
-        margin: 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
-    .size-option .size-label-btn:hover {
+    .size-label-btn:hover {
         border-color: #2f3ad1;
         background: #f0f2ff;
         color: #2f3ad1;
         transform: translateY(-2px);
     }
 
-    .size-option input[type="radio"]:checked+.size-label-btn {
+    .size-radio:checked+.size-label-btn {
         background: #2f3ad1;
         color: white;
         border-color: #2f3ad1;
         box-shadow: 0 4px 10px rgba(47, 58, 209, 0.2);
+    }
+
+    /* Active selected size class for JavaScript */
+    .size-label-btn.active-selected {
+        background: #2f3ad1 !important;
+        color: white !important;
+        border-color: #2f3ad1 !important;
+        box-shadow: 0 4px 10px rgba(47, 58, 209, 0.2) !important;
     }
 
     .measurement-details {
@@ -569,7 +585,7 @@
             gap: 8px;
         }
 
-        .size-option .size-label-btn {
+        .size-label-btn {
             padding: 10px 18px !important;
             min-width: 50px;
             font-size: 14px;
@@ -603,9 +619,6 @@
                         <li class="nav-item">
                             <a class="nav-link cart-icon" href="{{ route('cart.index') }}">
                                 Cart Details
-                                @php
-                                $cartCount = session('cart_count', 0);
-                                @endphp
                             </a>
                         </li>
                         <li>
@@ -635,6 +648,7 @@
             </nav>
         </header>
         <!-- End Header section -->
+
         <!-- slider section -->
         <section class="slider_section">
             <div class="slider_container">
@@ -756,8 +770,8 @@
 
                             <!-- Product Price -->
                             <div class="product-price-section">
-                                <span
-                                    class="product-price">Price:${{ number_format($product->product_price, 2) }}</span>
+                                <span class="product-price">Price:
+                                    ${{ number_format($product->product_price, 2) }}</span>
                                 @if(!empty($product->product_discount_price) && $product->product_discount_price >
                                 $product->product_price)
                                 <span
@@ -844,7 +858,7 @@
                             </div>
                             @endif
 
-                            <!-- SIZE SELECTION SECTION - FIXED VERSION -->
+                            <!-- SIZE SELECTION SECTION -->
                             @php
                             // SIMPLIFIED CLOTHING CATEGORY DETECTION
                             $isClothingProduct = false;
@@ -934,9 +948,11 @@
                                         <div class="text-muted">{{ $product->measurement_details }}</div>
                                     </div>
                                     @endif
-                                    <div >
-                                        <img src="https://cdn.shopify.com/s/files/1/0660/6123/8461/files/Black_and_White_Modern_Size_Chart_Instagram_Post_480x480.png?v=1732964208" alt="" height="320px" width="450px" style="border-radius: 10px;"
->
+
+                                    <div style="margin-top: 15px;">
+                                        <img src="https://cdn.shopify.com/s/files/1/0660/6123/8461/files/Black_and_White_Modern_Size_Chart_Instagram_Post_480x480.png?v=1732964208"
+                                            alt="Size Chart" height="320px" width="450px"
+                                            style="border-radius: 10px; max-width: 100%; height: auto;">
                                     </div>
                                 </div>
                                 @endif
@@ -978,7 +994,6 @@
                                     <span>Buy Now</span>
                                 </button>
                             </form>
-
                         </div>
                     </div>
                 </div>
@@ -1211,13 +1226,11 @@
                 </p>
             </div>
         </footer>
-        <!-- footer section -->
     </section>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Simple JavaScript for Quantity Control Only (No AJAX) -->
     <!-- Simple JavaScript for Quantity Control and Size Selection -->
     <script>
     $(document).ready(function() {
@@ -1236,7 +1249,6 @@
             let currentValue = parseInt(quantityInput.val()) || 1;
             if (currentValue > 1) {
                 quantityInput.val(currentValue - 1);
-                // Update both form fields
                 $('#form-quantity').val(currentValue - 1);
                 $('#buy-now-quantity').val(currentValue - 1);
             }
@@ -1247,7 +1259,6 @@
             let currentValue = parseInt(quantityInput.val()) || 1;
             if (currentValue < maxStock) {
                 quantityInput.val(currentValue + 1);
-                // Update both form fields
                 $('#form-quantity').val(currentValue + 1);
                 $('#buy-now-quantity').val(currentValue + 1);
             } else {
@@ -1265,136 +1276,28 @@
             $('#buy-now-quantity').val(val);
         });
 
-        // ============== SIZE SELECTION FIX ==============
-        @if($isClothingProduct && !empty($productSizes))
+        // ============== SIZE SELECTION ==============
+        @if(isset($isClothingProduct) && $isClothingProduct && !empty($productSizes))
 
-        // Debug: Check if radio buttons exist
-        console.log('Size radio buttons found:', $('input[name="size"]').length);
-
-        // When any size radio button is clicked
-        $('input[name="size"]').on('change click', function() {
-            const selectedSize = $(this).val();
-            console.log('Size selected:', selectedSize);
-
-            // Update buy now hidden field
+        // Size selection - simple and clean
+        $('input[name="size"]').on('change', function() {
+            var selectedSize = $(this).val();
             $('#buy-now-size').val(selectedSize);
-
-            // Visual feedback - remove active class from all labels
-            $('.size-option .size-label-btn').removeClass('active-selected');
-
-            // Add active class to selected label
-            $(this).siblings('.size-label-btn').addClass('active-selected');
+            console.log('Size selected: ' + selectedSize);
         });
 
-        // Trigger change event on page load to set initial value
-        setTimeout(function() {
-            $('input[name="size"]:checked').trigger('change');
-        }, 100);
-
-        // Make sure the form submits with the selected size
-        $('#add-to-cart-form').on('submit', function() {
-            const selectedSize = $('input[name="size"]:checked').val();
-            console.log('Submitting with size:', selectedSize);
-            return true;
-        });
+        // Set initial size on page load
+        var initialSize = $('input[name="size"]:checked').val();
+        if (initialSize) {
+            $('#buy-now-size').val(initialSize);
+        }
 
         @endif
 
-        // ============== FORM SUBMISSION VALIDATION ==============
-        $('#add-to-cart-form').on('submit', function(e) {
-            @if($isClothingProduct && !empty($productSizes))
-            // Check if size is selected for clothing products
-            const selectedSize = $('input[name="size"]:checked').val();
-            if (!selectedSize) {
-                e.preventDefault();
-                alert('Please select a size before adding to cart.');
-                return false;
-            }
-            @endif
-
-            // Check quantity
-            const qty = parseInt($('#quantity').val());
-            if (qty < 1 || qty > maxStock) {
-                e.preventDefault();
-                alert('Please enter a valid quantity (1-' + maxStock + ').');
-                return false;
-            }
-
-            return true;
-        });
-
-        // Buy Now form validation
-        $('#buy-now-form').on('submit', function(e) {
-            @if($isClothingProduct && !empty($productSizes))
-            const selectedSize = $('#buy-now-size').val();
-            console.log('Buy Now with size:', selectedSize);
-
-            if (!selectedSize) {
-                e.preventDefault();
-                alert('Please select a size before buying.');
-                return false;
-            }
-            @endif
-
-            const qty = parseInt($('#quantity').val());
-            if (qty < 1 || qty > maxStock) {
-                e.preventDefault();
-                alert('Please enter a valid quantity (1-' + maxStock + ').');
-                return false;
-            }
-
-            return true;
-        });
+        // Debug info
+        console.log('Max stock: ' + maxStock);
     });
     </script>
-
-    <!-- Add CSS for selected state -->
-    <style>
-    .size-option .size-label-btn.active-selected {
-        background: #2f3ad1 !important;
-        color: white !important;
-        border-color: #2f3ad1 !important;
-        box-shadow: 0 4px 10px rgba(47, 58, 209, 0.2) !important;
-    }
-
-    /* Make sure radio is hidden but accessible */
-    .size-radio {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    /* Better visual feedback */
-    .size-option {
-        position: relative;
-        display: inline-block;
-        margin-right: 10px;
-        margin-bottom: 10px;
-    }
-
-    .size-label-btn {
-        display: inline-block;
-        padding: 12px 24px;
-        background: white;
-        border: 2px solid #dee2e6;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        color: #495057;
-        cursor: pointer;
-        transition: all 0.3s;
-        min-width: 70px;
-        text-align: center;
-    }
-
-    .size-label-btn:hover {
-        border-color: #2f3ad1;
-        background: #f0f2ff;
-        color: #2f3ad1;
-        transform: translateY(-2px);
-    }
-    </style>
 </body>
 
 </html>

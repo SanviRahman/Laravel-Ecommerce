@@ -202,6 +202,54 @@
     </div>
     <!-- end hero area -->
 
+    <!-- আপনার index.blade.php তে success message দেখানোর জন্য নিচের কোড যোগ করুন -->
+    <!-- সাধারণত hero section এর পরে বা products section এর আগে -->
+
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+    <div class="container mt-4">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="container mt-4">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    @endif
+
+    @if(session('info'))
+    <div class="container mt-4">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fa fa-info-circle"></i> {{ session('info') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    @endif
+
+    @if(session('warning'))
+    <div class="container mt-4">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-triangle"></i> {{ session('warning') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    @endif
+
     <!-- shop section -->
     <br><br><br>
     <section class="shop_section layout_padding"

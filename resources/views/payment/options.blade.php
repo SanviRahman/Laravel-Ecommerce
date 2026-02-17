@@ -402,41 +402,67 @@
                             <!-- Customer Information -->
                             <div class="mb-4">
                                 <h4>Customer Information</h4>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Full Name *</label>
-                                            <input type="text" name="name" class="form-control" required
-                                                value="{{ Auth::user()->name ?? old('name') }}">
+
+                                <!-- Display customer information as text, not in input fields -->
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="font-weight-bold">Full Name:</label>
+                                                <p class="form-control-plaintext">
+                                                    {{ $customerInfo['name'] ?? (Auth::user()->name ?? 'Not provided') }}
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="font-weight-bold">Email Address:</label>
+                                                <p class="form-control-plaintext">
+                                                    {{ $customerInfo['email'] ?? (Auth::user()->email ?? 'Not provided') }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="font-weight-bold">Phone Number:</label>
+                                                <p class="form-control-plaintext">
+                                                    {{ $customerInfo['phone'] ?? (Auth::user()->phone ?? 'Not provided') }}
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="font-weight-bold">Shipping Address:</label>
+                                                <p class="form-control-plaintext">
+                                                    {{ $customerInfo['address'] ?? (Auth::user()->address ?? 'Not provided') }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        @if(isset($customerInfo['notes']) && !empty($customerInfo['notes']))
+                                        <div class="row">
+                                            <div class="col-12 mb-3">
+                                                <label class="font-weight-bold">Order Notes:</label>
+                                                <p class="form-control-plaintext">{{ $customerInfo['notes'] }}</p>
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        <!-- Hidden inputs to pass data to payment processing -->
+                                        <input type="hidden" name="name"
+                                            value="{{ $customerInfo['name'] ?? (Auth::user()->name ?? '') }}">
+                                        <input type="hidden" name="email"
+                                            value="{{ $customerInfo['email'] ?? (Auth::user()->email ?? '') }}">
+                                        <input type="hidden" name="phone"
+                                            value="{{ $customerInfo['phone'] ?? (Auth::user()->phone ?? '') }}">
+                                        <input type="hidden" name="address"
+                                            value="{{ $customerInfo['address'] ?? (Auth::user()->address ?? '') }}">
+                                        <input type="hidden" name="notes" value="{{ $customerInfo['notes'] ?? '' }}">
+
+                                        <div class="alert alert-info mt-2">
+                                            <i class="fa fa-info-circle"></i>
+                                            These details were provided during order confirmation.
+                                            <a href="{{ route('cart.confirm') }}" class="alert-link">Go back</a> to
+                                            change them.
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Email Address *</label>
-                                            <input type="email" name="email" class="form-control" required
-                                                value="{{ Auth::user()->email ?? old('email') }}">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Phone Number *</label>
-                                            <input type="text" name="phone" class="form-control" required
-                                                value="{{ Auth::user()->phone ?? old('phone') }}">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Shipping Address *</label>
-                                            <input type="text" name="address" class="form-control" required
-                                                value="{{ Auth::user()->address ?? old('address') }}">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Order Notes (Optional)</label>
-                                    <textarea name="notes" class="form-control" rows="2">{{ old('notes') }}</textarea>
                                 </div>
                             </div>
 
@@ -651,7 +677,7 @@
                                 <span>${{ number_format($orderSummary['shipping'] ?? 0, 2) }}</span>
                             </div>
                             <div class="summary-item">
-                                <span>Tax (5%)</span>
+                                <span>Tax (10%)</span>
                                 <span>${{ number_format($orderSummary['tax'] ?? 0, 2) }}</span>
                             </div>
                             <div class="summary-item summary-total">

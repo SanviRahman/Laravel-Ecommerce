@@ -237,68 +237,6 @@
 </head>
 
 <body>
-    <!-- header section -->
-    <header class="header_section">
-        <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                <span>
-                    Giftos
-                </span>
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class=""></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav  ">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('guest.track.order') }}" class="nav-link">
-                            My Order
-                        </a>
-                    </li>
-                </ul>
-                <div class="user_option">
-                    @if(Auth::check())
-                    <a href="{{ route('dashboard') }}">
-                        <i class="fa fa-user" aria-hidden="true"></i>
-                        <span>
-                            Dashboard
-                        </span>
-                    </a>
-                    @else
-                    <a href="{{ route('login') }}">
-                        <i class="fa fa-user" aria-hidden="true"></i>
-                        <span>
-                            Login
-                        </span>
-                    </a>
-                    <a href="{{ route('register') }}">
-                        <i class="fa fa-user" aria-hidden="true"></i>
-                        <span>
-                            Register
-                        </span>
-                    </a>
-                    @endif
-                    <a href="{{ route('cart.index') }}" class="cart-icon">
-                        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
-                        <span class="cart-count">{{ $cartCount ?? 0 }}</span>
-                    </a>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <!-- end header section -->
-
     <!-- Success Section -->
     <section class="success-section" style="padding: 100px 0; background: #f8f9fa; min-height: 70vh;">
         <div class="container">
