@@ -677,7 +677,7 @@
     /* Medium devices (tablets, 768px to 991px) */
     @media (max-width: 991px) {
         .slider_section {
-            padding: 0 35px;
+            padding: 0 44px;
         }
 
         .carousel-item {
@@ -812,7 +812,7 @@
     /* Extra small devices (portrait phones, less than 576px) */
     @media (max-width: 576px) {
         .slider_section {
-            padding: 0 25px;
+            padding: 0 30px;
         }
 
         .carousel-item {
