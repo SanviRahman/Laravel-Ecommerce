@@ -25,7 +25,7 @@ class UserController extends Controller
 
     public function home()
     {
-        $products = Product::latest()->take(9)->get();
+        $products = Product::latest()->take(10)->get();
 
         // Get cart count for the current user/session
         $cartCount = $this->getCartCount();
@@ -94,10 +94,6 @@ class UserController extends Controller
         
         return view('dashboard', compact('user', 'orders', 'cartCount', 'stats'));
     }
-    
-    /**
-     * View single order details
-     */
     
     
     /**
