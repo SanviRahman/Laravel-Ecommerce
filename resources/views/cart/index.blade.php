@@ -553,7 +553,7 @@
                         <li class="nav-item active">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                         </li>
-                        <li>
+                        <li class="nav-item">
                             <a href="{{ route('guest.track.order') }}" class="nav-link">
                                 Track Order
                             </a>

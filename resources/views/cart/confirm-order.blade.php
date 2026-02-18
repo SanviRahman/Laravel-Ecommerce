@@ -693,14 +693,14 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav  ">
-                        <li class="nav-item">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
                             <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('contact') }}">Contact Us</a>
                         </li>
-                        <li class="nav-item active">
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('cart.index') }}">Cart Details</a>
                         </li>
                         <li>
@@ -709,6 +709,8 @@
                             </a>
                         </li>
                     </ul>
+                    
+
                     <div class="user_option">
                         @if(Auth::check())
                         <a href="{{ route('dashboard') }}">

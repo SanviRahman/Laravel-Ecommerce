@@ -250,6 +250,7 @@
     </div>
     @endif
 
+
     <!-- shop section -->
     <br><br><br>
     <section class="shop_section layout_padding"
@@ -262,68 +263,278 @@
             </div>
 
             @if(isset($products) && count($products) > 0)
-            <div class="row">
+            <!-- Add this CSS for better product display -->
+            <style>
+            .product-grid {
+                display: flex;
+                flex-wrap: wrap;
+                margin: 0 -10px;
+            }
+
+            .product-card-wrapper {
+                padding: 10px;
+                flex: 0 0 33.333%;
+                max-width: 33.333%;
+            }
+
+            .product-card {
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                border: 1px solid #f0f0f0;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+            }
+
+            .product-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+            }
+
+            .product-image-container {
+                height: 240px;
+                overflow: hidden;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                position: relative;
+            }
+
+            .product-image {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                transition: transform 0.5s ease;
+                max-height: 200px;
+            }
+
+            .product-card:hover .product-image {
+                transform: scale(1.08);
+            }
+
+            .product-badge {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: #ff3368;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+                z-index: 1;
+            }
+
+            .product-content {
+                padding: 20px;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .product-title {
+                font-size: 15px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 12px;
+                line-height: 1.4;
+                min-height: 42px;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .product-price {
+                color: #ff3368;
+                font-size: 18px;
+                font-weight: 700;
+                margin-top: auto;
+            }
+
+            .product-old-price {
+                color: #999;
+                text-decoration: line-through;
+                font-size: 14px;
+                margin-left: 8px;
+            }
+
+            .product-link {
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                height: 100%;
+            }
+
+            .view-details-btn {
+                border: none;
+                background: linear-gradient(135deg, #2d43be 0%, #1a2a8f 100%);
+                color: white;
+                border-radius: 8px;
+                padding: 10px 12px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                width: 100%;
+                margin-top: 10px;
+                height: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 10px rgba(45, 67, 190, 0.2);
+            }
+
+            .view-details-btn:hover {
+                background: linear-gradient(135deg, #1a2a8f 0%, #0f1a66 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(45, 67, 190, 0.3);
+            }
+
+            .view-details-btn a {
+                color: white;
+                text-decoration: none;
+                display: block;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Responsive Grid */
+            @media (max-width: 992px) {
+                .product-card-wrapper {
+                    flex: 0 0 50%;
+                    max-width: 50%;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .product-card-wrapper {
+                    flex: 0 0 50%;
+                    max-width: 50%;
+                }
+
+                .product-image-container {
+                    height: 200px;
+                }
+
+                .product-content {
+                    padding: 15px;
+                }
+
+                .product-title {
+                    font-size: 14px;
+                    min-height: 40px;
+                }
+
+                .view-details-btn {
+                    height: 40px;
+                    font-size: 13px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .product-card-wrapper {
+                    padding: 5px;
+                    flex: 0 0 50%;
+                    max-width: 50%;
+                }
+
+                .product-image-container {
+                    height: 180px;
+                    padding: 15px;
+                }
+
+                .product-content {
+                    padding: 12px;
+                }
+
+                .product-title {
+                    font-size: 13px;
+                    min-height: 38px;
+                }
+
+                .product-price {
+                    font-size: 16px;
+                }
+
+                .view-details-btn {
+                    height: 38px;
+                    font-size: 12px;
+                    padding: 8px 10px;
+                }
+            }
+
+            @media (max-width: 400px) {
+                .product-card-wrapper {
+                    flex: 0 0 100%;
+                    max-width: 100%;
+                }
+
+                .product-image-container {
+                    height: 220px;
+                }
+            }
+            </style>
+
+            <div class="product-grid">
                 @foreach($products as $product)
-                <div class="col-md-4 mb-4">
-                    <div class="box product-box h-100 d-flex flex-column">
-                        <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none text-dark">
-                            <!-- Image Container with fixed height -->
-                            <div class="img-box" style="height: 250px; overflow: hidden; position: relative;">
+                <div class="product-card-wrapper">
+                    <div class="product-card">
+                        <a href="{{ route('product.details', $product->id) }}" class="product-link">
+                            <div class="product-image-container">
                                 @php
-                                // Check if image exists
                                 $imageExists = $product->product_image &&
                                 file_exists(public_path($product->product_image));
+                                $hasDiscount = $product->product_discount_price && $product->product_discount_price >
+                                $product->product_price;
                                 @endphp
 
                                 @if($imageExists)
                                 <img src="{{ asset($product->product_image) }}" alt="{{ $product->product_title }}"
-                                    style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                    class="product-image" loading="lazy">
                                 @else
                                 <img src="{{ asset('images/default-product.jpg') }}" alt="No Image Available"
-                                    style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                    class="product-image" loading="lazy">
                                 @endif
 
-                                <!-- Discount badge (if any) -->
-                                @if($product->product_discount_price && $product->product_discount_price >
-                                $product->product_price)
-                                <span
-                                    style="position: absolute; top: 10px; right: 10px; background: #ff3368; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                                @if($hasDiscount)
+                                <span class="product-badge">
                                     Save
                                     {{ number_format((($product->product_discount_price - $product->product_price) / $product->product_discount_price) * 100, 0) }}%
                                 </span>
                                 @endif
                             </div>
 
-                            <!-- Content with flex-grow to take remaining space -->
-                            <div class="detail-box p-3 flex-grow-1 d-flex flex-column">
-                                <h6 class="mb-2"
-                                    style="font-weight: 600; font-size: 16px; line-height: 1.4; min-height: 45px;">
+                            <div class="product-content">
+                                <h6 class="product-title">
                                     {{ \Illuminate\Support\Str::limit($product->product_title, 25) }}
                                 </h6>
-
-                                <div class="mt-auto">
-                                    <h6 class="mb-0" style="color: #ff3368; font-size: 18px; font-weight: 700;">
-                                        ${{ number_format($product->product_price, 2) }}
-                                        @if($product->product_discount_price && $product->product_discount_price >
-                                        $product->product_price)
-                                        <span class="text-muted"
-                                            style="font-size: 14px; text-decoration: line-through; margin-left: 5px;">
-                                            ${{ number_format($product->product_discount_price, 2) }}
-                                        </span>
-                                        @endif
-                                    </h6>
-
-                                    <!-- Add to Cart Button -->
-                                    <button class="btn btn-sm btn-outline-primary mt-2 w-100 add-to-cart-btn"
-                                        data-product-id="{{ $product->id }}"
-                                        data-product-title="{{ $product->product_title }}"
-                                        data-product-price="{{ $product->product_price }}"
-                                        style="border-color: #2d43be; color: #2d43be; background-color: #2d43be; color: white; border-radius: 5px; padding: 8px 12px; font-size: 14px;">
-                                        View Details
-                                    </button>
+                                <div class="product-price">
+                                    ${{ number_format($product->product_price, 2) }}
+                                    @if($hasDiscount)
+                                    <span class="product-old-price">
+                                        ${{ number_format($product->product_discount_price, 2) }}
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                         </a>
+
+                        <!-- View Details Button -->
+                        <button class="view-details-btn">
+                            <a href="{{ route('product.details', $product->id) }}">View Details</a>
+                        </button>
                     </div>
                 </div>
                 @endforeach
@@ -339,11 +550,8 @@
                     View All Products
                 </a>
             </div>
-
-
         </div>
     </section>
-
     <!-- end shop section -->
 
 
